@@ -2,3 +2,6 @@
 *.swp
 .idea/
 .vscode/
+
+# local Callee discovery symlink/copy of pack
+.callee/
