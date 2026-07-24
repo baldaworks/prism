@@ -1,0 +1,26 @@
+{
+  "name": "prism",
+  "owner": {
+    "name": "Baldaworks"
+  },
+  "metadata": {
+    "description": "Prism story lifecycle plugins for GitHub Copilot CLI.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "prism",
+      "description": "Run the Prism beads-backed story lifecycle with Callee prism/* agents.",
+      "version": "0.1.0",
+      "source": "./plugins/prism",
+      "author": {
+        "name": "Baldaworks",
+        "url": "https://github.com/baldaworks"
+      },
+      "homepage": "https://github.com/baldaworks/prism",
+      "repository": "https://github.com/baldaworks/prism",
+      "license": "MIT",
+      "keywords": ["prism", "beads", "callee", "story-lifecycle"]
+    }
+  ]
+}

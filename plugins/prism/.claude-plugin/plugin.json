@@ -1,0 +1,9 @@
+{
+  "name": "prism",
+  "version": "0.1.0",
+  "description": "Run the Prism beads-backed story lifecycle with Callee prism/* agents.",
+  "author": {
+    "name": "Baldaworks"
+  },
+  "skills": "./skills/"
+}

@@ -1,0 +1,24 @@
+{
+  "name": "prism",
+  "description": "Prism story lifecycle plugins for Grok Build.",
+  "owner": {
+    "name": "Baldaworks"
+  },
+  "plugins": [
+    {
+      "name": "prism",
+      "description": "Run the Prism beads-backed story lifecycle with Callee prism/* agents.",
+      "version": "0.1.0",
+      "category": "development",
+      "author": {
+        "name": "Baldaworks"
+      },
+      "homepage": "https://github.com/baldaworks/prism",
+      "keywords": ["prism", "beads", "callee", "story-lifecycle"],
+      "source": {
+        "type": "local",
+        "path": "./plugins/prism"
+      }
+    }
+  ]
+}

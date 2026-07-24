@@ -1,0 +1,20 @@
+{
+  "name": "prism",
+  "owner": {
+    "name": "Baldaworks"
+  },
+  "metadata": {
+    "description": "Prism story lifecycle plugins for Cursor.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "prism",
+      "source": "./plugins/prism",
+      "description": "Run the Prism beads-backed story lifecycle with Callee prism/* agents.",
+      "version": "0.1.0",
+      "category": "developer-tools",
+      "tags": ["prism", "beads", "callee", "skills"]
+    }
+  ]
+}

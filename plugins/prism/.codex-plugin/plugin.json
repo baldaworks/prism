@@ -1,0 +1,31 @@
+{
+  "name": "prism",
+  "version": "0.1.0",
+  "description": "Run the Prism beads-backed story lifecycle with Callee prism/* agents.",
+  "author": {
+    "name": "Baldaworks",
+    "url": "https://github.com/baldaworks"
+  },
+  "homepage": "https://github.com/baldaworks/prism",
+  "repository": "https://github.com/baldaworks/prism",
+  "license": "MIT",
+  "keywords": [
+    "prism",
+    "beads",
+    "callee",
+    "story-lifecycle"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Prism",
+    "shortDescription": "Beads-backed story lifecycle with Callee agents.",
+    "longDescription": "Guides coding agents through the Prism story lifecycle: specify, design, breakdown, human-approved apply, and verify using bd and callee.",
+    "developerName": "Baldaworks",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Local filesystem",
+      "CLI orchestration"
+    ],
+    "defaultPrompt": "Use $prism:lifecycle to advance the Prism story lifecycle in this repository."
+  }
+}

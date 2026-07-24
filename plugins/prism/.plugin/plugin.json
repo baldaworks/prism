@@ -1,0 +1,14 @@
+{
+  "name": "prism",
+  "version": "0.1.0",
+  "description": "Run the Prism beads-backed story lifecycle with Callee prism/* agents.",
+  "author": {
+    "name": "Baldaworks",
+    "url": "https://github.com/baldaworks"
+  },
+  "homepage": "https://github.com/baldaworks/prism",
+  "repository": "https://github.com/baldaworks/prism",
+  "license": "MIT",
+  "keywords": ["prism", "beads", "callee", "story-lifecycle", "agent-skills"],
+  "skills": "./prefixed-skills/"
+}

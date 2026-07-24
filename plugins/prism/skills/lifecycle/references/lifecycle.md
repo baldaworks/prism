@@ -1,0 +1,69 @@
+# Prism lifecycle graph
+
+Canonical phase flow for the Prism story lifecycle. Durable state lives in
+**beads**; agent runs are **Callee** IDs under `prism/*`. The host skill advances
+**one phase at a time**.
+
+## Graph
+
+Workflow diagrams for the Prism lifecycle must remain **vertical** and **top-to-bottom**. Use Mermaid `flowchart TB` when editing this lifecycle documentation.
+
+```mermaid
+flowchart TB
+  I["1 Intake<br/>bd create type=story<br/>labels: prism, phase:specify"]
+  S["2 Specify<br/>description + acceptance<br/>optional prism/roles/interviewer"]
+  D["3 Design<br/>prism/workflows/design<br/>bd update --design"]
+  B["4 Breakdown<br/>prism/roles/breakdown<br/>child tasks + bd dep"]
+  H["5 Human gate<br/>label approved<br/>human only"]
+  A["6 Apply<br/>claim one ready task<br/>prism/workflows/apply"]
+  V["7 Verify<br/>prism/workflows/verify"]
+  C["8 Close story<br/>bd close story"]
+
+  I --> S
+  S --> D
+  D --> B
+  B --> H
+  H --> A
+  A -->|"open tasks remain"| A
+  A -->|"all children closed"| V
+  V -->|"fail: reopen / new tasks"| A
+  V -->|"pass"| C
+```
+
+## Phase labels on the story
+
+| After step | Typical labels |
+| --- | --- |
+| Intake / specify | `prism`, `phase:specify` → then `phase:design` |
+| Design | `prism`, `phase:breakdown` (design field set) |
+| Breakdown | `prism`, `phase:awaiting-human` (children exist) |
+| Human gate | `prism`, `phase:apply`, `approved` |
+| Apply (in progress) | `prism`, `phase:apply`, `approved` |
+| Verify | `prism`, `phase:verify`, `approved` |
+| Done | story `closed` |
+
+Prefer the **highest** `phase:*` present; if labels and artifacts disagree, trust artifacts (design field, children, `approved`).
+
+## Callee agents per phase
+
+| Step | Callee | Beads writes |
+| --- | --- | --- |
+| Specify assist | `prism/roles/interviewer` | `bd update` description / acceptance |
+| Design | `prism/workflows/design` | `bd update --design` / `--design-file` |
+| Breakdown | `prism/roles/breakdown` | `bd create --parent`, `bd dep` — see [breakdown.md](breakdown.md) |
+| Apply | `prism/workflows/apply` | claim / close one task |
+| Verify | `prism/workflows/verify` | close story (or reopen tasks) |
+
+PromptKit template map: [promptkit.md](promptkit.md).
+
+## Authority boundaries
+
+```text
+Human ──approved──► apply / verify consent for this story
+Host skill ──bd──► durable state
+Callee ──prism/*──► provider work (stateless between runs)
+```
+
+- Do **not** run apply without `approved`.
+- Do **not** close the story while child tasks are open.
+- After each Callee return: persist with `bd`, then `bd show` / `bd children` / `bd ready`.
