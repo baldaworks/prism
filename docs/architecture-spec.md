@@ -1,4 +1,4 @@
-# project-under-documentation — Architecture Specification
+# Prism — Architecture Specification
 
 ## 1. Introduction
 KNOWN: This repository packages one host plugin at `plugins/prism/`, one Prism story-lifecycle Callee pack at `pack/callee/prism/`, and one repository-documentation Callee pack at `pack/callee/documentation/` (`README.md`, `plugins/prism/skills/lifecycle/SKILL.md`, `pack/callee/documentation/workflows/maintain.md`). KNOWN: The repository exists to distribute a Beads-backed story lifecycle and a separate documentation-maintenance workflow through host plugin manifests and reusable Callee packs.
@@ -20,11 +20,11 @@ KNOWN: The primary user-facing capability is the Prism lifecycle skill, invoked 
 | `.callee` mirror | A repository-local symlink or copy of `pack/callee/*` used for local Callee discovery when present; `pack/callee/*` remains authoritative. |
 
 ## 3. Architectural Scope
-KNOWN: This architecture covers the repository contents that define and distribute Prism behavior: the host plugin payload under `plugins/prism/`, the Prism Callee pack under `pack/callee/prism/`, the documentation Callee pack under `pack/callee/documentation/`, and the root marketplace manifests under `.agents/plugins/`, `.claude-plugin/`, `.cursor-plugin/`, `.github/plugin/`, and `.grok-plugin/`.
+KNOWN: This architecture covers the repository contents that define and distribute Prism behavior: the host plugin payload under `plugins/prism/`, the Prism Callee pack under `pack/callee/prism/`, the documentation Callee pack under `pack/callee/documentation/`, the checked-in `.callee/*` discovery mirror, and the root marketplace manifests under `.agents/plugins/`, `.claude-plugin/`, `.cursor-plugin/`, `.github/plugin/`, and `.grok-plugin/`.
 
 KNOWN: Covered deployment modes are repository consumption as a host-plugin marketplace source and repository consumption as a Callee pack copied or linked into another project as `.callee/prism/` or `.callee/documentation/` (`README.md`, `plugins/prism/skills/lifecycle/SKILL.md`).
 
-KNOWN: When a repository-local `.callee/prism/` or `.callee/documentation/` tree is present in this working tree, it is a local mirror of `pack/callee/*` rather than an additional authoritative source (`README.md`, `.gitignore`).
+KNOWN: The live working tree currently contains `.callee/prism/` and `.callee/documentation/`, and those paths are local mirrors of `pack/callee/*` rather than additional authoritative sources (`README.md`, `.gitignore`).
 
 INFERRED: Out of scope are the internal implementations of the external `bd` and `callee` binaries, host-specific runtime behavior beyond the repository manifests and skill files in the live working tree, and any consumer-project application code that Prism may later operate on. This is inferred because the repository contains configuration, skill, and workflow definitions rather than those upstream runtimes.
 
@@ -35,7 +35,7 @@ INFERRED: Out of scope are the internal implementations of the external `bd` and
 - KNOWN[Permanent]: The apply phase cannot be automated end-to-end because a human must set the `approved` label before `prism/workflows/apply` is allowed to run (`plugins/prism/skills/lifecycle/SKILL.md`, `plugins/prism/skills/lifecycle/references/lifecycle.md`).
 - KNOWN[Permanent]: `pack/callee/prism/` and `pack/callee/documentation/` are the authoritative workflow definitions; a repository-local `.callee/*` tree is only a discovery mirror when present (`README.md`, `.gitignore`).
 - [ASSUMPTION][Temporary] Contact ownership is not documented in the repository, so Section 7 uses `[UNKNOWN]` placeholders rather than inferred names. This is necessary to avoid fabricating maintainers.
-- KNOWN[Permanent]: **Examined**: `README.md`, `docs/architecture-spec.md`, `plugins/prism/`, `pack/callee/`, root marketplace manifests, and workflow/reference markdown under those paths. **Method**: repository file enumeration with `rg --files` and `find`, then targeted reads with `sed` and search with `rg -n` over workflow and lifecycle terms.
+- KNOWN[Permanent]: **Examined**: `README.md`, `docs/architecture-spec.md`, `.callee/`, `plugins/prism/`, `pack/callee/`, root marketplace manifests, and workflow/reference markdown under those paths. **Method**: repository file enumeration with `rg --files` and `find`, targeted reads with `sed`, search with `rg -n` over workflow and lifecycle terms, and mirror verification with `diff -rq` between `.callee/*` and `pack/callee/*`.
 - KNOWN[Permanent]: **Excluded**: external implementations of `bd`, `callee`, and host runtimes, plus any consumer-project repository that would install `.callee/prism/` or `.callee/documentation/`. These are excluded because they are not defined in this repository.
 - KNOWN[Temporary]: **Limitations**: this maintenance pass verified repository files in the live working tree and repository layout only; it did not execute external CLIs or perform host-runtime installs from the repository during authorship.
 
@@ -53,7 +53,7 @@ KNOWN: The documentation pack defines a Loop workflow named `documentation/workf
 #### 5.1.3 Packaging model
 KNOWN: The repository separates host-facing plugin assets from project-facing Callee pack assets. KNOWN: Host-specific plugin manifests live under `plugins/prism/.codex-plugin/`, `plugins/prism/.claude-plugin/`, `plugins/prism/.cursor-plugin/`, `plugins/prism/.grok-plugin/`, and `plugins/prism/.plugin/`, while project-facing workflows and Roles live under `pack/callee/...` (`plugins/prism/.codex-plugin/plugin.json`, `plugins/prism/.claude-plugin/plugin.json`, `plugins/prism/.cursor-plugin/plugin.json`, `plugins/prism/.grok-plugin/plugin.json`, `plugins/prism/.plugin/plugin.json`).
 KNOWN: Installing the host plugin does not install `.callee/prism/` or `.callee/documentation/` automatically; operators must copy or link those packs into consumer projects separately (`README.md`, `plugins/prism/skills/lifecycle/SKILL.md`).
-KNOWN: The live working tree may also carry `.callee/prism/` and `.callee/documentation/` as a local mirror for Callee discovery, but those paths are derivative of `pack/callee/*` and should not be edited as the primary source (`README.md`, `.gitignore`).
+KNOWN: The live working tree carries `.callee/prism/` and `.callee/documentation/` as a local mirror for Callee discovery, but those paths are derivative of `pack/callee/*` and should not be edited as the primary source (`README.md`, `.gitignore`).
 
 ### 5.2 Network Architecture
 INFERRED: Not applicable — this repository operates as local documentation, manifest, and workflow content. The repository files in the live working tree describe installation sources and external CLIs, but the repository itself does not run a resident network service.

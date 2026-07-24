@@ -8,7 +8,7 @@
 
 Tagline: *Intent through a prism: story → design → tasks → apply → verify.*
 
-This repository is a **standalone marketplace** at the repo root. Root-level marketplace manifests live under `.grok-plugin/`, `.claude-plugin/`, `.agents/plugins/`, `.cursor-plugin/`, and `.github/plugin/`. The shipped host plugin lives at `plugins/prism/` and currently exposes one lifecycle skill in two host-facing layouts:
+This repository is a **standalone marketplace** at the repo root. Root-level marketplace manifests live under `.grok-plugin/`, `.claude-plugin/`, `.agents/plugins/`, `.cursor-plugin/`, and `.github/plugin/`. For Codex, the repo-level marketplace entry is `.agents/plugins/marketplace.json`, while the shipped plugin payload keeps its host manifest at `plugins/prism/.codex-plugin/plugin.json`. The shipped host plugin lives at `plugins/prism/` and currently exposes one lifecycle skill in two host-facing layouts:
 
 - `plugins/prism/skills/lifecycle/` for namespaced hosts such as Codex and Claude
 - `plugins/prism/prefixed-skills/prism-lifecycle/` for flat-slash hosts such as Grok and Cursor
@@ -34,6 +34,9 @@ The story-lifecycle Callee pack lives at `pack/callee/prism/` and is installed i
 ├── pack/callee/documentation/           # documentation-maintenance Callee pack
 │   ├── roles/                           # writer, reviewer
 │   └── workflows/                       # maintain
+├── .callee/                             # checked-in local Callee discovery mirror
+│   ├── prism/                           # mirrors pack/callee/prism/ for local discovery
+│   └── documentation/                   # mirrors pack/callee/documentation/ for local discovery
 ├── .agents/plugins/marketplace.json     # Codex marketplace entry
 ├── .claude-plugin/marketplace.json
 ├── .cursor-plugin/marketplace.json
@@ -42,7 +45,7 @@ The story-lifecycle Callee pack lives at `pack/callee/prism/` and is installed i
 └── docs/architecture-spec.md            # operator-facing repository architecture spec
 ```
 
-If this repository also contains `.callee/prism/` or `.callee/documentation/`, treat those paths as a local discovery mirror of `pack/callee/*`, not as the source of truth. Maintain `pack/callee/*` first and then resync the `.callee/*` mirror if needed.
+This working tree also includes `.callee/prism/` and `.callee/documentation/` as a local discovery mirror of `pack/callee/*`. Treat `pack/callee/*` as the source of truth, maintain those paths first, and then resync the `.callee/*` mirror if needed.
 
 ## Documentation
 
