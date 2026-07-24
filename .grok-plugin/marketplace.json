@@ -2,7 +2,7 @@
   "name": "prism",
   "description": "Prism story lifecycle plugins for Grok Build.",
   "owner": {
-    "name": "Baldaworks"
+    "name": "Alexey Samoylov"
   },
   "plugins": [
     {
@@ -11,7 +11,7 @@
       "version": "0.1.0",
       "category": "development",
       "author": {
-        "name": "Baldaworks"
+        "name": "Alexey Samoylov"
       },
       "homepage": "https://github.com/baldaworks/prism",
       "keywords": ["prism", "beads", "callee", "story-lifecycle"],

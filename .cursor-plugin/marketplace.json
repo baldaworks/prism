@@ -1,7 +1,7 @@
 {
   "name": "prism",
   "owner": {
-    "name": "Baldaworks"
+    "name": "Alexey Samoylov"
   },
   "metadata": {
     "description": "Prism story lifecycle plugins for Cursor.",

@@ -1,7 +1,7 @@
 {
   "name": "prism",
   "owner": {
-    "name": "Baldaworks"
+    "name": "Alexey Samoylov"
   },
   "metadata": {
     "description": "Prism story lifecycle plugins for GitHub Copilot CLI.",
@@ -14,7 +14,7 @@
       "version": "0.1.0",
       "source": "./plugins/prism",
       "author": {
-        "name": "Baldaworks",
+        "name": "Alexey Samoylov",
         "url": "https://github.com/baldaworks"
       },
       "homepage": "https://github.com/baldaworks/prism",
