@@ -1,70 +1,45 @@
 # Prism
 
-**Host plugin + Callee pack repository** for a minimal **story lifecycle**:
+Prism is a story lifecycle for software changes:
 
-- **[Beads](https://github.com/steveyegge/beads)** (`bd`) stores durable story, design, task, dependency, and progress state.
-- **[Callee](https://github.com/baldaworks/callee)** runs the provider agents under `prism/*` and `documentation/*`.
-- **Skill** `$prism:lifecycle` / `/prism-lifecycle` advances the Prism story lifecycle over `bd` + `callee`.
+- **Beads** stores the story, design, tasks, dependencies, and progress.
+- **Callee** runs the `prism/*` agents that move the story forward.
+- **Prism plugin skills** give users a simple command to advance the lifecycle from their host tool.
 
-Tagline: *Intent through a prism: story → design → tasks → apply → verify.*
+Tagline: *Intent through a prism: story -> design -> tasks -> apply -> verify.*
 
-This repository is a **standalone marketplace** at the repo root. Root-level marketplace manifests live under `.grok-plugin/`, `.claude-plugin/`, `.agents/plugins/`, `.cursor-plugin/`, and `.github/plugin/`. For Codex, the repo-level marketplace entry is `.agents/plugins/marketplace.json`, while the shipped plugin payload keeps its host manifest at `plugins/prism/.codex-plugin/plugin.json`. The shipped host plugin lives at `plugins/prism/` and currently exposes one lifecycle skill in two host-facing layouts:
+## What You Get
 
-- `plugins/prism/skills/lifecycle/` for namespaced hosts such as Codex and Claude
-- `plugins/prism/prefixed-skills/prism-lifecycle/` for flat-slash hosts such as Grok and Cursor
+Prism helps you move a change through a small, explicit workflow:
 
-The story-lifecycle Callee pack lives at `pack/callee/prism/` and is installed into consumer projects as `.callee/prism/`. A separate repository-documentation pack lives at `pack/callee/documentation/` and installs as `.callee/documentation/`.
+1. Capture a story with description and acceptance criteria.
+2. Generate a design.
+3. Break the design into child tasks.
+4. Wait for human approval.
+5. Apply one task at a time.
+6. Verify the story before closing it.
 
-## Layout
+The normal user-facing entrypoint is the Prism skill:
 
-```text
-.
-├── plugins/prism/                       # host plugin payload
-│   ├── skills/lifecycle/                # canonical namespaced skill → $prism:lifecycle
-│   ├── prefixed-skills/prism-lifecycle/ # flat slash skill → /prism-lifecycle
-│   ├── .codex-plugin/plugin.json
-│   ├── .claude-plugin/plugin.json
-│   ├── .cursor-plugin/plugin.json
-│   ├── .grok-plugin/plugin.json
-│   └── .plugin/plugin.json
-├── pack/callee/prism/                   # story-lifecycle Callee pack for consumer repos
-│   ├── roles/                           # interviewer, explorer, architect, breakdown,
-│   │                                    # implementer, reviewer
-│   └── workflows/                       # design, apply, verify
-├── pack/callee/documentation/           # documentation-maintenance Callee pack
-│   ├── roles/                           # writer, reviewer
-│   └── workflows/                       # maintain
-├── .callee/                             # checked-in local Callee discovery mirror
-│   ├── prism/                           # mirrors pack/callee/prism/ for local discovery
-│   └── documentation/                   # mirrors pack/callee/documentation/ for local discovery
-├── .agents/plugins/marketplace.json     # Codex marketplace entry
-├── .claude-plugin/marketplace.json
-├── .cursor-plugin/marketplace.json
-├── .github/plugin/marketplace.json      # GitHub Copilot CLI marketplace entry
-├── .grok-plugin/marketplace.json
-└── docs/architecture-spec.md            # operator-facing repository architecture spec
-```
+- Codex / Claude-style hosts: `$prism:lifecycle`
+- Flat-slash hosts: `/prism-lifecycle`
 
-This working tree also includes `.callee/prism/` and `.callee/documentation/` as a local discovery mirror of `pack/callee/*`. Treat `pack/callee/*` as the source of truth, maintain those paths first, and then resync the `.callee/*` mirror if needed.
+## Before You Start
 
-## Documentation
+You need these tools in the target project:
 
-- Repository overview and install notes: `README.md`
-- Operator-facing architecture and workflow boundaries: `docs/architecture-spec.md`
-- Story lifecycle reference: `plugins/prism/skills/lifecycle/references/lifecycle.md`
-- PromptKit role and workflow map: `plugins/prism/skills/lifecycle/references/promptkit.md`
+- `bd` (Beads)
+- `callee` `0.17.0+`
+- a supported host with the Prism plugin installed
 
-When repository documentation describes lifecycle behavior or workflow flow, the lifecycle must be shown as a **vertical top-to-bottom sequence**. Mermaid diagrams in this repository use `flowchart TB` for that requirement.
+Prism has two install surfaces:
 
-## Install the host plugin
+1. The **host plugin**, so your tool exposes the Prism skill.
+2. The **Callee agent pack**, so `prism/*` agents exist on `callee agent list`.
 
-### Grok Build
+You need both.
 
-```sh
-grok plugin install 'baldaworks/prism#plugins/prism' --trust
-```
-
-Invoke: `/prism-lifecycle`
+## Install the Host Plugin
 
 ### Codex
 
@@ -73,7 +48,7 @@ codex plugin marketplace add baldaworks/prism
 codex plugin add prism@prism
 ```
 
-Invoke: `$prism:lifecycle`
+Invoke with: `$prism:lifecycle`
 
 ### Claude Code
 
@@ -82,7 +57,15 @@ claude plugin marketplace add baldaworks/prism
 claude plugin install prism@prism --scope user
 ```
 
-Invoke: namespaced skill under the prism plugin (see host help).
+Invoke with the Prism lifecycle skill under the `prism` plugin.
+
+### Grok Build
+
+```sh
+grok plugin install 'baldaworks/prism#plugins/prism' --trust
+```
+
+Invoke with: `/prism-lifecycle`
 
 ### GitHub Copilot CLI
 
@@ -97,154 +80,143 @@ copilot plugin install prism@prism
 agent plugin marketplace add https://github.com/baldaworks/prism.git
 ```
 
-Install **prism** from the marketplace UI; invoke the `prism-lifecycle` skill.
+Then install **prism** from the marketplace UI and invoke `prism-lifecycle`.
 
 ### OpenCode
 
-Copy skills from the plugin into OpenCode skill paths (marketplace load may vary by version):
+If your OpenCode setup does not load the plugin from a marketplace, copy the shipped flat skill:
 
 ```sh
-# example: project-local
 mkdir -p .opencode/skills
 cp -a plugins/prism/prefixed-skills/prism-lifecycle .opencode/skills/
 ```
 
-Or install via any OpenCode plugin mechanism your version documents for GitHub marketplaces.
+## Install the Callee Agents
 
-## Install the Callee pack into a *project*
-
-The host plugin does **not** put agents on `callee agent list` by itself. Consumer repos need `.callee/prism/` for the Prism lifecycle and can optionally install `.callee/documentation/` for the repository-documentation maintenance workflow.
-
-Within this repository, `pack/callee/prism/` and `pack/callee/documentation/` are authoritative. A repo-local `.callee/*` tree may exist for local Callee discovery, but contributors should not treat that mirror as the primary definition.
-
-Set `PRISM_ROOT` to a clone of this repo (or use a submodule path).
-
-### Variant A — copy
+For most users, the right install path is:
 
 ```sh
-mkdir -p .callee
-cp -a "$PRISM_ROOT/pack/callee/prism" .callee/prism
+callee agent import baldaworks/prism \
+  --path pack/callee/prism \
+  --prefix prism
 ```
 
-Optional documentation workflow:
+Validate the install:
 
 ```sh
-cp -a "$PRISM_ROOT/pack/callee/documentation" .callee/documentation
+callee agent list | grep '^prism/'
+callee agent view prism/workflows/design --json
+bd where
 ```
 
-### Variant B — symlink (track pack updates)
+If you also want the optional documentation-maintenance workflow:
 
 ```sh
-mkdir -p .callee
-ln -sfn "$PRISM_ROOT/pack/callee/prism" .callee/prism
-```
-
-Optional documentation workflow:
-
-```sh
-ln -sfn "$PRISM_ROOT/pack/callee/documentation" .callee/documentation
-```
-
-### Variant C — git submodule + symlink
-
-```sh
-git submodule add https://github.com/baldaworks/prism.git vendor/prism
-mkdir -p .callee
-ln -sfn "$(pwd)/vendor/prism/pack/callee/prism" .callee/prism
-```
-
-Optional documentation workflow:
-
-```sh
-ln -sfn "$(pwd)/vendor/prism/pack/callee/documentation" .callee/documentation
-```
-
-### Variant D — sparse checkout (pack only)
-
-```sh
-git clone --filter=blob:none --sparse https://github.com/baldaworks/prism.git vendor/prism
-git -C vendor/prism sparse-checkout set pack/callee/prism
-mkdir -p .callee
-ln -sfn "$(pwd)/vendor/prism/pack/callee/prism" .callee/prism
-```
-
-Optional documentation workflow:
-
-```sh
-# if you want both packs in the sparse checkout, include both paths
-git -C vendor/prism sparse-checkout set pack/callee/prism pack/callee/documentation
-ln -sfn "$(pwd)/vendor/prism/pack/callee/documentation" .callee/documentation
+callee agent import baldaworks/prism \
+  --path pack/callee/documentation \
+  --prefix documentation
 ```
 
 Validate:
 
 ```sh
-callee agent list | grep prism/
-callee agent validate .callee/prism/roles/interviewer.md
-bd where
+callee agent list | grep '^documentation/'
+callee agent view documentation/workflows/maintain --json
 ```
 
-If you also installed the documentation pack:
+## Quick Start
 
-```sh
-callee agent list | grep documentation/
-callee agent validate .callee/documentation/workflows/maintain.md
-```
-
-## Prerequisites
-
-- `bd` (Beads) in the target project  
-- `callee` 0.16.x on `PATH` with Codex CLI installed/authenticated (`prism/*` and `documentation/*` use `codex` / `gpt-5.4`; reviewer Roles pin `xhigh`, documentation writer pins `high`)  
-- Human sets story label `approved` before apply  
-
-## Quick start
+Create a story in your project:
 
 ```sh
 bd create "User can export report as CSV" \
-  --type=story -l prism,phase:specify \
-  --description="…" --acceptance="…" --priority=2
-
-callee agent run prism/workflows/design --message "$(bd show <story>)" \
-  | bd update <story> --design-file - --set-labels prism,phase:breakdown
-# … breakdown → human approved → apply → verify
+  --type=story \
+  -l prism,phase:specify \
+  --description="Users can export the current report as CSV." \
+  --acceptance="User can download a CSV export from the report page." \
+  --priority=2
 ```
 
-Full procedure: skill body under `plugins/prism/skills/lifecycle/SKILL.md`.  
-Lifecycle graph: `plugins/prism/skills/lifecycle/references/lifecycle.md`.  
-PromptKit role/workflow map: `plugins/prism/skills/lifecycle/references/promptkit.md`.
+Then run the Prism skill from your host:
 
-## Story lifecycle workflows (Callee)
+```text
+$prism:lifecycle
+```
 
-The Prism lifecycle is a **vertical** workflow: intake/specify → design → breakdown → human approval gate → apply → verify. Keep lifecycle diagrams top-to-bottom when updating documentation.
+or:
 
-| Agent ID | Kind | Role |
-| --- | --- | --- |
-| `prism/workflows/design` | Sequential | explorer → architect |
-| `prism/workflows/apply` | Loop | implementer ↔ reviewer |
-| `prism/workflows/verify` | Sequential | reviewer (story-level) |
+```text
+/prism-lifecycle
+```
 
-Direct Roles used by the lifecycle skill (outside those workflows): `prism/roles/interviewer`, `prism/roles/breakdown`.
+Ask Prism to advance the current story through the next phase. Prism will inspect Beads, find the current lifecycle state, and run the appropriate `prism/*` agent.
 
-## Documentation Maintenance Pack
+## Lifecycle Summary
 
-Outside the story phase machine, the repository also ships a separate writer/reviewer loop for keeping docs aligned with the live tree:
+Prism advances one phase at a time:
+
+1. `phase:specify`
+2. `phase:design`
+3. `phase:breakdown`
+4. `phase:awaiting-human`
+5. `phase:apply`
+6. `phase:verify`
+
+Rules that matter to users:
+
+- `approved` must be set by a human before apply.
+- Apply works one claimed child task at a time.
+- Verify only closes the story when verification passes.
+
+## When to Use Direct Callee Commands
+
+Most users should use the Prism skill, not raw workflow IDs.
+
+Direct `callee agent run prism/...` commands are mainly for:
+
+- debugging the lifecycle
+- validating a local Prism install
+- advanced operator workflows
+
+If you want the full operational behavior, see:
+
+- `plugins/prism/skills/lifecycle/SKILL.md`
+- `plugins/prism/skills/lifecycle/references/lifecycle.md`
+- `plugins/prism/skills/lifecycle/references/promptkit.md`
+
+## Optional Documentation Workflow
+
+This repository also ships a separate documentation-maintenance workflow:
 
 ```sh
 callee agent run documentation/workflows/maintain \
-  --message "Maintain documentation so README and operator docs match the live repository layout."
+  --message "Maintain repository documentation so it matches the live tree."
 ```
 
-| Agent ID | Kind | Role |
-| --- | --- | --- |
-| `documentation/workflows/maintain` | Loop | `writer` ↔ `reviewer` |
+This is **not** part of the Prism story lifecycle. It is optional and mainly useful for maintainers.
 
-This workflow is **not** part of the Prism story lifecycle and is not driven by beads phase labels; it is an optional separate pack for operators and maintainers. When this workflow updates lifecycle documentation, it must preserve the vertical top-to-bottom lifecycle requirement.
+## Repository Notes
+
+If you are using this repository itself as a source checkout, these paths matter:
+
+- `plugins/prism/` contains the shipped host plugin payload.
+- `pack/callee/prism/` is the source of truth for the Prism Callee pack.
+- `pack/callee/documentation/` is the source of truth for the optional documentation pack.
+- `.callee/*` may exist as a local discovery mirror in this repo, but `pack/callee/*` remains authoritative.
+
+The repository also publishes marketplace metadata for multiple hosts from the repo root.
+
+For contributor- and operator-facing details, see:
+
+- `docs/architecture-spec.md`
+- `plugins/prism/skills/lifecycle/references/lifecycle.md`
+- `plugins/prism/skills/lifecycle/references/promptkit.md`
 
 ## Authority
 
-- Only a **human** sets `approved` before apply  
-- Skill does not invent approval; commit/push only with explicit authority  
-- Durable state is beads only (not ad hoc markdown TODOs)  
+- Only a human sets `approved` before apply.
+- Prism should not invent approval.
+- Commit and push require explicit human authority.
 
 ## License
 
