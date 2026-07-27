@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "prism",
+  "project_id": "134a85eb-6952-409d-9ef5-dea1ef3c06b0"
+}
