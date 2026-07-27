@@ -1,0 +1,4 @@
+interface:
+  display_name: "Prism Approve"
+  short_description: "Authorize a Prism story for apply"
+  default_prompt: "Use $prism:approve to move a Prism story through the human gate and add human:approved."

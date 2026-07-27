@@ -1,4 +1,4 @@
-# Prism breakdown → beads children
+# Prism plan → beads children
 
 Contract for turning `prism/roles/breakdown` (PromptKit `plan-implementation`)
 output into beads task children. The host agent **must** extract a machine-usable
@@ -36,11 +36,11 @@ Rules:
 - `description` states **done-when** (testable).
 - `depends_on` lists earlier `key`s that must complete first.
 - No scope beyond story acceptance / design.
-- If the plan has no extractable tasks, **re-run breakdown** or stop and ask the human — do not invent a graph.
+- If the plan has no extractable tasks, **re-run plan/breakdown** or stop and ask the human — do not invent a graph.
 
 ## Host procedure (strict)
 
-1. Run breakdown (see SKILL.md for full `callee` command).
+1. Run plan (implemented by the existing `breakdown` role; see SKILL.md for the full `callee` command).
 2. Parse or normalize into the JSON shape above. Keep a key→bead-id map.
 3. Create children **in any order**, recording ids:
 
@@ -66,7 +66,7 @@ bd blocked
 6. Advance story labels:
 
 ```bash
-bd update <story-id> --set-labels prism,phase:awaiting-human
+bd update <story-id> --set-labels prism,phase:human
 ```
 
 ## Reject

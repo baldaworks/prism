@@ -2,10 +2,10 @@
 name: lifecycle
 description: >
   Run the Prism story lifecycle: Beads stores story, design, tasks, and progress;
-  Callee agents under prism/* run intake, design, breakdown, apply, and verify.
+  Callee agents under prism/* run intake, design, plan, apply, and verify.
   Use when the user runs $prism:lifecycle, /prism-lifecycle, /prism, asks to run or
-  advance Prism, uses labels prism or phase:specify|design|breakdown|apply|verify,
-  or says story → design → tasks → apply.
+  advance Prism, uses labels prism or phase:specify|design|plan|human|apply|verify,
+  or says story → design → plan → apply.
 metadata:
   short-description: "Prism story lifecycle (beads + prism/* Callee)"
 ---
@@ -16,7 +16,7 @@ Minimal story lifecycle:
 
 | Layer | Owns |
 | --- | --- |
-| **Beads** | Story description, acceptance, design, task children, status, comments, human `approved` |
+| **Beads** | Story description, acceptance, design, task children, status, comments, human approval tag `human:approved` |
 | **Callee `prism/*`** | Provider runs (PromptKit Roles + Sequential/Loop) |
 | **This skill** | Phase machine, `bd` writes, only `callee agent run prism/…` |
 
@@ -64,33 +64,33 @@ Validate: `callee agent list | grep '^prism/'` and `callee agent view prism/work
 6. Run **one** phase end-to-end, then re-check labels/children.
 7. Lifecycle graph: [references/lifecycle.md](references/lifecycle.md).
 8. PromptKit map / regenerate: [references/promptkit.md](references/promptkit.md).
-9. Breakdown → beads: [references/breakdown.md](references/breakdown.md).
+9. Plan → beads: [references/breakdown.md](references/breakdown.md).
 
 ## Hard rules
 
 1. **Only** `prism/roles/*` and `prism/workflows/*` — never bare `roles/*` or `workflows/*` for Prism.
 2. Keep Prism agents discoverable under `prism/*`; `callee agent import` should preserve the `prism` prefix, while repo-local copy/symlink/vendor installs should expose the pack at `.callee/prism`.
 3. **Beads** is the durable store for requirements, design, tasks, progress.
-4. **Human gate:** do not run `prism/workflows/apply` without story label `approved` (human-only).
+4. **Human gate:** do not run `prism/workflows/apply` without story label `human:approved` (human-only).
 5. **One claimed task per apply** run.
 6. After every `callee agent run`: persist with `bd`, then `bd show`, `bd children`, `bd ready`.
-7. **`--set-labels` replaces all labels** — always re-include `prism` and, after gate, `approved`.
+7. **`--set-labels` replaces all labels** — always re-include `prism` and, after gate, `human:approved`.
 8. **No commit/push** without explicit user authority.
 9. Before direct Role runs: `callee agent view <id> --json` and pass every required `--param`.
 10. After apply that changed code: run project checks (`task test` or `go test ./...`). Do not close the task if checks fail.
 11. `prism/workflows/design` returns design markdown on stdout; persist it directly with `bd update --design-file -` and do not create temp files.
-12. A story is ready for verify when it is `approved` and has **no open child tasks**; there is no separate `apply done` marker.
+12. A story is ready for verify when it is `human:approved` and has **no open child tasks**; there is no separate `apply done` marker.
 13. During apply, choose a task from `bd children <story>` and confirm it is ready/unblocked before claiming it; never claim from global `bd ready` alone.
 
 ## Phase → action
 
 | Condition (priority order) | Do next |
 | --- | --- |
-| `phase:verify` or (`approved` and no open children) | Verify; close only if verification passes |
-| `phase:apply` + `approved` + open child tasks | Claim one ready child → apply |
-| Open child tasks exist and **no** `approved` | **Stop** — ask human for `approved` |
-| `phase:awaiting-human` | **Stop** — ask human for `approved` |
-| `phase:breakdown` or (design set and no children) | Breakdown → create children |
+| `phase:verify` or (`human:approved` and no open children) | Verify; close only if verification passes |
+| `phase:apply` + `human:approved` + open child tasks | Claim one ready child → apply |
+| Open child tasks exist and **no** `human:approved` | **Stop** — ask human for `human:approved` |
+| `phase:human` | **Stop** — ask human for `human:approved` |
+| `phase:plan` or (design set and no children) | Plan → create children |
 | `phase:design` or (description/acceptance set and design empty) | Design → `--design` |
 | `phase:specify` or missing description/acceptance | Intake / specify |
 
@@ -100,7 +100,7 @@ Validate: `callee agent list | grep '^prism/'` and `callee agent view prism/work
 | --- | --- |
 | `prism` | In this lifecycle |
 | `phase:specify` … `phase:verify` | Phase cache |
-| `approved` | Human allowed implement |
+| `human:approved` | Human allowed implement |
 
 ## Agents
 
@@ -108,7 +108,7 @@ Validate: `callee agent list | grep '^prism/'` and `callee agent view prism/work
 | --- | --- |
 | Intake assist | `prism/roles/interviewer` (+ params) |
 | Design | `prism/workflows/design` |
-| Breakdown | `prism/roles/breakdown` (+ params) |
+| Plan | `prism/roles/breakdown` (+ params) |
 | Apply | `prism/workflows/apply` |
 | Verify | `prism/workflows/verify` |
 
@@ -133,10 +133,10 @@ bd update <story> --set-labels prism,phase:design
 
 ```bash
 callee agent run prism/workflows/design --message "$(bd show <story>)" \
-  | bd update <story> --design-file - --set-labels prism,phase:breakdown
+  | bd update <story> --design-file - --set-labels prism,phase:plan
 ```
 
-### 3. Breakdown
+### 3. Plan
 
 ```bash
 callee agent run prism/roles/breakdown \
@@ -150,13 +150,13 @@ callee agent run prism/roles/breakdown \
 Follow [references/breakdown.md](references/breakdown.md), then:
 
 ```bash
-bd update <story> --set-labels prism,phase:awaiting-human
+bd update <story> --set-labels prism,phase:human
 ```
 
 ### 4. Human gate (human only)
 
 ```bash
-bd update <story> --set-labels prism,phase:apply,approved
+bd update <story> --set-labels prism,phase:apply,human:approved
 ```
 
 ### 5. Apply
@@ -177,13 +177,13 @@ If no child of `<story>` is currently ready, stop and leave the story open.
 ### 6. Verify + close
 
 ```bash
-bd update <story> --set-labels prism,phase:verify,approved
+bd update <story> --set-labels prism,phase:verify,human:approved
 callee agent run prism/workflows/verify --message "$(bd show <story>)"
 # close only if acceptance is met and verify did not require follow-up work
 bd close <story> --reason="Acceptance met"
 ```
 
-If verify finds gaps, keep the story open. Reopen or create child tasks as needed and return the story to `phase:apply,approved`; if verification invalidates the plan or design, move the story back to the appropriate earlier phase instead of closing it.
+If verify finds gaps, keep the story open. Reopen or create child tasks as needed and return the story to `phase:apply,human:approved`; if verification invalidates the plan or design, move the story back to the appropriate earlier phase and clear `human:approved` instead of closing it.
 
 ## Discover
 
@@ -197,7 +197,7 @@ callee agent view <prism-id> --json
 
 ## Safety
 
-- Do not invent `approved` or close a story with open children.
+- Do not invent `human:approved` or close a story with open children.
 - Do not close a story after verify unless the verify result is a pass with no follow-up work.
 - Prefer `bd --json` when parsing; never `bd edit`.
 - Do not hand-edit PromptKit Role bodies; regenerate per [references/promptkit.md](references/promptkit.md).

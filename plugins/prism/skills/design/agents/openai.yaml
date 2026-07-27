@@ -1,0 +1,4 @@
+interface:
+  display_name: "Prism Design"
+  short_description: "Run the Prism design phase"
+  default_prompt: "Use $prism:design to generate and persist design markdown for a Prism story."

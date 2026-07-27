@@ -15,7 +15,7 @@ Prism helps you move a change through a small, explicit workflow:
 1. Capture a story with description and acceptance criteria.
 2. Generate a design.
 3. Break the design into child tasks.
-4. Wait for human approval.
+4. Wait at the human gate.
 5. Apply one task at a time.
 6. Verify the story before closing it.
 
@@ -46,9 +46,14 @@ You need both.
 ```sh
 codex plugin marketplace add baldaworks/prism
 codex plugin add prism@prism
+codex plugin add prism-callee@prism
 ```
 
-Invoke with: `$prism:lifecycle`
+Invoke with:
+
+- `$prism:lifecycle` for the main lifecycle
+- `$prism:specify`, `$prism:design`, `$prism:plan`, `$prism:approve`, `$prism:apply`, or `$prism:verify` for direct phase commands
+- `$prism-callee:lifecycle` for the automated Callee lifecycle plugin
 
 ### Claude Code
 
@@ -157,14 +162,14 @@ Prism advances one phase at a time:
 
 1. `phase:specify`
 2. `phase:design`
-3. `phase:breakdown`
-4. `phase:awaiting-human`
+3. `phase:plan`
+4. `phase:human`
 5. `phase:apply`
 6. `phase:verify`
 
 Rules that matter to users:
 
-- `approved` must be set by a human before apply.
+- `human:approved` must be set by a human before apply.
 - Apply works one claimed child task at a time.
 - Verify only closes the story when verification passes.
 
@@ -214,7 +219,7 @@ For contributor- and operator-facing details, see:
 
 ## Authority
 
-- Only a human sets `approved` before apply.
+- Only a human sets `human:approved` before apply.
 - Prism should not invent approval.
 - Commit and push require explicit human authority.
 

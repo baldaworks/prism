@@ -1,0 +1,4 @@
+interface:
+  display_name: "Prism Callee Lifecycle"
+  short_description: "Run the automated Prism lifecycle through Callee subagents"
+  default_prompt: "Use $prism-callee:lifecycle to advance a Prism story automatically until it reaches the human gate or another stop condition."

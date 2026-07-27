@@ -1,0 +1,4 @@
+interface:
+  display_name: "Prism Apply"
+  short_description: "Run one Prism apply iteration"
+  default_prompt: "Use $prism:apply to claim and implement one ready child task for a Prism story."

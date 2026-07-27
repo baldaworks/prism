@@ -1,0 +1,4 @@
+interface:
+  display_name: "Prism Specify"
+  short_description: "Run the Prism specify phase"
+  default_prompt: "Use $prism:specify to create or refine a Prism story's description and acceptance criteria."

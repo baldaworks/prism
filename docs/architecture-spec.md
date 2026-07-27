@@ -3,7 +3,7 @@
 ## 1. Introduction
 KNOWN: This repository packages one host plugin at `plugins/prism/`, one Prism story-lifecycle Callee pack at `pack/callee/prism/`, and one repository-documentation Callee pack at `pack/callee/documentation/` (`README.md`, `plugins/prism/skills/lifecycle/SKILL.md`, `pack/callee/documentation/workflows/maintain.md`). KNOWN: The repository exists to distribute a Beads-backed story lifecycle and a separate documentation-maintenance workflow through host plugin manifests and reusable Callee packs.
 
-KNOWN: The primary user-facing capability is the Prism lifecycle skill, invoked as `$prism:lifecycle` on namespaced hosts or `/prism-lifecycle` on flat-slash hosts, which advances stories through specify, design, breakdown, a human `approved` gate, apply, and verify (`plugins/prism/skills/lifecycle/SKILL.md`, `plugins/prism/skills/lifecycle/references/lifecycle.md`). KNOWN: A second capability is the `documentation/workflows/maintain` loop, which uses a writer/reviewer pair to keep repository documentation aligned with the live working tree and explicitly requires the vertical lifecycle workflow requirement when lifecycle behavior is documented (`pack/callee/documentation/workflows/maintain.md`).
+KNOWN: The primary user-facing capability is the Prism lifecycle skill, invoked as `$prism:lifecycle` on namespaced hosts or `/prism-lifecycle` on flat-slash hosts, which advances stories through specify, design, plan, the human gate, apply, and verify (`plugins/prism/skills/lifecycle/SKILL.md`, `plugins/prism/skills/lifecycle/references/lifecycle.md`). KNOWN: A second capability is the `documentation/workflows/maintain` loop, which uses a writer/reviewer pair to keep repository documentation aligned with the live working tree and explicitly requires the vertical lifecycle workflow requirement when lifecycle behavior is documented (`pack/callee/documentation/workflows/maintain.md`).
 
 ## 2. Definitions
 | Term | Definition |
@@ -12,7 +12,7 @@ KNOWN: The primary user-facing capability is the Prism lifecycle skill, invoked 
 | Callee | The external agent runner that executes Roles and Sequential/Loop workflows defined in this repository. |
 | Host plugin | The plugin payload under `plugins/prism/` plus per-host plugin manifests used by agent hosts to expose Prism skills. |
 | Marketplace manifest | A root-level JSON file that exposes this repository as an installable marketplace source for a host. |
-| Prism lifecycle | The story workflow defined by the Prism skill and Callee pack: specify, design, breakdown, human approval, apply, and verify. |
+| Prism lifecycle | The story workflow defined by the Prism skill and Callee pack: specify, design, plan, human gate, apply, and verify. |
 | Vertical lifecycle workflow requirement | The documentation rule that lifecycle/workflow diagrams and descriptions must preserve a top-to-bottom progression; Mermaid diagrams use `flowchart TB`. |
 | Documentation pack | The Callee pack under `pack/callee/documentation/` that runs the documentation writer/reviewer maintenance loop. |
 | Namespaced skill | A host skill exposed from `plugins/prism/skills/lifecycle/`, invoked as `$prism:lifecycle`. |
@@ -32,7 +32,7 @@ INFERRED: Out of scope are the internal implementations of the external `bd` and
 - [ASSUMPTION][Temporary] No separate operator runbook exists outside `README.md` and this architecture specification. This is reasonable because repository inspection found no other operator-focused docs in the working tree root, `docs/`, or `pack/`.
 - KNOWN[Permanent]: The repository currently ships one Prism skill today, even though the plugin layout allows more skills under `plugins/prism/skills/` (`README.md`, `plugins/prism/skills/`).
 - KNOWN[Permanent]: The documentation maintenance workflow is a separate pack and is not part of the Beads phase machine for Prism stories (`README.md`, `pack/callee/documentation/workflows/maintain.md`).
-- KNOWN[Permanent]: The apply phase cannot be automated end-to-end because a human must set the `approved` label before `prism/workflows/apply` is allowed to run (`plugins/prism/skills/lifecycle/SKILL.md`, `plugins/prism/skills/lifecycle/references/lifecycle.md`).
+- KNOWN[Permanent]: The apply phase cannot be automated end-to-end because a human must set the `human:approved` label before `prism/workflows/apply` is allowed to run (`plugins/prism/skills/lifecycle/SKILL.md`, `plugins/prism/skills/lifecycle/references/lifecycle.md`).
 - KNOWN[Permanent]: `pack/callee/prism/` and `pack/callee/documentation/` are the authoritative workflow definitions; a repository-local `.callee/*` tree is only a discovery mirror when present (`README.md`, `.gitignore`).
 - [ASSUMPTION][Temporary] Contact ownership is not documented in the repository, so Section 7 uses `[UNKNOWN]` placeholders rather than inferred names. This is necessary to avoid fabricating maintainers.
 - KNOWN[Permanent]: **Examined**: `README.md`, `docs/architecture-spec.md`, `.callee/`, `plugins/prism/`, `pack/callee/`, root marketplace manifests, and workflow/reference markdown under those paths. **Method**: repository file enumeration with `rg --files` and `find`, targeted reads with `sed`, search with `rg -n` over workflow and lifecycle terms, and mirror verification with `diff -rq` between `.callee/*` and `pack/callee/*`.
@@ -45,7 +45,7 @@ INFERRED: Out of scope are the internal implementations of the external `bd` and
 KNOWN: This repository does not implement a wire protocol. It defines a repository-local control system made of skills, Roles, and workflows that orchestrate two external systems: Beads for durable state and Callee for agent execution.
 
 #### 5.1.1 Prism story lifecycle
-KNOWN: The Prism lifecycle advances one phase at a time and uses Beads as the durable source of truth while Callee runs stateless agent work under `prism/*` (`plugins/prism/skills/lifecycle/references/lifecycle.md`). KNOWN: The ordered steps are intake, specify, design, breakdown, human gate, apply, verify, and close story. KNOWN: The repository requires lifecycle documentation to preserve that order as a vertical top-to-bottom flow.
+KNOWN: The Prism lifecycle advances one phase at a time and uses Beads as the durable source of truth while Callee runs stateless agent work under `prism/*` (`plugins/prism/skills/lifecycle/references/lifecycle.md`). KNOWN: The ordered steps are intake, specify, design, plan, human gate, apply, verify, and close story. KNOWN: The repository requires lifecycle documentation to preserve that order as a vertical top-to-bottom flow.
 
 #### 5.1.2 Documentation maintenance lifecycle
 KNOWN: The documentation pack defines a Loop workflow named `documentation/workflows/maintain` whose children are `documentation/roles/writer` and `documentation/roles/reviewer` (`pack/callee/documentation/workflows/maintain.md`). KNOWN: The writer is instructed to inspect the live repository and update docs to match verified behavior, and the reviewer is instructed to audit that output against the live working tree. KNOWN: The workflow explicitly includes the vertical lifecycle workflow requirement in both writer requirements and reviewer focus areas.
@@ -114,7 +114,7 @@ KNOWN: The root marketplace manifests advertise the repository or plugin to host
 - KNOWN: The primary public interface is the host skill invocation surface: `$prism:lifecycle` for namespaced hosts and `/prism-lifecycle` for flat-slash hosts (`README.md`, `plugins/prism/skills/lifecycle/SKILL.md`).
 - KNOWN: The secondary public interface is the Callee agent surface exposed after a consumer project installs the packs: `prism/roles/*`, `prism/workflows/*`, and `documentation/workflows/maintain` (`README.md`).
 - KNOWN: Invocation shape is CLI-based rather than RPC- or REST-based. The repository documents commands such as `callee agent run ...`, `callee agent validate ...`, `bd create`, `bd update`, and `bd close`.
-- KNOWN: The `prism/workflows/apply` interface requires prior human authorization through the `approved` story label before use (`plugins/prism/skills/lifecycle/SKILL.md`).
+- KNOWN: The `prism/workflows/apply` interface requires prior human authorization through the `human:approved` story label before use (`plugins/prism/skills/lifecycle/SKILL.md`).
 - INFERRED: Extensibility is file-system based: new skills, Roles, or workflows can be added by creating additional repository definitions under `plugins/prism/skills/` or `pack/callee/...`. This is inferred from the repository layout and README wording that more skills can be added.
 
 ### 5.5 Persisted State
@@ -126,7 +126,7 @@ KNOWN: The root marketplace manifests advertise the repository or plugin to host
 ## 6. Architectural Implications
 
 ### 6.1 Security
-KNOWN: The major trust boundary is between automated workflow progression and the human approval gate. The `approved` label is human-only authorization for apply, which prevents the repository from implicitly granting implementation authority (`plugins/prism/skills/lifecycle/SKILL.md`).
+KNOWN: The major trust boundary is between automated workflow progression and the human approval gate. The `human:approved` label is human-only authorization for apply, which prevents the repository from implicitly granting implementation authority (`plugins/prism/skills/lifecycle/SKILL.md`).
 
 KNOWN: Additional attack surfaces are documentation or workflow drift and incorrect agent invocation IDs. The repository mitigates these through explicit agent naming rules, validation commands, and the separate documentation reviewer loop (`plugins/prism/skills/lifecycle/SKILL.md`, `pack/callee/documentation/workflows/maintain.md`).
 

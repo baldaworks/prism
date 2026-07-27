@@ -13,8 +13,8 @@ flowchart TB
   I["1 Intake<br/>bd create type=story<br/>labels: prism, phase:specify"]
   S["2 Specify<br/>description + acceptance<br/>optional prism/roles/interviewer"]
   D["3 Design<br/>prism/workflows/design<br/>stdout -> bd update --design-file -"]
-  B["4 Breakdown<br/>prism/roles/breakdown<br/>child tasks + bd dep"]
-  H["5 Human gate<br/>label approved<br/>human only"]
+  B["4 Plan<br/>prism/roles/breakdown<br/>child tasks + bd dep"]
+  H["5 Human gate<br/>label human:approved<br/>human only"]
   A["6 Apply<br/>claim one ready task<br/>prism/workflows/apply"]
   V["7 Verify<br/>prism/workflows/verify"]
   C["8 Close story<br/>bd close story"]
@@ -35,14 +35,14 @@ flowchart TB
 | After step | Typical labels |
 | --- | --- |
 | Intake / specify | `prism`, `phase:specify` → then `phase:design` |
-| Design | `prism`, `phase:breakdown` (design field set) |
-| Breakdown | `prism`, `phase:awaiting-human` (children exist) |
-| Human gate | `prism`, `phase:apply`, `approved` |
-| Apply (in progress) | `prism`, `phase:apply`, `approved` |
-| Verify | `prism`, `phase:verify`, `approved` |
+| Design | `prism`, `phase:plan` (design field set) |
+| Plan | `prism`, `phase:human` (children exist) |
+| Human gate | `prism`, `phase:apply`, `human:approved` |
+| Apply (in progress) | `prism`, `phase:apply`, `human:approved` |
+| Verify | `prism`, `phase:verify`, `human:approved` |
 | Done | story `closed` |
 
-Prefer the **highest** `phase:*` present; if labels and artifacts disagree, trust artifacts (design field, children, `approved`). A story is ready for verify when it is `approved` and has no open child tasks.
+Prefer the **highest** `phase:*` present; if labels and artifacts disagree, trust artifacts (design field, children, `human:approved`). A story is ready for verify when it is `human:approved` and has no open child tasks.
 
 ## Callee agents per phase
 
@@ -50,7 +50,7 @@ Prefer the **highest** `phase:*` present; if labels and artifacts disagree, trus
 | --- | --- | --- |
 | Specify assist | `prism/roles/interviewer` | `bd update` description / acceptance |
 | Design | `prism/workflows/design` | stdout markdown piped to `bd update --design-file -` |
-| Breakdown | `prism/roles/breakdown` | `bd create --parent`, `bd dep` — see [breakdown.md](breakdown.md) |
+| Plan | `prism/roles/breakdown` | `bd create --parent`, `bd dep` — see [breakdown.md](breakdown.md) |
 | Apply | `prism/workflows/apply` | claim / close one ready child task of the current story |
 | Verify | `prism/workflows/verify` | close story only on pass; otherwise reopen or create follow-up tasks |
 
@@ -59,12 +59,12 @@ PromptKit template map: [promptkit.md](promptkit.md).
 ## Authority boundaries
 
 ```text
-Human ──approved──► apply / verify consent for this story
+Human ──human:approved──► apply / verify consent for this story
 Host skill ──bd──► durable state
 Callee ──prism/*──► provider work (stateless between runs)
 ```
 
-- Do **not** run apply without `approved`.
+- Do **not** run apply without `human:approved`.
 - During apply, claim only a ready child of the current story; do not pick from global `bd ready` alone.
 - Do **not** close the story while child tasks are open.
 - Do **not** close the story after verify if that run produced follow-up work.
