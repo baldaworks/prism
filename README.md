@@ -205,8 +205,7 @@ bd create "User can export report as CSV" \
   --description="…" --acceptance="…" --priority=2
 
 callee agent run prism/workflows/design --message "$(bd show <story>)" \
-  | tee /tmp/prism-design.md
-bd update <story> --design-file /tmp/prism-design.md --set-labels prism,phase:breakdown
+  | bd update <story> --design-file - --set-labels prism,phase:breakdown
 # … breakdown → human approved → apply → verify
 ```
 

@@ -12,7 +12,7 @@ Workflow diagrams for the Prism lifecycle must remain **vertical** and **top-to-
 flowchart TB
   I["1 Intake<br/>bd create type=story<br/>labels: prism, phase:specify"]
   S["2 Specify<br/>description + acceptance<br/>optional prism/roles/interviewer"]
-  D["3 Design<br/>prism/workflows/design<br/>bd update --design"]
+  D["3 Design<br/>prism/workflows/design<br/>stdout -> bd update --design-file -"]
   B["4 Breakdown<br/>prism/roles/breakdown<br/>child tasks + bd dep"]
   H["5 Human gate<br/>label approved<br/>human only"]
   A["6 Apply<br/>claim one ready task<br/>prism/workflows/apply"]
@@ -42,17 +42,17 @@ flowchart TB
 | Verify | `prism`, `phase:verify`, `approved` |
 | Done | story `closed` |
 
-Prefer the **highest** `phase:*` present; if labels and artifacts disagree, trust artifacts (design field, children, `approved`).
+Prefer the **highest** `phase:*` present; if labels and artifacts disagree, trust artifacts (design field, children, `approved`). A story is ready for verify when it is `approved` and has no open child tasks.
 
 ## Callee agents per phase
 
 | Step | Callee | Beads writes |
 | --- | --- | --- |
 | Specify assist | `prism/roles/interviewer` | `bd update` description / acceptance |
-| Design | `prism/workflows/design` | `bd update --design` / `--design-file` |
+| Design | `prism/workflows/design` | stdout markdown piped to `bd update --design-file -` |
 | Breakdown | `prism/roles/breakdown` | `bd create --parent`, `bd dep` — see [breakdown.md](breakdown.md) |
-| Apply | `prism/workflows/apply` | claim / close one task |
-| Verify | `prism/workflows/verify` | close story (or reopen tasks) |
+| Apply | `prism/workflows/apply` | claim / close one ready child task of the current story |
+| Verify | `prism/workflows/verify` | close story only on pass; otherwise reopen or create follow-up tasks |
 
 PromptKit template map: [promptkit.md](promptkit.md).
 
@@ -65,5 +65,7 @@ Callee ──prism/*──► provider work (stateless between runs)
 ```
 
 - Do **not** run apply without `approved`.
+- During apply, claim only a ready child of the current story; do not pick from global `bd ready` alone.
 - Do **not** close the story while child tasks are open.
+- Do **not** close the story after verify if that run produced follow-up work.
 - After each Callee return: persist with `bd`, then `bd show` / `bd children` / `bd ready`.

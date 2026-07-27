@@ -2,7 +2,7 @@
 apiVersion: callee.metalagman.dev/v1alpha1
 kind: Role
 spec:
-    description: 'Prism design architect: author design notes stored on a beads story --design field.'
+    description: 'Prism design architect: author design markdown for later persistence to a beads story --design field.'
     provider:
         type: codex
         model: gpt-5.4

@@ -3,7 +3,7 @@ apiVersion: callee.metalagman.dev/v1alpha1
 kind: Sequential
 spec:
   description: |
-    Prism design — reconstruct repository behavior, then author a design document for a beads story.
+    Prism design — reconstruct repository behavior, then author a design document for a beads story and return that markdown as the root stdout artifact.
   children:
     - ref: prism/roles/explorer
       alias: explorer

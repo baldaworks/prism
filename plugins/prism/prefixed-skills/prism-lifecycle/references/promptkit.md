@@ -70,7 +70,7 @@ callee promptkit role create prism/roles/explorer \
 # architect
 callee promptkit role create prism/roles/architect \
   --template author-design-doc \
-  --description "Prism design architect: author design notes stored on a beads story --design field." \
+  --description "Prism design architect: author design markdown for later persistence to a beads story --design field." \
   --provider codex \
   --prompt-param requirements_doc \
   --persona software-architect \
