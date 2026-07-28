@@ -5,13 +5,13 @@
   },
   "metadata": {
     "description": "Prism story lifecycle plugins for GitHub Copilot CLI.",
-    "version": "0.1.0"
+    "version": "0.1.0+codex.20260727100206"
   },
   "plugins": [
     {
       "name": "prism",
-      "description": "Run the Prism beads-backed story lifecycle with Callee prism/* agents.",
-      "version": "0.1.0",
+      "description": "Run the Prism beads-backed story lifecycle directly in the host by deriving the current phase from Beads state.",
+      "version": "0.1.0+codex.20260727100206",
       "source": "./plugins/prism",
       "author": {
         "name": "Alexey Samoylov",
@@ -21,6 +21,20 @@
       "repository": "https://github.com/baldaworks/prism",
       "license": "MIT",
       "keywords": ["prism", "beads", "callee", "story-lifecycle"]
+    },
+    {
+      "name": "prism-callee",
+      "description": "Run the automated Prism lifecycle through Callee subagents.",
+      "version": "0.1.0+codex.20260727100206",
+      "source": "./plugins/prism-callee",
+      "author": {
+        "name": "Alexey Samoylov",
+        "url": "https://github.com/baldaworks"
+      },
+      "homepage": "https://github.com/baldaworks/prism",
+      "repository": "https://github.com/baldaworks/prism",
+      "license": "MIT",
+      "keywords": ["prism", "beads", "callee", "story-lifecycle", "subagents"]
     }
   ]
 }

@@ -1,0 +1,21 @@
+---
+apiVersion: callee.metalagman.dev/v1alpha1
+kind: Sequential
+spec:
+  description: |
+    Public Prism verify phase entrypoint. Delegates the close-or-bounce decision to
+    the internal verify workflow while preserving verify as a non-repair phase.
+  children:
+    - ref: prism/workflows/verify
+      alias: verify_executor
+      input: |
+        Prism verify phase for the same story.
+
+        Treat verify as a close-or-bounce decision phase. Do not perform
+        implementation work here.
+
+        {{ .Input }}
+  output: |
+    {{ index .State.outputs "verify_executor" }}
+---
+{{ .Input }}

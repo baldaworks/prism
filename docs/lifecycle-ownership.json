@@ -1,0 +1,136 @@
+{
+  "version": 3,
+  "lifecycle_ref": "prism/lifecycle",
+  "manual_host_entrypoints": {
+    "codex": "$prism:lifecycle",
+    "claude": "/prism:lifecycle",
+    "flat": "/prism-lifecycle"
+  },
+  "automated_host_entrypoints": {
+    "codex": "$prism-callee:lifecycle",
+    "claude": "/prism-callee:lifecycle",
+    "flat": "/prism-callee-lifecycle"
+  },
+  "preferred_assignee_encoding": {
+    "namespace": "prism",
+    "delimiter": "/"
+  },
+  "accepted_assignee_aliases": [
+    {
+      "namespace": "prism",
+      "delimiter": ":"
+    }
+  ],
+  "story_phases": [
+    {
+      "phase": "specify",
+      "owner": "interviewer",
+      "assignee": "prism/interviewer",
+      "aliases": ["prism:interviewer"],
+      "executor": {
+        "kind": "Sequential",
+        "manual_phase_reference": "plugins/prism/skills/lifecycle/references/specify.md",
+        "public_ref": "prism/phases/specify",
+        "internal_refs": ["prism/roles/interviewer"]
+      },
+      "requires_human_approval": false,
+      "success_transition": "design"
+    },
+    {
+      "phase": "design",
+      "owner": "designer",
+      "assignee": "prism/designer",
+      "aliases": ["prism:designer"],
+      "executor": {
+        "kind": "Sequential",
+        "manual_phase_reference": "plugins/prism/skills/lifecycle/references/design.md",
+        "public_ref": "prism/phases/design",
+        "internal_refs": [
+          "prism/workflows/design",
+          "prism/roles/explorer",
+          "prism/roles/architect"
+        ]
+      },
+      "requires_human_approval": false,
+      "success_transition": "plan"
+    },
+    {
+      "phase": "plan",
+      "owner": "planner",
+      "assignee": "prism/planner",
+      "aliases": ["prism:planner"],
+      "executor": {
+        "kind": "Sequential",
+        "manual_phase_reference": "plugins/prism/skills/lifecycle/references/plan.md",
+        "public_ref": "prism/phases/breakdown",
+        "internal_refs": ["prism/roles/breakdown"]
+      },
+      "requires_human_approval": false,
+      "success_transition": "human"
+    },
+    {
+      "phase": "human",
+      "owner": "human",
+      "assignee": "human",
+      "aliases": [],
+      "executor": {
+        "kind": "ManualGate",
+        "manual_phase_reference": "plugins/prism/skills/lifecycle/references/human.md",
+        "internal_refs": []
+      },
+      "requires_human_approval": false,
+      "success_transition": "apply"
+    },
+    {
+      "phase": "apply",
+      "owner": "implementer",
+      "assignee": "prism/implementer",
+      "aliases": ["prism:implementer"],
+      "executor": {
+        "kind": "Sequential",
+        "manual_phase_reference": "plugins/prism/skills/lifecycle/references/apply.md",
+        "public_ref": "prism/phases/apply",
+        "internal_refs": ["prism/workflows/apply"]
+      },
+      "requires_human_approval": true,
+      "success_transition": "verify"
+    },
+    {
+      "phase": "verify",
+      "owner": "reviewer",
+      "assignee": "prism/reviewer",
+      "aliases": ["prism:reviewer"],
+      "executor": {
+        "kind": "Sequential",
+        "manual_phase_reference": "plugins/prism/skills/lifecycle/references/verify.md",
+        "public_ref": "prism/phases/verify",
+        "internal_refs": ["prism/workflows/verify", "prism/roles/reviewer"]
+      },
+      "requires_human_approval": true,
+      "success_transition": "close",
+      "bounce_transitions": {
+        "implementation_gap": "apply",
+        "planning_gap": "plan",
+        "design_gap": "design",
+        "requirements_gap": "specify"
+      }
+    }
+  ],
+  "task_states": [
+    {
+      "state": "implementation",
+      "owner": "implementer",
+      "assignee": "prism/implementer",
+      "aliases": ["prism:implementer"],
+      "success_transition": "review"
+    },
+    {
+      "state": "review",
+      "owner": "reviewer",
+      "assignee": "prism/reviewer",
+      "aliases": ["prism:reviewer"],
+      "success_transition": "close",
+      "failure_transition": "implementation"
+    }
+  ]
+}

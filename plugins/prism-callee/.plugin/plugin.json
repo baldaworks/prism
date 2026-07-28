@@ -1,7 +1,7 @@
 {
-  "name": "prism",
+  "name": "prism-callee",
   "version": "0.1.0+codex.20260727100206",
-  "description": "Run the Prism beads-backed story lifecycle directly in the host by deriving the current phase from Beads state.",
+  "description": "Run the automated Prism lifecycle through Callee subagents.",
   "author": {
     "name": "Alexey Samoylov",
     "url": "https://github.com/baldaworks"
@@ -9,6 +9,6 @@
   "homepage": "https://github.com/baldaworks/prism",
   "repository": "https://github.com/baldaworks/prism",
   "license": "MIT",
-  "keywords": ["prism", "beads", "callee", "story-lifecycle"],
+  "keywords": ["prism", "beads", "callee", "story-lifecycle", "subagents"],
   "skills": "./prefixed-skills/"
 }

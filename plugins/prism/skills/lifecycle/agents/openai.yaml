@@ -1,4 +1,4 @@
 interface:
   display_name: "Prism Lifecycle"
-  short_description: "Beads-backed story lifecycle via Callee prism/*"
-  default_prompt: "Use $prism:lifecycle to advance the Prism story lifecycle in this repository."
+  short_description: "Host-native Prism lifecycle with Beads-backed state"
+  default_prompt: "Use $prism:lifecycle to advance the Prism story lifecycle directly in this host session."

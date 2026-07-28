@@ -1,7 +1,7 @@
 {
   "name": "prism",
-  "version": "0.1.0",
-  "description": "Run the Prism beads-backed story lifecycle with Callee prism/* agents.",
+  "version": "0.1.0+codex.20260727160645",
+  "description": "Run the Prism beads-backed story lifecycle directly in the host by deriving the current phase from Beads state.",
   "author": {
     "name": "Alexey Samoylov",
     "url": "https://github.com/baldaworks"
@@ -18,14 +18,14 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "Prism",
-    "shortDescription": "Beads-backed story lifecycle with Callee agents.",
-    "longDescription": "Guides coding agents through the Prism story lifecycle with full lifecycle and direct phase commands: specify, design, plan, human gate, apply, and verify using bd and callee.",
+    "shortDescription": "Beads-backed story lifecycle from current Beads phase state.",
+    "longDescription": "Guides coding agents through the Prism story lifecycle by reading the current Beads story state and advancing the next lifecycle phase in-host.",
     "developerName": "Alexey Samoylov",
     "category": "Developer Tools",
     "capabilities": [
       "Local filesystem",
       "CLI orchestration"
     ],
-    "defaultPrompt": "Use $prism:lifecycle to advance the Prism story lifecycle in this repository, or use $prism:specify, $prism:design, $prism:plan, $prism:approve, $prism:apply, or $prism:verify for a specific phase."
+    "defaultPrompt": "Use $prism:lifecycle to inspect the current Beads story state and advance the Prism lifecycle in this repository."
   }
 }

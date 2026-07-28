@@ -1,4 +1,0 @@
-interface:
-  display_name: "Prism Plan"
-  short_description: "Run the Prism planning phase"
-  default_prompt: "Use $prism:plan to turn a designed Prism story into child tasks and dependencies."

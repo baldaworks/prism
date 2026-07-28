@@ -1,12 +1,12 @@
 ---
-name: lifecycle
+name: prism-callee-lifecycle
 description: >
   Run the automated Prism lifecycle: Beads stores durable story state while this
   skill uses Callee `prism/*` roles and workflows to advance as far as possible
   in one pass. Stop at the human gate or another blocking condition, then resume
   from the current story state on the next run. Use when the user runs
-  $prism-callee:lifecycle, /prism-callee:lifecycle, or asks for automated Prism
-  progression through Callee.
+  /prism-callee-lifecycle, /prism-callee:lifecycle, $prism-callee:lifecycle,
+  or asks for automated Prism progression through Callee.
 metadata:
   short-description: "Automated Prism lifecycle via Callee prism/*"
 ---
@@ -16,7 +16,7 @@ metadata:
 This skill is the automated Prism lifecycle entrypoint. It is the only Prism
 surface that may execute `callee agent run prism/...`.
 
-PromptKit role/workflow contract: [references/promptkit.md](references/promptkit.md).
+PromptKit role/workflow contract: [../../skills/lifecycle/references/promptkit.md](../../skills/lifecycle/references/promptkit.md).
 
 ## Goal
 
@@ -80,7 +80,7 @@ bd where
 5. Infer the highest current `phase:*` label, but trust artifacts when labels disagree.
 6. Continue advancing phases until a stop condition is reached.
 7. After every `callee agent run`, persist to Beads and re-check with `bd show`, `bd children`, and `bd ready`.
-8. Before direct Role or workflow execution details, load [references/promptkit.md](references/promptkit.md).
+8. Before direct Role or workflow execution details, load [../../skills/lifecycle/references/promptkit.md](../../skills/lifecycle/references/promptkit.md).
 
 ## Stop conditions
 
@@ -113,7 +113,7 @@ Stop the run when any of these becomes true:
 - Before direct Role runs, inspect the contract with `callee agent view <id> --json` and pass every required `--param`.
 - Do not bypass the human gate.
 - `prism/phases/apply` is the public apply entrypoint, while `prism/workflows/apply` is the one-task implementer/reviewer loop behind it.
-- Public apply is the outer story loop that continues claim → apply → check → close while `human:approved` remains present and another child becomes ready.
+- Public apply is the outer story loop that continues claim -> apply -> check -> close while `human:approved` remains present and another child becomes ready.
 - Verify is a close-or-bounce decision phase, not an implementation repair loop.
 - Persist `prism/workflows/design` stdout directly with `bd update --design-file -`.
 - Run project checks after every apply iteration (`task test` or `go test ./...`). Do not close the task if checks fail.
@@ -123,7 +123,7 @@ Stop the run when any of these becomes true:
 - Do not commit or push without explicit user authority.
 - Resume from current story state rather than restarting the lifecycle.
 
-## Phase → action
+## Phase -> action
 
 | Condition (priority order) | Do next |
 | --- | --- |

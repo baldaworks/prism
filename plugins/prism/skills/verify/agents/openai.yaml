@@ -1,4 +1,0 @@
-interface:
-  display_name: "Prism Verify"
-  short_description: "Run the Prism verify phase"
-  default_prompt: "Use $prism:verify to run story-level verification for a Prism story."

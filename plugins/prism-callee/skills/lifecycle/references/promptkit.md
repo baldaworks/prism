@@ -4,16 +4,18 @@ Authoritative map of PromptKit templates, personas, binds, and runtime parameter
 for Prism Callee agents under `pack/callee/prism/`.
 
 Regenerate Roles with `callee promptkit role create` (do not hand-rewrite PromptKit
-bodies). Workflows under `pack/callee/prism/workflows/` are authored Sequential/Loop
-graphs that reference these Roles. After regeneration, preserve the checked-in
-`spec.provider.model` / `spec.provider.reasoning` values. Repository-documentation
-agents now live in the separate `pack/callee/documentation/` pack and are intentionally
-excluded from this Prism lifecycle reference.
+bodies). Public lifecycle entrypoints now live at `pack/callee/prism/lifecycle.md`
+and `pack/callee/prism/phases/*`. Internal workflows under
+`pack/callee/prism/workflows/` remain authored Sequential/Loop graphs that reference
+these Roles. After regeneration, preserve the checked-in `spec.provider.model` /
+`spec.provider.reasoning` values. Repository-documentation agents now live in the
+separate `pack/callee/documentation/` pack and are intentionally excluded from this
+Prism lifecycle reference.
 
-Lifecycle diagram: [lifecycle.md](lifecycle.md).
+Lifecycle diagram: [../../../prism/skills/lifecycle/references/lifecycle.md](../../../prism/skills/lifecycle/references/lifecycle.md).
 
 After `prism/roles/breakdown` runs, turn the plan into beads children using
-[breakdown.md](breakdown.md) (JSON task graph contract).
+`plugins/prism/skills/lifecycle/references/breakdown.md` (JSON task graph contract).
 
 Provider for all Roles: **`codex`** with **`model: gpt-5.4`**. The Prism reviewer pins
 **`reasoning: xhigh`**.
@@ -184,6 +186,19 @@ Inspect live keys with `callee agent view <id> --json` (authoritative if drift).
 
 ## Workflow map
 
+### Public Callee surface
+
+| Agent ID | Kind | Semantic role |
+| --- | --- | --- |
+| `prism/lifecycle` | Sequential | Root lifecycle graph for specify → design → breakdown → apply → verify |
+| `prism/phases/specify` | Sequential | Public specify phase entrypoint |
+| `prism/phases/design` | Sequential | Public design phase entrypoint |
+| `prism/phases/breakdown` | Sequential | Public breakdown phase entrypoint behind Beads `phase:plan` |
+| `prism/phases/apply` | Sequential | Public apply phase entrypoint delegating to the one-task loop |
+| `prism/phases/verify` | Sequential | Public verify phase entrypoint delegating to the close-or-bounce review |
+
+### Internal execution layer
+
 | Agent ID | Kind | Children | Root required params |
 | --- | --- | --- | --- |
 | `prism/workflows/design` | Sequential | `explorer` → `architect` | **none** (child params bound in workflow) |
@@ -213,8 +228,20 @@ Validate trees:
 
 ```bash
 callee agent validate pack/callee/prism/workflows/design.md
+callee agent validate pack/callee/prism/lifecycle.md
+callee agent validate pack/callee/prism/phases/specify.md
+callee agent validate pack/callee/prism/phases/design.md
+callee agent validate pack/callee/prism/phases/breakdown.md
+callee agent validate pack/callee/prism/phases/apply.md
+callee agent validate pack/callee/prism/phases/verify.md
 callee agent validate pack/callee/prism/workflows/apply.md
 callee agent validate pack/callee/prism/workflows/verify.md
+callee agent view prism/lifecycle --json
+callee agent view prism/phases/specify --json
+callee agent view prism/phases/design --json
+callee agent view prism/phases/breakdown --json
+callee agent view prism/phases/apply --json
+callee agent view prism/phases/verify --json
 callee agent view prism/workflows/design --json
 callee agent view prism/workflows/apply --json
 callee agent view prism/workflows/verify --json

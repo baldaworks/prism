@@ -1,13 +1,13 @@
 # Prism plan → beads children
 
-Contract for turning `prism/roles/breakdown` (PromptKit `plan-implementation`)
-output into beads task children. The host agent **must** extract a machine-usable
-task list before creating issues. Do not invent tasks that are not in the plan.
+Contract for turning a Prism implementation plan into beads task children. The
+host agent **must** extract a machine-usable task list before creating issues.
+Do not invent tasks that are not in the plan.
 
 ## Required output shape
 
-Prefer a single fenced JSON block from the breakdown Role (or normalize free-form
-plan text into this shape before any `bd create`):
+Prefer a single fenced JSON block from the host-authored plan (or normalize
+free-form plan text into this shape before any `bd create`):
 
 ```json
 {
@@ -36,16 +36,18 @@ Rules:
 - `description` states **done-when** (testable).
 - `depends_on` lists earlier `key`s that must complete first.
 - No scope beyond story acceptance / design.
-- If the plan has no extractable tasks, **re-run plan/breakdown** or stop and ask the human — do not invent a graph.
+- If the plan has no extractable tasks, revise the plan or stop and ask the human — do not invent a graph.
 
 ## Host procedure (strict)
 
-1. Run plan (implemented by the existing `breakdown` role; see SKILL.md for the full `callee` command).
+1. Produce or collect a plan in the JSON shape above.
+   - The manual host lifecycle may author this plan directly in the host after it derives `phase:plan` from Beads state.
+   - Automated `$prism-callee:lifecycle` may obtain it from `prism/roles/breakdown`.
 2. Parse or normalize into the JSON shape above. Keep a key→bead-id map.
 3. Create children **in any order**, recording ids:
 
 ```bash
-bd create "<title>" --type=task --parent=<story-id> -l prism \
+bd create "<title>" --type=task --parent=<story-id> -l prism -a prism/implementer \
   --description="<done-when>" --silent
 # → prints bead id; map key → id
 ```
@@ -66,7 +68,7 @@ bd blocked
 6. Advance story labels:
 
 ```bash
-bd update <story-id> --set-labels prism,phase:human
+bd update <story-id> -a human --set-labels prism,phase:human
 ```
 
 ## Reject
