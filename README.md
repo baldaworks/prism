@@ -15,7 +15,7 @@ Prism helps you move a change through a small, explicit workflow:
 1. Capture a story with description and acceptance criteria.
 2. Generate a design.
 3. Break the design into child tasks.
-4. Wait at the human gate.
+4. Collect human approval at the human gate.
 5. Apply until the remaining story work is operationally closed.
 6. Verify the story as a close-or-bounce decision before closing it.
 
@@ -40,7 +40,7 @@ For the manual host lifecycle, you need:
 
 For the automated lifecycle, you also need:
 
-- `callee` `0.17.0+`
+- `callee` `0.18.0+`
 - the Prism Callee agent pack installed so `prism/*` appears on `callee agent list`
 
 Prism therefore ships two host-facing lifecycle surfaces:
@@ -222,6 +222,7 @@ Prism advances one phase at a time:
 Rules that matter to users:
 
 - `human:approved` must be set by a human before apply.
+- In the automated `prism-callee` surface, the `phase:human` gate is collected through a Callee Human agent before `human:approved` is persisted.
 - Beads assignee is the current phase owner.
 - Host Prism derives the current phase from Beads story state; it does not expose separate host phase subskills.
 - Apply closes remaining story work one ready child task at a time.
@@ -257,6 +258,16 @@ If you want the full operational behavior, see:
 
 - `docs/architecture-host-lifecycle.md` for the manual host lifecycle
 - `docs/architecture-callee-lifecycle.md` for the automated `prism-callee` lifecycle
+
+For repeatable PTY-backed smoke tests of the Callee Human path, use:
+
+```sh
+./scripts/smoke-test-callee-human.sh questions
+./scripts/smoke-test-callee-human.sh specify
+```
+
+Use `--keep-temp` if you want the captured diagnostics and artifacts left under
+`/tmp` for inspection.
 - `plugins/prism/skills/lifecycle/SKILL.md`
 - `plugins/prism-callee/skills/lifecycle/SKILL.md`
 - `pack/callee/prism/lifecycle.md`
