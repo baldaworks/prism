@@ -35,7 +35,7 @@ The automated entrypoint follows the same split:
 
 For the manual host lifecycle, you need:
 
-- `bd` (Beads)
+- [`bd` (Beads)](https://github.com/gastownhall/beads)
 - a supported host with the Prism plugin installed
 
 For the automated lifecycle, you also need:

@@ -39,7 +39,7 @@ Phase references:
 
 ## Prerequisites (target project)
 
-1. **`bd`** available; beads workspace in the project (`bd where` / `bd prime`). Prefer the project **beads** skill for tracker basics.
+1. **[`bd` (Beads)](https://github.com/gastownhall/beads)** available; beads workspace in the project (`bd where` / `bd prime`). Prefer the project **beads** skill for tracker basics.
 2. Repository context is inspectable from the current host session so the skill can reason about requirements, design, implementation, and verification directly.
 3. If the user wants automated `prism/*` execution instead of host-native work, switch to `/prism-callee-lifecycle`.
 

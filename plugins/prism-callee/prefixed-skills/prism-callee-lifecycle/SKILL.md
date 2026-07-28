@@ -44,7 +44,7 @@ Permission tag:
 
 ## Prerequisites
 
-1. **`bd`** available; beads workspace in the project (`bd where` / `bd prime`).
+1. **[`bd` (Beads)](https://github.com/gastownhall/beads)** available; beads workspace in the project (`bd where` / `bd prime`).
 2. **`callee` 0.18.0+** on `PATH` with the required provider/auth setup.
 3. Prism agents discoverable under `prism/*`. Validate with `callee agent list | grep '^prism/'`.
 
