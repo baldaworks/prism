@@ -1,4 +1,4 @@
 interface:
   display_name: "Prism Callee Lifecycle"
   short_description: "Automate Prism through Callee prism/* assets"
-  default_prompt: "Use $prism-callee:lifecycle to advance a Prism story automatically by running prism/* Callee assets until the human gate or another stop condition."
+  default_prompt: "Use $prism-callee:lifecycle to advance a Prism story automatically through the Callee Human-agent approval gate and the remaining prism/* lifecycle phases."

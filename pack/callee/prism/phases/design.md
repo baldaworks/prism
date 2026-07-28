@@ -6,7 +6,7 @@ spec:
     Public Prism design phase entrypoint. Delegates to the internal design workflow
     while preserving the stable phase contract.
   children:
-    - ref: prism/workflows/design
+    - ref: prism/design/flow
       alias: design_executor
       input: |
         Prism design phase for the same story.

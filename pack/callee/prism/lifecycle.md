@@ -3,9 +3,10 @@ apiVersion: callee.metalagman.dev/v1alpha1
 kind: Sequential
 spec:
   description: |
-    Prism lifecycle phase chain — specify, design, breakdown, apply, and verify in order.
-    The human gate remains an external Beads transition between breakdown and apply,
-    while apply itself owns story-level operational closure through the inner one-task loop.
+    Prism lifecycle phase chain — specify, design, breakdown, human approval, apply,
+    and verify in order. The human gate is collected through a Callee Human agent
+    before apply begins, while apply itself owns story-level operational closure
+    through the inner one-task loop.
   children:
     - ref: prism/phases/specify
       alias: specify
@@ -28,6 +29,20 @@ spec:
 
         Design result:
         {{ index .State.outputs "design" }}
+    - ref: prism/phases/human
+      alias: human
+      input: |
+        Original lifecycle context:
+        {{ .Input }}
+
+        Specify result:
+        {{ index .State.outputs "specify" }}
+
+        Design result:
+        {{ index .State.outputs "design" }}
+
+        Breakdown result:
+        {{ index .State.outputs "breakdown" }}
     - ref: prism/phases/apply
       alias: apply
       input: |
@@ -42,6 +57,9 @@ spec:
 
         Breakdown result:
         {{ index .State.outputs "breakdown" }}
+
+        Human approval result:
+        {{ index .State.outputs "human" }}
     - ref: prism/phases/verify
       alias: verify
       input: |

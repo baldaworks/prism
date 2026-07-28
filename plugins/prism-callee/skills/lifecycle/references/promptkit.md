@@ -5,10 +5,10 @@ for Prism Callee agents under `pack/callee/prism/`.
 
 Regenerate Roles with `callee promptkit role create` (do not hand-rewrite PromptKit
 bodies). Public lifecycle entrypoints now live at `pack/callee/prism/lifecycle.md`
-and `pack/callee/prism/phases/*`. Internal workflows under
-`pack/callee/prism/workflows/` remain authored Sequential/Loop graphs that reference
-these Roles. After regeneration, preserve the checked-in `spec.provider.model` /
-`spec.provider.reasoning` values. Repository-documentation agents now live in the
+and `pack/callee/prism/phases/*`. Internal phase-local agents under
+`pack/callee/prism/<phase>/` remain authored Sequential/Loop/Human/Script graphs
+that reference these Roles. After regeneration, preserve the checked-in
+`spec.provider.model` / `spec.provider.reasoning` values. Repository-documentation agents now live in the
 separate `pack/callee/documentation/` pack and are intentionally excluded from this
 Prism lifecycle reference.
 
@@ -17,8 +17,11 @@ Lifecycle diagram: [../../../prism/skills/lifecycle/references/lifecycle.md](../
 After `prism/roles/breakdown` runs, turn the plan into beads children using
 `plugins/prism/skills/lifecycle/references/breakdown.md` (JSON task graph contract).
 
-Provider for all Roles: **`codex`** with **`model: gpt-5.4`**. The Prism reviewer pins
-**`reasoning: xhigh`**.
+Provider for all Roles: **`codex`**. Default role model is **`gpt-5.4`**.
+Validator-style roles use **`gpt-5.3-codex-spark`**:
+
+- `prism/specify/gate`
+- `prism/roles/reviewer`
 Permissions: default / **`ask`**.
 
 ---
@@ -27,7 +30,8 @@ Permissions: default / **`ask`**.
 
 | Agent ID | Kind | PromptKit template | Persona | `--prompt-param` | Author-time `--bind` | `repl` |
 | --- | --- | --- | --- | --- | --- | --- |
-| `prism/roles/interviewer` | Role | `collaborate-requirements-change` | `software-architect` | `change_description` | — | **true** (template `metadata.mode: interactive`) |
+| `prism/roles/interviewer` | Role | `author-requirements-doc` | `software-architect` | `description` | — | false |
+| `prism/specify/gate` | Role | `audit-spec-invariants` | `specification-analyst` | `spec_content` | — | false |
 | `prism/roles/explorer` | Role | `reconstruct-behavior` | `reverse-engineer` | `artifact_content` | `artifact_type=code` | false |
 | `prism/roles/architect` | Role | `author-design-doc` | `software-architect` | `requirements_doc` | — | false |
 | `prism/roles/breakdown` | Role | `plan-implementation` | `software-architect` | `description` | — | false |
@@ -38,6 +42,7 @@ Paths on disk:
 
 ```text
 pack/callee/prism/roles/interviewer.md
+pack/callee/prism/specify/gate.md
 pack/callee/prism/roles/explorer.md
 pack/callee/prism/roles/architect.md
 pack/callee/prism/roles/breakdown.md
@@ -50,12 +55,24 @@ pack/callee/prism/roles/reviewer.md
 ```bash
 # interviewer
 callee promptkit role create prism/roles/interviewer \
-  --template collaborate-requirements-change \
-  --description "Prism intake: interactive requirements discovery for a beads story (description + acceptance)." \
+  --template author-requirements-doc \
+  --description "Prism specify normalizer: produce a design-ready requirements document when the current story context is sufficient, otherwise identify only the missing requirement dimensions needed for follow-up." \
   --provider codex \
-  --prompt-param change_description \
+  --model gpt-5.4 \
+  --prompt-param description \
   --persona software-architect \
   --output pack/callee/prism/roles/interviewer.md \
+  --force
+
+# specify_gate
+callee promptkit role create prism/specify/gate \
+  --template audit-spec-invariants \
+  --description "Prism specify gate: audit a candidate requirements document against design-readiness invariants, escalate when the story is sufficiently specified for design, otherwise return only the missing requirement dimensions and follow-up questions." \
+  --provider codex \
+  --model gpt-5.3-codex-spark \
+  --prompt-param spec_content \
+  --persona specification-analyst \
+  --output pack/callee/prism/specify/gate.md \
   --force
 
 # explorer
@@ -104,6 +121,7 @@ callee promptkit role create prism/roles/reviewer \
   --template review-code \
   --description "Prism reviewer: independent code review for one-task apply validation or story-level verify." \
   --provider codex \
+  --model gpt-5.3-codex-spark \
   --prompt-param code \
   --persona systems-engineer \
   --output pack/callee/prism/roles/reviewer.md \
@@ -134,9 +152,18 @@ Inspect live keys with `callee agent view <id> --json` (authoritative if drift).
 
 | Key | Description |
 | --- | --- |
-| `prism/roles/interviewer.context` | Additional context — system architecture, constraints, domain conventions |
-| `prism/roles/interviewer.existing_artifacts` | Existing requirements, design docs, specs — paste or reference |
-| `prism/roles/interviewer.project_name` | Name of the project, product, or system being changed |
+| `prism/roles/interviewer.audience` | Who will read the output |
+| `prism/roles/interviewer.context` | Additional context — existing system, constraints, stakeholders |
+| `prism/roles/interviewer.project_name` | Name of the project or feature |
+
+### `prism/specify/gate`
+
+| Key | Description |
+| --- | --- |
+| `prism/specify/gate.audience` | Who will read the audit output |
+| `prism/specify/gate.context` | Additional context about the system and gate policy |
+| `prism/specify/gate.invariants` | Design-readiness invariants the candidate requirements doc must satisfy |
+| `prism/specify/gate.project_name` | Name of the project or feature |
 
 ### `prism/roles/explorer`
 
@@ -190,10 +217,11 @@ Inspect live keys with `callee agent view <id> --json` (authoritative if drift).
 
 | Agent ID | Kind | Semantic role |
 | --- | --- | --- |
-| `prism/lifecycle` | Sequential | Root lifecycle graph for specify → design → breakdown → apply → verify |
+| `prism/lifecycle` | Sequential | Root lifecycle graph for specify → design → breakdown → human → apply → verify |
 | `prism/phases/specify` | Sequential | Public specify phase entrypoint |
 | `prism/phases/design` | Sequential | Public design phase entrypoint |
 | `prism/phases/breakdown` | Sequential | Public breakdown phase entrypoint behind Beads `phase:plan` |
+| `prism/phases/human` | Sequential | Public human approval gate that collects approval through a Human agent |
 | `prism/phases/apply` | Sequential | Public apply phase entrypoint delegating to the one-task loop |
 | `prism/phases/verify` | Sequential | Public verify phase entrypoint delegating to the close-or-bounce review |
 
@@ -201,25 +229,36 @@ Inspect live keys with `callee agent view <id> --json` (authoritative if drift).
 
 | Agent ID | Kind | Children | Root required params |
 | --- | --- | --- | --- |
-| `prism/workflows/design` | Sequential | `explorer` → `architect` | **none** (child params bound in workflow) |
-| `prism/workflows/apply` | Loop | `worker`=`implementer` ↔ `validator`=`reviewer` (`canEscalate`) | **none** |
-| `prism/workflows/verify` | Sequential | `reviewer` | **none** |
+| `prism/specify/loop` | Loop | `normalizer`=`interviewer` → `gate`=`specify/gate` (`canEscalate`) → `clarifications`=`specify/questions` | **none** (child params bound in workflow) |
+| `prism/specify/questions` | Human | operator answers to the gate's follow-up questions | **none** |
+| `prism/specify/extract` | Script | final requirements document extractor | **none** |
+| `prism/design/flow` | Sequential | `explorer` → `architect` | **none** (child params bound in workflow) |
+| `prism/human/prompt` | Human | operator approval prompt | **none** |
+| `prism/human/check` | Script | approval token validator | **none** |
+| `prism/apply/loop` | Loop | `worker`=`implementer` ↔ `validator`=`reviewer` (`canEscalate`) | **none** |
+| `prism/verify/review` | Sequential | `reviewer` | **none** |
 
 Paths:
 
 ```text
-pack/callee/prism/workflows/design.md
-pack/callee/prism/workflows/apply.md
-pack/callee/prism/workflows/verify.md
+pack/callee/prism/specify/loop.md
+pack/callee/prism/specify/questions.md
+pack/callee/prism/specify/extract.md
+pack/callee/prism/design/flow.md
+pack/callee/prism/human/prompt.md
+pack/callee/prism/human/check.md
+pack/callee/prism/apply/loop.md
+pack/callee/prism/verify/review.md
 ```
 
 Root message conventions:
 
 | Workflow | `--message` content |
 | --- | --- |
-| `prism/workflows/design` | `bd show <story>` dump (requirements + acceptance) |
-| `prism/workflows/apply` | story dump + claimed task dump |
-| `prism/workflows/verify` | story dump (acceptance + design context) |
+| `prism/specify/loop` | `bd show <story>` dump plus any current intent / constraints |
+| `prism/design/flow` | `bd show <story>` dump (requirements + acceptance) |
+| `prism/apply/loop` | story dump + claimed task dump |
+| `prism/verify/review` | story dump (acceptance + design context) |
 
 Child `params` bindings live in the workflow Markdown frontmatter (not PromptKit).
 If you change Role param names via regenerate, update workflow `params:` keys to match.
@@ -227,24 +266,30 @@ If you change Role param names via regenerate, update workflow `params:` keys to
 Validate trees:
 
 ```bash
-callee agent validate pack/callee/prism/workflows/design.md
+callee agent validate pack/callee/prism/design/flow.md
 callee agent validate pack/callee/prism/lifecycle.md
 callee agent validate pack/callee/prism/phases/specify.md
 callee agent validate pack/callee/prism/phases/design.md
 callee agent validate pack/callee/prism/phases/breakdown.md
+callee agent validate pack/callee/prism/phases/human.md
 callee agent validate pack/callee/prism/phases/apply.md
 callee agent validate pack/callee/prism/phases/verify.md
-callee agent validate pack/callee/prism/workflows/apply.md
-callee agent validate pack/callee/prism/workflows/verify.md
+callee agent validate pack/callee/prism/human/prompt.md
+callee agent validate pack/callee/prism/human/check.md
+callee agent validate pack/callee/prism/apply/loop.md
+callee agent validate pack/callee/prism/verify/review.md
 callee agent view prism/lifecycle --json
 callee agent view prism/phases/specify --json
 callee agent view prism/phases/design --json
 callee agent view prism/phases/breakdown --json
+callee agent view prism/phases/human --json
 callee agent view prism/phases/apply --json
 callee agent view prism/phases/verify --json
-callee agent view prism/workflows/design --json
-callee agent view prism/workflows/apply --json
-callee agent view prism/workflows/verify --json
+callee agent view prism/human/prompt --json
+callee agent view prism/human/check --json
+callee agent view prism/design/flow --json
+callee agent view prism/apply/loop --json
+callee agent view prism/verify/review --json
 ```
 
 ---
@@ -255,7 +300,8 @@ Documented so future changes do not re-litigate without reason.
 
 | Role | Chosen | Strong alternatives |
 | --- | --- | --- |
-| interviewer | `collaborate-requirements-change` | `author-requirements-doc` (one-shot, no REPL) |
+| interviewer | `author-requirements-doc` | `collaborate-requirements-change` (interactive workshop / patch workflow) |
+| specify_gate | `audit-spec-invariants` | `audit-spec-alignment`, `audit-traceability` |
 | explorer | `reconstruct-behavior` | `reverse-engineer-requirements`, `investigate-bug` |
 | architect | `author-design-doc` | `interactive-design` (REPL; format is requirements-doc) |
 | breakdown | `plan-implementation` | `plan-refactoring` (refactor-only stories) |

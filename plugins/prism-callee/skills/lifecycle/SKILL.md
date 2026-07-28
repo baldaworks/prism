@@ -3,8 +3,8 @@ name: lifecycle
 description: >
   Run the automated Prism lifecycle: Beads stores durable story state while this
   skill uses Callee `prism/*` roles and workflows to advance as far as possible
-  in one pass. Stop at the human gate or another blocking condition, then resume
-  from the current story state on the next run. Use when the user runs
+  in one pass. Collect approval through a Callee Human agent at the human gate,
+  then continue or stop based on that response. Use when the user runs
   $prism-callee:lifecycle, /prism-callee:lifecycle, or asks for automated Prism
   progression through Callee.
 metadata:
@@ -24,7 +24,7 @@ PromptKit role/workflow contract: [references/promptkit.md](references/promptkit
 
 - Advance the story through as many lifecycle phases as possible using the existing `prism/*` Callee roles and workflows.
 - Persist durable state in Beads after every Callee return.
-- Stop cleanly at the human gate or any other blocking condition.
+- Collect human approval through a Callee Human agent at the human gate, then either continue to apply or stop cleanly.
 - Resume from current state when run again later.
 
 ## Shared lifecycle state
@@ -45,7 +45,7 @@ Permission tag:
 ## Prerequisites
 
 1. **`bd`** available; beads workspace in the project (`bd where` / `bd prime`).
-2. **`callee` 0.17.0+** on `PATH` with the required provider/auth setup.
+2. **`callee` 0.18.0+** on `PATH` with the required provider/auth setup.
 3. Prism agents discoverable under `prism/*`. Validate with `callee agent list | grep '^prism/'`.
 
 If `prism/*` is absent, install the pack:
@@ -86,7 +86,7 @@ bd where
 
 Stop the run when any of these becomes true:
 
-- the story reaches `phase:human` without `human:approved`
+- the human approval phase returns a non-approval response
 - there is no story-level description/acceptance and the intake role cannot produce usable output
 - there is no ready work
 - the planning output cannot be normalized into the required task JSON shape
@@ -99,23 +99,24 @@ Stop the run when any of these becomes true:
 - specify -> `prism/phases/specify`
 - design -> `prism/phases/design`
 - breakdown -> `prism/phases/breakdown`
+- human -> `prism/phases/human`
 - apply -> `prism/phases/apply`
 - verify -> `prism/phases/verify`
-- internal executors stay under `prism/roles/*` and `prism/workflows/*`
+- internal executors stay under `prism/roles/*` and `prism/<phase>/*`
 
 ## Rules
 
 - Reuse the same Beads labels and state model as `$prism:lifecycle`.
 - `$prism:*` manual skills must not invoke `callee`; this skill owns all `prism/*` execution.
 - Use `prism/lifecycle` and `prism/phases/*` as the public Prism automation surface.
-- Keep `prism/roles/*` and `prism/workflows/*` as internal execution structure behind that public surface.
+- Keep `prism/roles/*` and `prism/<phase>/*` as internal execution structure behind that public surface.
 - `prism/lifecycle` is the canonical Sequential phase graph for automated Prism execution.
 - Before direct Role runs, inspect the contract with `callee agent view <id> --json` and pass every required `--param`.
-- Do not bypass the human gate.
-- `prism/phases/apply` is the public apply entrypoint, while `prism/workflows/apply` is the one-task implementer/reviewer loop behind it.
+- Do not bypass the human gate; collect approval through `prism/phases/human` and persist `human:approved` only after explicit approval.
+- `prism/phases/apply` is the public apply entrypoint, while `prism/apply/loop` is the one-task implementer/reviewer loop behind it.
 - Public apply is the outer story loop that continues claim → apply → check → close while `human:approved` remains present and another child becomes ready.
 - Verify is a close-or-bounce decision phase, not an implementation repair loop.
-- Persist `prism/workflows/design` stdout directly with `bd update --design-file -`.
+- Persist `prism/design/flow` stdout directly with `bd update --design-file -`.
 - Run project checks after every apply iteration (`task test` or `go test ./...`). Do not close the task if checks fail.
 - During apply, choose only ready/unblocked children of the current story; never claim from global `bd ready` alone.
 - A story is ready for verify when it is `human:approved` and has no open child tasks.
@@ -129,9 +130,9 @@ Stop the run when any of these becomes true:
 | --- | --- |
 | `phase:verify` or (`human:approved` and no open children) | Verify; close only if verification passes |
 | `phase:apply` + `human:approved` + open child tasks | Continue the outer story loop: choose one ready child, run apply, run checks, close it on pass, then re-check for another ready child |
-| Open child tasks exist and **no** `human:approved` | Stop and ask the human to add `human:approved` |
-| `phase:human` | Stop and ask the human to add `human:approved` |
-| `phase:plan` or (design set and no children) | Run plan, normalize task JSON, create children, then advance to `phase:human` |
+| Open child tasks exist and **no** `human:approved` | Run `prism/phases/human`; on approval persist `human:approved`, otherwise stop |
+| `phase:human` | Run `prism/phases/human`; on approval persist `human:approved`, otherwise stop |
+| `phase:plan` or (design set and no children) | Run plan, normalize task JSON, create children, then advance to `phase:human` for Human-agent approval |
 | `phase:design` or (description/acceptance set and design empty) | Run design and persist markdown, then advance to `phase:plan` |
 | `phase:specify` or missing description/acceptance | Run intake/specify and persist the resulting description and acceptance |
 
@@ -143,26 +144,24 @@ Stop the run when any of these becomes true:
 bd create "<title>" --type=story -a prism/interviewer -l prism,phase:specify \
   --description="…" --acceptance="…" --priority=2
 
-callee agent view prism/roles/interviewer --json
-callee agent run prism/roles/interviewer \
-  --message "<intent>" \
-  --param prism/roles/interviewer.context="<constraints or none>" \
-  --param prism/roles/interviewer.existing_artifacts="<or none yet>" \
-  --param prism/roles/interviewer.project_name="<project>"
+callee agent run prism/phases/specify --message "$(bd show <story>)"
 
 bd update <story> \
-  --description="…" \
-  --acceptance="…" \
+  --description="persist the normalized summary from the returned requirements doc" \
+  --acceptance="persist the returned acceptance criteria from the requirements doc" \
   -a prism/designer \
   --set-labels prism,phase:design
 ```
 
-If intake output is incomplete or ambiguous, stop and ask the user rather than inventing requirements.
+`prism/phases/specify` now owns the clarification loop. It runs a PromptKit
+normalizer, checks design-readiness, and if needed asks the operator follow-up
+questions through a Callee Human step before retrying. It returns only after the
+story is sufficiently specified for design or the loop exhausts.
 
 ### 2. Design
 
 ```bash
-callee agent run prism/workflows/design --message "$(bd show <story>)" \
+callee agent run prism/design/flow --message "$(bd show <story>)" \
   | bd update <story> --design-file - -a prism/planner --set-labels prism,phase:plan
 ```
 
@@ -186,11 +185,14 @@ bd update <story> -a human --set-labels prism,phase:human
 
 ### 4. Human gate
 
-Stop until a human applies:
-
 ```bash
+callee agent run prism/phases/human --message "$(bd show <story>)"
 bd update <story> -a prism/implementer --set-labels prism,phase:apply,human:approved
 ```
+
+If the operator withholds approval or responds with anything other than `APPROVE`,
+the Human phase fails closed. Stop the run and leave the story open in
+`phase:human` without `human:approved`.
 
 ### 5. Apply
 
@@ -199,7 +201,7 @@ bd children <story>
 bd ready
 # choose one task that is both a child of <story> and ready/unblocked
 bd update <task> -a prism/implementer
-callee agent run prism/workflows/apply \
+callee agent run prism/apply/loop \
   --message "$(bd show <story>; echo; bd show <task>)"
 task test 2>/dev/null || go test ./...
 bd update <task> -a prism/reviewer
@@ -212,7 +214,7 @@ If another child of the same story becomes ready after closing the task, repeat 
 
 ```bash
 bd update <story> -a prism/reviewer --set-labels prism,phase:verify,human:approved
-callee agent run prism/workflows/verify --message "$(bd show <story>)"
+callee agent run prism/verify/review --message "$(bd show <story>)"
 bd close <story> --reason="Acceptance met"
 ```
 

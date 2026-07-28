@@ -26,7 +26,7 @@ performing the work directly in the host.
 Internal implementation stays behind:
 
 - `prism/roles/*`
-- `prism/workflows/*`
+- `prism/<phase>/*`
 
 ## PromptKit contract
 
@@ -62,15 +62,18 @@ surfaces that may execute:
 - `callee agent run prism/lifecycle`
 - `callee agent run prism/phases/*`
 - `callee agent run prism/roles/*`
-- `callee agent run prism/workflows/*`
+- `callee agent run prism/<phase>/*`
 
 The automated lifecycle must:
 
 - inspect current Beads state
 - choose the next public phase
 - run the matching Callee asset
+- collect clarification during `phase:specify` through a Callee Human step when
+  the specify loop still lacks design-ready requirements
+- collect approval at `phase:human` through a Callee Human agent
 - persist outputs back into Beads
-- stop at the human gate or another blocking condition
+- stop only when approval is withheld or another blocking condition is reached
 
 ## Public vs internal surfaces
 
@@ -80,17 +83,17 @@ The automated lifecycle must:
 | `prism/lifecycle` | canonical automated lifecycle graph |
 | `prism/phases/*` | public phase-level automation entrypoints |
 | `prism/roles/*` | internal role building blocks |
-| `prism/workflows/*` | internal composed executors |
+| `prism/<phase>/*` | internal phase-local executors |
 
 Docs should describe `prism/lifecycle` and `prism/phases/*` as public. Direct
-references to `prism/roles/*` and `prism/workflows/*` should be framed as
+references to `prism/roles/*` and `prism/<phase>/*` should be framed as
 implementation details unless the change is specifically about maintainers.
 
 ## Hard rules
 
 - Do not describe PromptKit as part of the manual host lifecycle.
 - Do not move automated execution rules into the host phase references.
-- Do not expose internal `prism/workflows/*` as the primary user-facing surface
+- Do not expose internal `prism/<phase>/*` as the primary user-facing surface
   when `prism/lifecycle` or `prism/phases/*` already owns that behavior.
 - Do not bypass `human:approved` before apply.
 

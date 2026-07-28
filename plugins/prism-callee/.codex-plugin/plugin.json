@@ -20,13 +20,13 @@
   "interface": {
     "displayName": "Prism Callee",
     "shortDescription": "Automated Prism lifecycle with Callee subagents.",
-    "longDescription": "Runs the Prism lifecycle through Callee subagents until the story reaches the human gate, verification completes, or another stop condition is hit.",
+    "longDescription": "Runs the Prism lifecycle through Callee subagents, collects approval through a Callee Human agent at the human gate, and stops only when approval is withheld, verification completes, or another blocking condition is hit.",
     "developerName": "Alexey Samoylov",
     "category": "Developer Tools",
     "capabilities": [
       "Local filesystem",
       "CLI orchestration"
     ],
-    "defaultPrompt": "Use $prism-callee:lifecycle to advance a Prism story automatically until it reaches the human gate or another stop condition."
+    "defaultPrompt": "Use $prism-callee:lifecycle to advance a Prism story automatically through the Callee Human-agent approval gate and the remaining prism/* lifecycle phases."
   }
 }

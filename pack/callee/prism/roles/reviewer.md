@@ -5,8 +5,7 @@ spec:
     description: 'Prism reviewer: independent code review for one-task apply validation or story-level verify.'
     provider:
         type: codex
-        model: gpt-5.4
-        reasoning: xhigh
+        model: gpt-5.3-codex-spark
     params:
         additional_protocols: Optional — specific protocols to apply (e.g., memory-safety-c, thread-safety)
         context: What this code does, where it fits in the system, any known concerns

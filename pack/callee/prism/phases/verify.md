@@ -6,7 +6,7 @@ spec:
     Public Prism verify phase entrypoint. Delegates the close-or-bounce decision to
     the internal verify workflow while preserving verify as a non-repair phase.
   children:
-    - ref: prism/workflows/verify
+    - ref: prism/verify/review
       alias: verify_executor
       input: |
         Prism verify phase for the same story.

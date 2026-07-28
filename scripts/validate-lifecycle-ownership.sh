@@ -119,7 +119,10 @@ for phase in story_phases:
         )
     public_ref = executor.get("public_ref")
     if phase_name == "human":
-        record(public_ref in (None, ""), f"{phase_label} does not declare a Callee public_ref")
+        record(bool(public_ref), f"{phase_label} declares a public_ref")
+        if public_ref:
+            public_path = root / "pack/callee" / (public_ref + ".md")
+            record(public_path.is_file(), f"{phase_label} public_ref exists: {public_ref}")
     else:
         record(bool(public_ref), f"{phase_label} declares a public_ref")
         if public_ref:
@@ -180,6 +183,7 @@ docs_checks = [
         [
             "/prism-callee:lifecycle",
             "prism/lifecycle",
+            "prism/phases/human",
             "prism/phases/apply",
             "outer story loop",
             "one-task implementer/reviewer loop",
@@ -192,6 +196,7 @@ docs_checks = [
         [
             "/prism-callee:lifecycle",
             "prism/lifecycle",
+            "prism/phases/human",
             "prism/phases/apply",
             "outer story loop",
             "one-task implementer/reviewer loop",
@@ -318,8 +323,11 @@ for phase_ref in [
     root / "pack/callee/prism/phases/specify.md",
     root / "pack/callee/prism/phases/design.md",
     root / "pack/callee/prism/phases/breakdown.md",
+    root / "pack/callee/prism/phases/human.md",
     root / "pack/callee/prism/phases/apply.md",
     root / "pack/callee/prism/phases/verify.md",
+    root / "pack/callee/prism/human/prompt.md",
+    root / "pack/callee/prism/human/check.md",
 ]:
     record(phase_ref.is_file(), f"{phase_ref.relative_to(root)} exists")
 
@@ -333,6 +341,8 @@ if (root / "pack/callee/prism/lifecycle.md").is_file():
         "alias: specify",
         "alias: design",
         "alias: breakdown",
+        "alias: human",
+        "ref: prism/phases/human",
         "ref: prism/phases/apply",
         "ref: prism/phases/verify",
     ]:

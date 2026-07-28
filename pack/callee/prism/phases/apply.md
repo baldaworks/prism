@@ -6,7 +6,7 @@ spec:
     Public Prism apply phase entrypoint. Delegates one task execution to the internal
     implementer/reviewer loop while preserving apply as the story execution phase.
   children:
-    - ref: prism/workflows/apply
+    - ref: prism/apply/loop
       alias: apply_executor
       input: |
         Prism apply phase for the same story.

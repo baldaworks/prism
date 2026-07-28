@@ -31,7 +31,13 @@
         "kind": "Sequential",
         "manual_phase_reference": "plugins/prism/skills/lifecycle/references/specify.md",
         "public_ref": "prism/phases/specify",
-        "internal_refs": ["prism/roles/interviewer"]
+        "internal_refs": [
+          "prism/specify/loop",
+          "prism/specify/questions",
+          "prism/specify/extract",
+          "prism/roles/interviewer",
+          "prism/specify/gate"
+        ]
       },
       "requires_human_approval": false,
       "success_transition": "design"
@@ -46,7 +52,7 @@
         "manual_phase_reference": "plugins/prism/skills/lifecycle/references/design.md",
         "public_ref": "prism/phases/design",
         "internal_refs": [
-          "prism/workflows/design",
+          "prism/design/flow",
           "prism/roles/explorer",
           "prism/roles/architect"
         ]
@@ -74,9 +80,13 @@
       "assignee": "human",
       "aliases": [],
       "executor": {
-        "kind": "ManualGate",
+        "kind": "Sequential",
         "manual_phase_reference": "plugins/prism/skills/lifecycle/references/human.md",
-        "internal_refs": []
+        "public_ref": "prism/phases/human",
+        "internal_refs": [
+          "prism/human/prompt",
+          "prism/human/check"
+        ]
       },
       "requires_human_approval": false,
       "success_transition": "apply"
@@ -90,7 +100,7 @@
         "kind": "Sequential",
         "manual_phase_reference": "plugins/prism/skills/lifecycle/references/apply.md",
         "public_ref": "prism/phases/apply",
-        "internal_refs": ["prism/workflows/apply"]
+        "internal_refs": ["prism/apply/loop"]
       },
       "requires_human_approval": true,
       "success_transition": "verify"
@@ -104,7 +114,7 @@
         "kind": "Sequential",
         "manual_phase_reference": "plugins/prism/skills/lifecycle/references/verify.md",
         "public_ref": "prism/phases/verify",
-        "internal_refs": ["prism/workflows/verify", "prism/roles/reviewer"]
+        "internal_refs": ["prism/verify/review", "prism/roles/reviewer"]
       },
       "requires_human_approval": true,
       "success_transition": "close",
