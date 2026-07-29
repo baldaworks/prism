@@ -1,7 +1,7 @@
 {
   "name": "prism-callee",
   "displayName": "Prism Callee",
-  "version": "0.2.0+codex.20260728000000",
+  "version": "0.3.0+codex.20260729000000",
   "description": "Run the automated Prism lifecycle through Callee subagents.",
   "author": {
     "name": "Alexey Samoylov",
