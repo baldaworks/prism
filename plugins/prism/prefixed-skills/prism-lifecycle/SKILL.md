@@ -37,6 +37,10 @@ The story assignee is the only source of its active lifecycle phase:
 `prism` marks lifecycle membership. `human:approved` is the only authorization
 for apply. Do not add `phase:*` labels.
 
+Every open Prism story must have a complete `## Prism Impact Lens` section in
+its durable design. The lens assesses Product, Process, People, Planet, and
+Prosperity with qualitative ratings. Closed stories are not migrated.
+
 Within the story-level apply phase, child-task assignees record the inner loop:
 `prism/apply/implementer` then `prism/apply/reviewer`.
 
@@ -81,24 +85,40 @@ Phase references:
 3. Do not implement without `human:approved`.
 4. The human owns approval intent. The host may persist `human:approved` only
    after an unambiguous free-form authorization to start implementation.
-5. `--set-labels` replaces all labels: retain `prism`, and after the gate retain `human:approved`; never write `phase:*` labels.
-6. Do not commit or push without explicit user authority.
-7. Ask directly when requirements are incomplete; never invent missing requirements.
-8. After changed code, run project checks (`task test` or `go test ./...`). Do not close a task if checks fail.
-9. Claim only a ready, unblocked child of the current story; never claim from global `bd ready` alone.
-10. A story enters verify only when it has `human:approved` and no open child tasks.
-11. Apply is story-level operational closure; verify is a close-or-bounce decision phase, never a repair loop.
+5. Before any open story may leave design, its `## Prism Impact Lens` must have
+   exactly the five dimensions, allowed ratings, evidence in every row, no
+   `unknown`, and a mitigation or residual-impact disposition for every
+   `negative` or `mixed` row.
+6. `--set-labels` replaces all labels: retain `prism`, and after the gate retain `human:approved`; never write `phase:*` labels.
+7. Do not commit or push without explicit user authority.
+8. Ask directly when requirements are incomplete; never invent missing requirements.
+9. After changed code, run project checks (`task test` or `go test ./...`). Do not close a task if checks fail.
+10. Claim only a ready, unblocked child of the current story; never claim from global `bd ready` alone.
+11. A story enters verify only when it has `human:approved` and no open child tasks.
+12. Apply is story-level operational closure; verify is a close-or-bounce decision phase, never a repair loop.
 
 ## Phase → action
 
 | Condition (priority order) | Do next |
 | --- | --- |
+| Missing usable description or acceptance | Specify → persist requirements |
+| Open story has a missing, invalid, or `unknown` Impact Lens | Clear `human:approved`; Design → repair the lens, then Breakdown reconciles children |
 | `prism/verify` or (`human:approved` and no open children) | Verify; close only on pass |
 | `prism/apply` + `human:approved` + open children | Continue the story-level apply loop |
 | Open children without `human:approved` or `prism/human` | Stop at the human gate |
 | `prism/breakdown` or (design set and no children) | Breakdown → create child graph |
 | `prism/design` or (requirements set and design empty) | Design → persist design markdown |
-| `prism/specify` or missing requirements | Specify → persist description and acceptance |
+| `prism/specify` | Specify → persist description and acceptance |
+
+The migration rule precedes assignee routing: for any open story, preserve all
+open and closed children, remove approval, and return the story to
+`prism/design` when the lens is absent or incomplete. After design repair,
+Breakdown reconciles the existing graph. Never auto-delete or auto-close a
+child during migration.
+
+```bash
+bd update <story> -a prism/design --set-labels prism
+```
 
 ## Phase execution contract
 
@@ -112,8 +132,8 @@ The phase references own phase-local procedure. For every lifecycle run:
 | Phase | Load | Successful outcome |
 | --- | --- | --- |
 | Specify | [references/specify.md](references/specify.md) | story assignee is `prism/design` |
-| Design | [references/design.md](references/design.md) | story assignee is `prism/breakdown` |
-| Breakdown | [references/breakdown.md](references/breakdown.md) | child graph exists; story assignee is `prism/human` |
+| Design | [references/design.md](references/design.md) | valid Impact Lens exists; story assignee is `prism/breakdown` |
+| Breakdown | [references/breakdown.md](references/breakdown.md) | child graph covers actionable mitigations; story assignee is `prism/human` |
 | Human | [references/human.md](references/human.md) | stop until explicit approval moves the story to `prism/apply` |
 | Apply | [references/apply.md](references/apply.md) | one ready child closes, story enters verify, or apply stops blocked |
 | Verify | [references/verify.md](references/verify.md) | story closes on pass; otherwise it bounces to an earlier assignee |

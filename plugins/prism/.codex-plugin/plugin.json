@@ -1,6 +1,6 @@
 {
   "name": "prism",
-  "version": "0.2.0+codex.20260729065157",
+  "version": "0.2.0+codex.20260729101906",
   "description": "Run the Prism beads-backed story lifecycle directly in the host by deriving the current phase from Beads state.",
   "author": {
     "name": "Alexey Samoylov",

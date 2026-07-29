@@ -42,12 +42,24 @@ named story ID when present, otherwise resumes exactly one open Prism story. If
 neither applies, it creates a new `prism/specify` story from the raw request;
 Specify then normalizes the acceptance criteria.
 
+## Prism Impact Lens and approval
+
+The automated surface enforces the same five-dimension design contract and
+legacy migration as the host lifecycle: incomplete open stories return to
+Design, approval is cleared, children are preserved, and Breakdown reconciles
+mitigation coverage.
+
+At `prism/phases/human`, the host prepares Design summary → Prism Impact Lens →
+Task summary → Approval request from current Beads state. The Human agent
+accepts ordinary language; `prism/human/intent` classifies it without tools and
+fails closed, and the deterministic check accepts only exact `APPROVE`.
+
 ## Rules
 
 - Only this automated surface may execute `callee agent run prism/...`.
 - Persist every Callee result to Beads, then re-read story and child state.
 - Collect clarification in specify through the Callee Human step when needed.
-- Collect human approval through `prism/phases/human`; fail closed until it is explicit.
+- Collect free-form human approval through `prism/phases/human`; fail closed until intent is unambiguous.
 - Use `prism/phases/apply` for the outer story loop and
   `prism/apply/loop` for one child task.
 - Verify closes or bounces; it never repairs code.

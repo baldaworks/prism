@@ -12,7 +12,10 @@ spec:
         Prism verify phase for the same story.
 
         Treat verify as a close-or-bounce decision phase. Do not perform
-        implementation work here.
+        implementation work here. Bounce implementation gaps to prism/apply;
+        bounce missing mitigation task coverage to prism/breakdown and clear
+        approval; bounce an invalid or newly unknown Impact Lens to prism/design
+        and clear approval.
 
         {{ .Input }}
   output: |

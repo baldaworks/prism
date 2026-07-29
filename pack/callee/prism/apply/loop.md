@@ -10,6 +10,8 @@ spec:
       input: |
         Prism apply — one beads task only. Treat the following as the specification /
         change request for this single task (do not expand to sibling tasks).
+        Honor the saved Prism Impact Lens and implement the mitigation and
+        verification criteria assigned to this task.
 
         {{ .Input }}
 
@@ -46,9 +48,10 @@ spec:
       params:
         additional_protocols: none
         language: detect from repository sources under review
-        review_focus: correctness, regressions, security, missing tests
+        review_focus: correctness, regressions, security, missing tests, Prism Impact Lens mitigation adherence
         context: |
-          Single Prism task under a beads story. Judge against task description and story acceptance.
+          Single Prism task under a beads story. Judge against task description,
+          story acceptance, and the affected Prism Impact Lens dimension.
           Worker output:
           {{ index .State.outputs "worker" }}
   output: |

@@ -1,5 +1,5 @@
 {
-  "version": 5,
+  "version": 6,
   "lifecycle_ref": "prism/lifecycle",
   "manual_host_entrypoints": {
     "codex": "$prism:lifecycle",
@@ -15,6 +15,56 @@
     "prism",
     "human:approved"
   ],
+  "impact_lens": {
+    "design_heading": "## Prism Impact Lens",
+    "columns": [
+      "Dimension",
+      "Rating",
+      "Rationale / evidence",
+      "Mitigation / verification"
+    ],
+    "dimensions": [
+      "Product",
+      "Process",
+      "People",
+      "Planet",
+      "Prosperity"
+    ],
+    "ratings": [
+      "positive",
+      "negative",
+      "mixed",
+      "not-material",
+      "unknown"
+    ],
+    "numeric_score": false,
+    "requires_rationale": true,
+    "material_ratings": [
+      "negative",
+      "mixed"
+    ],
+    "material_requires": "mitigation_or_residual_impact_disposition",
+    "unknown_blocks_transition": "breakdown",
+    "human_summary_order": [
+      "Design summary",
+      "Prism Impact Lens",
+      "Task summary",
+      "Approval request"
+    ],
+    "approval_scope": [
+      "design",
+      "tasks",
+      "mitigations",
+      "disclosed_residual_impacts"
+    ],
+    "open_story_migration": {
+      "missing_or_invalid": "design",
+      "clear_human_approval": true,
+      "preserve_child_statuses": true,
+      "reconcile_children_in": "breakdown"
+    },
+    "closed_story_migration": "unchanged"
+  },
   "entry_resolution": {
     "explicit_story_id": "resume",
     "single_open_prism_story": "resume",
@@ -97,6 +147,7 @@
         "public_ref": "prism/phases/human",
         "internal_refs": [
           "prism/human/prompt",
+          "prism/human/intent",
           "prism/human/check"
         ]
       },

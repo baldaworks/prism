@@ -12,12 +12,14 @@ spec:
 
         {{ .Prompt }}
 
-        Inspect the working tree and tests against story acceptance criteria.
-        State clearly whether the story is acceptable to close.
+        Inspect the working tree and tests against story acceptance criteria
+        and the saved Prism Impact Lens. Verify evidence for every actionable
+        mitigation and confirm disclosed residual impacts still match the
+        approved design. State clearly whether the story is acceptable to close.
       params:
         additional_protocols: none
         language: detect from repository sources under review
-        review_focus: correctness, regressions, security, missing tests, acceptance coverage
+        review_focus: correctness, regressions, security, missing tests, acceptance coverage, Prism Impact Lens mitigation evidence
         context: |
           Story-level Prism verify. Child beads tasks should already be closed.
           Story dump and acceptance are in the root prompt.

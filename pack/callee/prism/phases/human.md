@@ -9,15 +9,20 @@ spec:
     - ref: prism/human/prompt
       alias: approval_prompt
       input: |
-        Prism human approval phase for the same story.
-
-        Review the current story state below and decide whether automated apply
-        may begin for this story.
-
         {{ .Input }}
+    - ref: prism/human/intent
+      alias: approval_intent
+      input: |
+        Classify the operator response to this informed Prism approval request.
+
+        Prepared summary and request:
+        {{ .Input }}
+
+        Operator response:
+        {{ index .State.outputs "approval_prompt" }}
     - ref: prism/human/check
       alias: approval_gate
   output: |
-    {{ index .State.outputs "approval_prompt" }}
+    {{ index .State.outputs "approval_gate" }}
 ---
 {{ .Input }}

@@ -23,6 +23,9 @@ Validator-style roles use **`gpt-5.3-codex-spark`**:
 - `prism/specify/gate`
 - `prism/roles/reviewer`
 Permissions: default / **`ask`**.
+The directly authored `prism/human/intent` classifier is the sole exception:
+it uses `spec.permissions.mode: deny` because approval classification requires
+no tools and must fail closed.
 
 ---
 
@@ -234,7 +237,8 @@ Inspect live keys with `callee agent view <id> --json` (authoritative if drift).
 | `prism/specify/extract` | Script | final requirements document extractor | **none** |
 | `prism/design/flow` | Sequential | `explorer` → `architect` | **none** (child params bound in workflow) |
 | `prism/human/prompt` | Human | operator approval prompt | **none** |
-| `prism/human/check` | Script | approval token validator | **none** |
+| `prism/human/intent` | Role | fail-closed free-form approval intent classifier | **none** |
+| `prism/human/check` | Script | exact classifier decision validator | **none** |
 | `prism/apply/loop` | Loop | `worker`=`implementer` ↔ `validator`=`reviewer` (`canEscalate`) | **none** |
 | `prism/verify/review` | Sequential | `reviewer` | **none** |
 
@@ -246,6 +250,7 @@ pack/callee/prism/specify/questions.md
 pack/callee/prism/specify/extract.md
 pack/callee/prism/design/flow.md
 pack/callee/prism/human/prompt.md
+pack/callee/prism/human/intent.md
 pack/callee/prism/human/check.md
 pack/callee/prism/apply/loop.md
 pack/callee/prism/verify/review.md
@@ -257,6 +262,7 @@ Root message conventions:
 | --- | --- |
 | `prism/specify/loop` | `bd show <story>` dump plus any current intent / constraints |
 | `prism/design/flow` | `bd show <story>` dump (requirements + acceptance) |
+| `prism/phases/human` | prepared Design summary → Impact Lens → Task summary → Approval request from `bd show`, `bd children`, and `bd blocked` |
 | `prism/apply/loop` | story dump + claimed task dump |
 | `prism/verify/review` | story dump (acceptance + design context) |
 
@@ -275,6 +281,7 @@ callee agent validate pack/callee/prism/phases/human.md
 callee agent validate pack/callee/prism/phases/apply.md
 callee agent validate pack/callee/prism/phases/verify.md
 callee agent validate pack/callee/prism/human/prompt.md
+callee agent validate pack/callee/prism/human/intent.md
 callee agent validate pack/callee/prism/human/check.md
 callee agent validate pack/callee/prism/apply/loop.md
 callee agent validate pack/callee/prism/verify/review.md
@@ -286,6 +293,7 @@ callee agent view prism/phases/human --json
 callee agent view prism/phases/apply --json
 callee agent view prism/phases/verify --json
 callee agent view prism/human/prompt --json
+callee agent view prism/human/intent --json
 callee agent view prism/human/check --json
 callee agent view prism/design/flow --json
 callee agent view prism/apply/loop --json

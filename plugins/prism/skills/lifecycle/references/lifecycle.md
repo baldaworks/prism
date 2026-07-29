@@ -16,7 +16,7 @@ Keep workflow diagrams vertical and top-to-bottom.
 flowchart TB
   I["1 Intake<br/>assignee: prism/specify"]
   S["2 Specify<br/>description + acceptance"]
-  D["3 Design<br/>assignee: prism/design"]
+  D["3 Design<br/>assignee: prism/design<br/>Prism Impact Lens"]
   B["4 Breakdown<br/>assignee: prism/breakdown<br/>Beads child graph"]
   H["5 Human gate<br/>assignee: prism/human"]
   A["6 Apply<br/>assignee: prism/apply<br/>one-task implementer/reviewer subloop"]
@@ -27,6 +27,7 @@ flowchart TB
   A -->|"open tasks remain"| A
   A -->|"all children closed"| V
   V -->|"follow-up work"| A
+  V -->|"lens/design defect; clear approval"| D
   V -->|"pass"| C
 ```
 
@@ -45,13 +46,18 @@ flowchart TB
 Derive phase from the story assignee. Reconcile it with requirements, design,
 children, and approval rather than adding a phase label.
 
+For any open legacy story whose design lacks a complete Impact Lens, clear
+`human:approved`, return it to Design, preserve all children, then reconcile the
+child graph in Breakdown. Closed stories remain unchanged.
+
 ## Host actions per phase
 
 | Step | Host action | Beads writes |
 | --- | --- | --- |
 | Specify | Clarify directly in chat and refine story requirements | description, acceptance, `prism/design` |
-| Design | Inspect repository and write design markdown through Beads | design, `prism/breakdown` |
-| Breakdown | Create 3–12 child tasks and dependencies directly in Beads | children, dependencies, `prism/human` |
+| Design | Inspect repository; write design and five-dimension Impact Lens | design, `prism/breakdown` |
+| Breakdown | Create or reconcile children; cover every actionable mitigation | children, dependencies, `prism/human` |
+| Human | Show Design summary → Impact Lens → Task summary → Approval request | `human:approved`, `prism/apply` only after unambiguous free-form approval |
 | Apply | Close ready children through the inner loop | task `prism/apply/implementer` → `prism/apply/reviewer`; story stays `prism/apply` |
 | Verify | Make the close-or-bounce decision | close story or return it to the needed assignee |
 

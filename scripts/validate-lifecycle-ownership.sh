@@ -31,8 +31,36 @@ mapping_path = root / "docs/lifecycle-ownership.json"
 record(mapping_path.is_file(), "lifecycle ownership mapping exists")
 mapping = load_json(mapping_path) if mapping_path.is_file() else {}
 
-record(mapping.get("version") == 5, "ownership schema version is 5")
+record(mapping.get("version") == 6, "ownership schema version is 6")
 record(mapping.get("lifecycle_labels") == ["prism", "human:approved"], "only prism and human:approved are lifecycle labels")
+impact_lens = mapping.get("impact_lens", {})
+record(impact_lens.get("design_heading") == "## Prism Impact Lens", "Impact Lens has the durable design heading")
+record(
+    impact_lens.get("dimensions") == ["Product", "Process", "People", "Planet", "Prosperity"],
+    "Impact Lens owns exactly the five Prism dimensions",
+)
+record(
+    impact_lens.get("ratings") == ["positive", "negative", "mixed", "not-material", "unknown"],
+    "Impact Lens ratings are qualitative and closed",
+)
+record(impact_lens.get("numeric_score") is False, "Impact Lens forbids a numeric score")
+record(impact_lens.get("unknown_blocks_transition") == "breakdown", "unknown impact blocks Breakdown")
+record(
+    impact_lens.get("human_summary_order")
+    == ["Design summary", "Prism Impact Lens", "Task summary", "Approval request"],
+    "human summary order includes the Impact Lens before tasks",
+)
+record(
+    impact_lens.get("open_story_migration")
+    == {
+        "missing_or_invalid": "design",
+        "clear_human_approval": True,
+        "preserve_child_statuses": True,
+        "reconcile_children_in": "breakdown",
+    },
+    "open legacy stories return to Design and preserve children for reconciliation",
+)
+record(impact_lens.get("closed_story_migration") == "unchanged", "closed stories are not migrated")
 record(
     mapping.get("entry_resolution") == {
         "explicit_story_id": "resume",
@@ -141,6 +169,7 @@ for human_path in [
     relative = human_path.relative_to(root)
     summary_markers = [
         "`### Design summary`",
+        "`### Prism Impact Lens`",
         "`### Task summary`",
         "`### Approval request`",
     ]
@@ -148,7 +177,7 @@ for human_path in [
     record(
         all(position >= 0 for position in summary_positions)
         and summary_positions == sorted(summary_positions),
-        f"{relative} presents design summary, task summary, then approval request",
+        f"{relative} presents design summary, Impact Lens, task summary, then approval request",
     )
     for snippet, contract in [
         ("cover **every** current child task", "covers every child task"),
@@ -167,6 +196,62 @@ for human_path in [
         ),
     ]:
         record(snippet in text, f"{relative} {contract}")
+
+for base in [
+    root / "plugins/prism/skills/lifecycle/references",
+    root / "plugins/prism/prefixed-skills/prism-lifecycle/references",
+]:
+    design_text = (base / "design.md").read_text()
+    for snippet in [
+        "## Prism Impact Lens",
+        "| Dimension | Rating | Rationale / evidence | Mitigation / verification |",
+        "`positive`, `negative`, `mixed`",
+        "`not-material`, and `unknown`",
+        "Do not advance while any rating is `unknown`",
+    ]:
+        record(snippet in design_text, f"{(base / 'design.md').relative_to(root)} enforces Impact Lens contract: {snippet}")
+
+    breakdown_text = (base / "breakdown.md").read_text()
+    for snippet in [
+        "Every actionable Impact Lens mitigation",
+        "preserve every open and closed child",
+        "never auto-delete, auto-close, or reopen a child",
+    ]:
+        record(snippet in breakdown_text, f"{(base / 'breakdown.md').relative_to(root)} enforces reconciliation: {snippet}")
+
+    apply_text = (base / "apply.md").read_text()
+    verify_text = (base / "verify.md").read_text()
+    record("Impact Lens mitigation" in apply_text, f"{(base / 'apply.md').relative_to(root)} honors mitigation criteria")
+    record("actionable Impact Lens mitigation" in verify_text, f"{(base / 'verify.md').relative_to(root)} verifies mitigation evidence")
+
+for skill_path in [
+    root / "plugins/prism-callee/skills/lifecycle/SKILL.md",
+    root / "plugins/prism-callee/prefixed-skills/prism-callee-lifecycle/SKILL.md",
+]:
+    text = skill_path.read_text()
+    for snippet in [
+        "missing, invalid, or `unknown` Impact Lens",
+        "`### Design summary`, `### Prism Impact Lens`",
+        "exact `APPROVE` classifier decision",
+        "Never automatically delete, close, or reopen children",
+    ]:
+        record(snippet in text, f"{skill_path.relative_to(root)} documents automated Impact Lens contract: {snippet}")
+
+callee_contracts = {
+    "pack/callee/prism/roles/architect.md": ["## Prism Impact Lens", "| Product |", "| Prosperity |", "No Impact Lens rating is `unknown`"],
+    "pack/callee/prism/phases/breakdown.md": ["Every actionable Impact Lens mitigation", "never auto-delete, close, or reopen"],
+    "pack/callee/prism/apply/loop.md": ["Prism Impact Lens", "mitigation adherence"],
+    "pack/callee/prism/verify/review.md": ["every actionable", "residual impacts"],
+    "pack/callee/prism/phases/human.md": ["prism/human/intent", "approval_intent"],
+    "pack/callee/prism/human/intent.md": ["mode: deny", "Output exactly `APPROVE`", "Output exactly `WITHHOLD`"],
+    "pack/callee/prism/human/check.md": ['[ "$normalized" = "APPROVE" ]', "APPROVAL_INTENT"],
+}
+for relative_path, snippets in callee_contracts.items():
+    path = root / relative_path
+    text = path.read_text() if path.is_file() else ""
+    record(path.is_file(), f"{relative_path} exists")
+    for snippet in snippets:
+        record(snippet in text, f"{relative_path} contains contract marker: {snippet}")
 
 record(
     not (root / "plugins/prism/skills/lifecycle/references/plan.md").exists(),

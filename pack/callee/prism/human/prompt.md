@@ -7,13 +7,8 @@ spec:
 ---
 Prism human gate
 
-Review the story state below.
-
-If you approve automated implementation for this story, reply exactly:
-
-APPROVE
-
-Any other nonblank response means approval is withheld and this automated run
-must stop before apply.
-
 {{ .Input }}
+
+Reply in ordinary free-form language. Approval is granted only when your intent
+to start implementation is unambiguous; questions, conditions, or requested
+changes withhold approval.

@@ -196,10 +196,18 @@ Prism advances one phase at a time:
 
 Rules that matter to users:
 
+- Design includes a Prism Impact Lens across Product, Process, People, Planet,
+  and Prosperity. Unknown impact blocks planning; actionable mitigations must
+  be represented in the child-task graph.
 - A human must explicitly authorize apply. In the host lifecycle, ordinary
   free-form approval is enough for the host to persist `human:approved`; an
   ambiguous response leaves the gate closed.
-- In the automated `prism-callee` surface, the `prism/human` gate is collected through a Callee Human agent before `human:approved` is persisted.
+- Before approval, Prism shows Design summary → Impact Lens → Task summary →
+  Approval request. One informed approval covers design, tasks, mitigations,
+  and disclosed residual impacts.
+- In the automated `prism-callee` surface, a no-tools classifier interprets the
+  Human agent's free-form response and a deterministic gate accepts only an
+  unambiguous approval decision.
 - Beads story assignee is the current lifecycle phase.
 - Lifecycle creates a story when no explicit or uniquely resumable Prism story exists.
 - Host Prism derives the current phase from Beads story state; it does not expose separate host phase subskills.
@@ -297,6 +305,8 @@ Then use the surface-local sources of truth only for the surface you are editing
 
 - Only explicit human intent authorizes apply. The host may persist
   `human:approved` on the human's behalf after unambiguous free-form approval.
+- The Impact Lens is Prism's own qualitative decision aid; it does not claim
+  compliance with an external framework.
 - Prism should not invent approval.
 - Commit and push require explicit human authority.
 

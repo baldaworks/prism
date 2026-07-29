@@ -14,6 +14,8 @@ spec:
         Human approval must already be present before execution. Treat apply as
         story-level operational closure. Use the inner one-task implementer/reviewer
         loop to close ready child work without expanding beyond this story.
+        Require a valid Prism Impact Lens with no unknown rating and honor each
+        task's mapped mitigation criteria.
 
         {{ .Input }}
   output: |

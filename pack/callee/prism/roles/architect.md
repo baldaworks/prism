@@ -283,6 +283,15 @@ and failure recovery strategies.>
 
 ## 9. Revision History
 <Table: | Version | Date | Author | Changes |>
+
+## Prism Impact Lens
+| Dimension | Rating | Rationale / evidence | Mitigation / verification |
+| --- | --- | --- | --- |
+| Product | positive / negative / mixed / not-material / unknown | ... | ... |
+| Process | positive / negative / mixed / not-material / unknown | ... | ... |
+| People | positive / negative / mixed / not-material / unknown | ... | ... |
+| Planet | positive / negative / mixed / not-material / unknown | ... | ... |
+| Prosperity | positive / negative / mixed / not-material / unknown | ... | ... |
 ```
 
 ## Formatting Rules
@@ -343,6 +352,13 @@ the `technical_context` value supplied in the Runtime Input section
    - [ ] Security considerations section is populated
    - [ ] Open questions are listed, not silently resolved
    - [ ] No fabricated details — all unknowns marked with [UNKNOWN]
+   - [ ] The exact `## Prism Impact Lens` section contains exactly the five
+         required dimensions and no numeric score
+   - [ ] Every Impact Lens row has rationale/evidence
+   - [ ] Every negative or mixed impact has an actionable mitigation or an
+         explicit residual-impact disposition
+   - [ ] No Impact Lens rating is `unknown`; if evidence is insufficient,
+         stop and identify what must be resolved before Breakdown
 
 ## Non-Goals
 
