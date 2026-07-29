@@ -26,9 +26,14 @@ documents for actual behavior:
 
 Both Prism skills operate on the same durable Beads model:
 
-- story labels: `prism`, `phase:*`, `human:approved`
+- story labels: `prism`, `human:approved`
+- story assignee: the active lifecycle phase, from `prism/specify` through `prism/verify`
 - story fields: description, acceptance, design
 - child tasks and dependencies
+
+Both skills accept user intent rather than requiring a pre-created story: use
+an explicitly named story ID, otherwise resume exactly one open Prism story,
+otherwise create a new story assigned to `prism/specify`.
 
 What differs is execution:
 
@@ -43,7 +48,7 @@ That separation is intentional and must remain explicit in docs and skills.
 | --- | --- |
 | Manual host lifecycle contract | `plugins/prism/skills/lifecycle/SKILL.md` and its phase references |
 | Automated lifecycle contract | `plugins/prism-callee/skills/lifecycle/SKILL.md`, `plugins/prism-callee/prefixed-skills/prism-callee-lifecycle/SKILL.md`, and `references/promptkit.md` |
-| Shared Beads phase graph | `plugins/prism/skills/lifecycle/references/lifecycle.md` |
+| Shared Beads lifecycle graph | `plugins/prism/skills/lifecycle/references/lifecycle.md` |
 | Automated `prism/*` agent graph | `pack/callee/prism/` |
 | Repository packaging and install surface | `README.md` plus host manifests under `plugins/` and marketplace files |
 

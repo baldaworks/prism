@@ -15,7 +15,7 @@ spec:
         {{ .Input }}
       params:
         constraints: |
-          Public phase owner: prism/planner.
+          Story phase assignee: prism/breakdown.
           Produce 3-12 small reviewable Beads tasks with explicit dependencies.
         design_doc: |
           {{ .Input }}

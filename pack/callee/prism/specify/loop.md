@@ -45,7 +45,7 @@ spec:
       params:
         audience: expert engineers
         context: |
-          Public phase owner: prism/interviewer.
+          Story phase assignee: prism/specify.
           Normalize scope, constraints, non-goals, and acceptance only.
           Stop short of design or implementation decisions.
         project_name: prism-story

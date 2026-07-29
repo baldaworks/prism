@@ -10,346 +10,207 @@ import pathlib
 import sys
 
 root = pathlib.Path(sys.argv[1])
-errors: list[str] = []
+errors = []
 
 
-def record(condition: bool, message: str) -> None:
-    if condition:
-        print(f"PASS: {message}")
-    else:
+def record(condition, message):
+    print(f"{'PASS' if condition else 'FAIL'}: {message}")
+    if not condition:
         errors.append(message)
-        print(f"FAIL: {message}")
 
 
-def load_json(path: pathlib.Path) -> dict:
+def load_json(path):
     try:
         return json.loads(path.read_text())
-    except json.JSONDecodeError as exc:
-        record(False, f"{path.relative_to(root)} is valid JSON: {exc}")
+    except (OSError, json.JSONDecodeError) as exc:
+        record(False, f"{path.relative_to(root)} parses as JSON: {exc}")
         return {}
 
 
 mapping_path = root / "docs/lifecycle-ownership.json"
-record(mapping_path.is_file(), "docs/lifecycle-ownership.json exists")
+record(mapping_path.is_file(), "lifecycle ownership mapping exists")
 mapping = load_json(mapping_path) if mapping_path.is_file() else {}
-record(mapping.get("version") == 3, "lifecycle ownership schema version is 3")
-record(mapping.get("lifecycle_ref") == "prism/lifecycle", "lifecycle ref is prism/lifecycle")
-manual_entrypoints = mapping.get("manual_host_entrypoints", {})
-automated_entrypoints = mapping.get("automated_host_entrypoints", {})
+
+record(mapping.get("version") == 5, "ownership schema version is 5")
+record(mapping.get("lifecycle_labels") == ["prism", "human:approved"], "only prism and human:approved are lifecycle labels")
 record(
-    manual_entrypoints.get("codex") == "$prism:lifecycle",
-    "manual host Codex entrypoint is $prism:lifecycle",
-)
-record(
-    manual_entrypoints.get("claude") == "/prism:lifecycle",
-    "manual host Claude entrypoint is /prism:lifecycle",
-)
-record(
-    manual_entrypoints.get("flat") == "/prism-lifecycle",
-    "manual host flat entrypoint is /prism-lifecycle",
-)
-record(
-    automated_entrypoints.get("codex") == "$prism-callee:lifecycle",
-    "automated host Codex entrypoint is $prism-callee:lifecycle",
-)
-record(
-    automated_entrypoints.get("claude") == "/prism-callee:lifecycle",
-    "automated host Claude entrypoint is /prism-callee:lifecycle",
-)
-record(
-    automated_entrypoints.get("flat") == "/prism-callee-lifecycle",
-    "automated host flat entrypoint is /prism-callee-lifecycle",
+    mapping.get("entry_resolution") == {
+        "explicit_story_id": "resume",
+        "single_open_prism_story": "resume",
+        "otherwise": "create",
+        "new_story": {
+            "labels": ["prism"],
+            "assignee": "prism/specify",
+            "description": "raw_user_request",
+        },
+    },
+    "entry resolution resumes explicit or sole stories and otherwise creates prism/specify",
 )
 
-expected_story_phases = ["specify", "design", "plan", "human", "apply", "verify"]
-expected_task_states = ["implementation", "review"]
-
+expected_story = [
+    ("specify", "prism/specify"),
+    ("design", "prism/design"),
+    ("breakdown", "prism/breakdown"),
+    ("human", "prism/human"),
+    ("apply", "prism/apply"),
+    ("verify", "prism/verify"),
+]
 story_phases = mapping.get("story_phases", [])
-task_states = mapping.get("task_states", [])
-
 record(
-    [item.get("phase") for item in story_phases] == expected_story_phases,
-    "story phases are specify -> design -> plan -> human -> apply -> verify",
-)
-record(
-    [item.get("state") for item in task_states] == expected_task_states,
-    "task states are implementation -> review",
-)
-
-preferred = mapping.get("preferred_assignee_encoding", {})
-record(
-    preferred.get("namespace") == "prism" and preferred.get("delimiter") == "/",
-    "preferred assignee encoding is prism/<owner>",
-)
-
-aliases = mapping.get("accepted_assignee_aliases", [])
-record(
-    any(alias.get("namespace") == "prism" and alias.get("delimiter") == ":" for alias in aliases),
-    "accepted alias encoding includes prism:<owner>",
+    [(item.get("phase"), item.get("assignee")) for item in story_phases] == expected_story,
+    "story assignees encode specify -> design -> breakdown -> human -> apply -> verify",
 )
 
 for phase in story_phases:
-    phase_name = phase.get("phase")
-    owner = phase.get("owner")
+    name = phase.get("phase")
     assignee = phase.get("assignee")
+    record(phase.get("aliases") == [assignee.replace("/", ":")], f"{name} has a matching colon alias")
     executor = phase.get("executor", {})
-    phase_label = f"phase:{phase_name}"
-
-    if owner == "human":
-        record(assignee == "human", f"{phase_label} assignee is human")
-    else:
-        record(assignee == f"prism/{owner}", f"{phase_label} assignee is prism/{owner}")
-        record(
-            f"prism:{owner}" in phase.get("aliases", []),
-            f"{phase_label} accepts alias prism:{owner}",
-        )
-
-    record(bool(executor.get("kind")), f"{phase_label} declares an executor kind")
-    manual_phase_reference = executor.get("manual_phase_reference")
-    record(
-        "manual_skill" not in executor,
-        f"{phase_label} does not use stale manual_skill metadata",
-    )
-    record(bool(manual_phase_reference), f"{phase_label} declares a manual_phase_reference")
-    if manual_phase_reference:
-        manual_phase_path = root / manual_phase_reference
-        record(
-            manual_phase_path.is_file(),
-            f"{phase_label} manual_phase_reference exists: {manual_phase_reference}",
-        )
+    manual_ref = executor.get("manual_phase_reference")
     public_ref = executor.get("public_ref")
-    if phase_name == "human":
-        record(bool(public_ref), f"{phase_label} declares a public_ref")
-        if public_ref:
-            public_path = root / "pack/callee" / (public_ref + ".md")
-            record(public_path.is_file(), f"{phase_label} public_ref exists: {public_ref}")
-    else:
-        record(bool(public_ref), f"{phase_label} declares a public_ref")
-        if public_ref:
-            public_path = root / "pack/callee" / (public_ref + ".md")
-            record(public_path.is_file(), f"{phase_label} public_ref exists: {public_ref}")
-    for ref in executor.get("internal_refs", []):
-        agent_path = root / "pack/callee" / (ref + ".md")
-        record(agent_path.is_file(), f"{phase_label} internal ref exists: {ref}")
+    record(bool(executor.get("kind")), f"{name} declares executor kind")
+    record(bool(manual_ref) and (root / manual_ref).is_file(), f"{name} manual phase reference exists")
+    record(
+        bool(public_ref) and (root / "pack/callee" / f"{public_ref}.md").is_file(),
+        f"{name} public Callee phase exists",
+    )
+    for internal_ref in executor.get("internal_refs", []):
+        record(
+            (root / "pack/callee" / f"{internal_ref}.md").is_file(),
+            f"{name} internal Callee ref exists: {internal_ref}",
+        )
 
-docs_checks = [
-    (
-        root / "README.md",
-        [
-            "/prism:lifecycle",
-            "/prism-callee:lifecycle",
-            "Beads assignee is the current phase owner",
-            "Apply closes remaining story work one ready child task at a time.",
-            "Verify is a close-or-bounce story decision.",
-            "docs/architecture-host-lifecycle.md",
-            "docs/architecture-callee-lifecycle.md",
-        ],
-    ),
-    (
-        root / "plugins/prism/skills/lifecycle/SKILL.md",
-        [
-            "/prism:lifecycle",
-            "story-level operational closure",
-            "close-or-bounce decision phase",
-            "prism/interviewer",
-            "prism/reviewer",
-            "references/specify.md",
-            "references/design.md",
-            "references/plan.md",
-            "references/human.md",
-            "references/apply.md",
-            "references/verify.md",
-            "The phase references, not this file, own the phase-local procedure.",
-        ],
-    ),
-    (
-        root / "plugins/prism/prefixed-skills/prism-lifecycle/SKILL.md",
-        [
-            "/prism:lifecycle",
-            "story-level operational closure",
-            "close-or-bounce decision phase",
-            "/prism-callee-lifecycle",
-            "references/specify.md",
-            "references/design.md",
-            "references/plan.md",
-            "references/human.md",
-            "references/apply.md",
-            "references/verify.md",
-            "The phase references, not this file, own the phase-local procedure.",
-        ],
-    ),
-    (
-        root / "plugins/prism-callee/skills/lifecycle/SKILL.md",
-        [
-            "/prism-callee:lifecycle",
-            "prism/lifecycle",
-            "prism/phases/human",
-            "prism/phases/apply",
-            "outer story loop",
-            "one-task implementer/reviewer loop",
-            "close-or-bounce decision",
-            "references/promptkit.md",
-        ],
-    ),
-    (
-        root / "plugins/prism-callee/prefixed-skills/prism-callee-lifecycle/SKILL.md",
-        [
-            "/prism-callee:lifecycle",
-            "prism/lifecycle",
-            "prism/phases/human",
-            "prism/phases/apply",
-            "outer story loop",
-            "one-task implementer/reviewer loop",
-            "close-or-bounce decision",
-            "../../skills/lifecycle/references/promptkit.md",
-        ],
-    ),
-    (
-        root / "docs/architecture-host-lifecycle.md",
-        [
-            "$prism:lifecycle",
-            "/prism:lifecycle",
-            "/prism-lifecycle",
-        ],
-    ),
-    (
-        root / "docs/architecture-callee-lifecycle.md",
-        [
-            "$prism-callee:lifecycle",
-            "/prism-callee:lifecycle",
-            "/prism-callee-lifecycle",
-        ],
-    ),
-    (
-        root / "plugins/prism/skills/lifecycle/references/lifecycle.md",
-        [
-            "story-level operational closure",
-            "close-or-bounce story decision"
-        ],
-    ),
+expected_task_states = [
+    ("implementation", "prism/apply/implementer"),
+    ("review", "prism/apply/reviewer"),
 ]
+record(
+    [(item.get("state"), item.get("assignee")) for item in mapping.get("task_states", [])] == expected_task_states,
+    "apply child-task states use nested assignees",
+)
 
-for path, snippets in docs_checks:
-    record(path.is_file(), f"{path.relative_to(root)} exists")
-    text = path.read_text() if path.is_file() else ""
-    for snippet in snippets:
-        record(snippet in text, f"{path.relative_to(root)} mentions: {snippet}")
-
-for path in [
+for skill_path in [
     root / "plugins/prism/skills/lifecycle/SKILL.md",
     root / "plugins/prism/prefixed-skills/prism-lifecycle/SKILL.md",
+    root / "plugins/prism-callee/skills/lifecycle/SKILL.md",
+    root / "plugins/prism-callee/prefixed-skills/prism-callee-lifecycle/SKILL.md",
 ]:
-    text = path.read_text() if path.is_file() else ""
-    for stale_heading in [
-        "### 1. Intake / specify",
-        "### 2. Design",
-        "### 3. Plan",
-        "### 4. Human gate (human only)",
-        "### 5. Apply",
-        "### 6. Verify + close",
-    ]:
-        record(
-            stale_heading not in text,
-            f"{path.relative_to(root)} omits duplicated phase recipe heading: {stale_heading}",
-        )
-
-for phase_ref in [
-    root / "plugins/prism/skills/lifecycle/references/specify.md",
-    root / "plugins/prism/skills/lifecycle/references/design.md",
-    root / "plugins/prism/skills/lifecycle/references/plan.md",
-    root / "plugins/prism/skills/lifecycle/references/human.md",
-    root / "plugins/prism/skills/lifecycle/references/apply.md",
-    root / "plugins/prism/skills/lifecycle/references/verify.md",
-    root / "plugins/prism/prefixed-skills/prism-lifecycle/references/specify.md",
-    root / "plugins/prism/prefixed-skills/prism-lifecycle/references/design.md",
-    root / "plugins/prism/prefixed-skills/prism-lifecycle/references/plan.md",
-    root / "plugins/prism/prefixed-skills/prism-lifecycle/references/human.md",
-    root / "plugins/prism/prefixed-skills/prism-lifecycle/references/apply.md",
-    root / "plugins/prism/prefixed-skills/prism-lifecycle/references/verify.md",
-    root / "plugins/prism-callee/skills/lifecycle/references/promptkit.md",
-]:
-    record(phase_ref.is_file(), f"{phase_ref.relative_to(root)} exists")
-
-phase_contract_sections = [
-    "## Required inputs",
-    "## Persist and advance",
-    "## Stop when",
-    "## Never",
-]
-
-for phase_ref in [
-    root / "plugins/prism/skills/lifecycle/references/specify.md",
-    root / "plugins/prism/skills/lifecycle/references/design.md",
-    root / "plugins/prism/skills/lifecycle/references/plan.md",
-    root / "plugins/prism/skills/lifecycle/references/human.md",
-    root / "plugins/prism/skills/lifecycle/references/apply.md",
-    root / "plugins/prism/skills/lifecycle/references/verify.md",
-    root / "plugins/prism/prefixed-skills/prism-lifecycle/references/specify.md",
-    root / "plugins/prism/prefixed-skills/prism-lifecycle/references/design.md",
-    root / "plugins/prism/prefixed-skills/prism-lifecycle/references/plan.md",
-    root / "plugins/prism/prefixed-skills/prism-lifecycle/references/human.md",
-    root / "plugins/prism/prefixed-skills/prism-lifecycle/references/apply.md",
-    root / "plugins/prism/prefixed-skills/prism-lifecycle/references/verify.md",
-]:
-    text = phase_ref.read_text() if phase_ref.is_file() else ""
-    for section in phase_contract_sections:
-        record(
-            section in text,
-            f"{phase_ref.relative_to(root)} mentions: {section}",
-        )
-
-for stale_ref in [
-    root / "plugins/prism/skills/lifecycle/references/promptkit.md",
-    root / "plugins/prism/prefixed-skills/prism-lifecycle/references/promptkit.md",
-]:
-    record(not stale_ref.exists(), f"{stale_ref.relative_to(root)} was removed from manual host skill references")
-
-for workflow_ref in [
-    root / "pack/callee/prism/lifecycle.md",
-]:
-    record(workflow_ref.is_file(), f"{workflow_ref.relative_to(root)} exists")
-
-mirror_dir = root / ".callee/prism"
-mirror_lifecycle = mirror_dir / "lifecycle.md"
-if mirror_dir.exists():
-    record(
-        mirror_lifecycle.is_file(),
-        ".callee/prism/lifecycle.md exists when the optional .callee/prism mirror directory is present",
-    )
-else:
-    record(True, ".callee/prism mirror directory is absent; mirror remains optional")
-
-for phase_ref in [
-    root / "pack/callee/prism/phases/specify.md",
-    root / "pack/callee/prism/phases/design.md",
-    root / "pack/callee/prism/phases/breakdown.md",
-    root / "pack/callee/prism/phases/human.md",
-    root / "pack/callee/prism/phases/apply.md",
-    root / "pack/callee/prism/phases/verify.md",
-    root / "pack/callee/prism/human/prompt.md",
-    root / "pack/callee/prism/human/check.md",
-]:
-    record(phase_ref.is_file(), f"{phase_ref.relative_to(root)} exists")
-
-if (root / "pack/callee/prism/lifecycle.md").is_file():
-    lifecycle_text = (root / "pack/callee/prism/lifecycle.md").read_text()
-    record(
-        "kind: Sequential" in lifecycle_text,
-        "pack/callee/prism/lifecycle.md is Sequential",
-    )
+    text = skill_path.read_text() if skill_path.is_file() else ""
+    record(skill_path.is_file(), f"{skill_path.relative_to(root)} exists")
+    for assignee in [value for _, value in expected_story]:
+        record(assignee in text, f"{skill_path.relative_to(root)} mentions {assignee}")
+    record("phase:*" in text, f"{skill_path.relative_to(root)} forbids phase labels")
     for snippet in [
-        "alias: specify",
-        "alias: design",
-        "alias: breakdown",
-        "alias: human",
-        "ref: prism/phases/human",
-        "ref: prism/phases/apply",
-        "ref: prism/phases/verify",
+        "story ID",
+        "exactly one open Prism stor",
+        "--type=story -a prism/specify -l prism",
+        "raw user request",
     ]:
-        record(
-            snippet in lifecycle_text,
-            f"pack/callee/prism/lifecycle.md includes {snippet}",
-        )
+        record(snippet in text, f"{skill_path.relative_to(root)} documents lifecycle-owned story creation: {snippet}")
+
+readme_path = root / "README.md"
+readme_text = readme_path.read_text() if readme_path.is_file() else ""
+record("bd create" not in readme_text, "README does not require manual story creation")
+for internal_workflow in ["documentation-maintenance", "documentation/workflows/maintain", "pack/callee/documentation/"]:
+    record(internal_workflow not in readme_text, f"README omits internal workflow reference: {internal_workflow}")
+
+for architecture_path in [
+    root / "docs/architecture-host-lifecycle.md",
+    root / "docs/architecture-callee-lifecycle.md",
+]:
+    architecture_text = architecture_path.read_text() if architecture_path.is_file() else ""
+    record("exactly one open Prism story" in architecture_text, f"{architecture_path.relative_to(root)} documents sole-story resume")
+    record("prism/specify" in architecture_text, f"{architecture_path.relative_to(root)} documents new-story assignee")
+
+for reference in ["specify", "design", "breakdown", "human", "apply", "verify"]:
+    for base in [
+        root / "plugins/prism/skills/lifecycle/references",
+        root / "plugins/prism/prefixed-skills/prism-lifecycle/references",
+    ]:
+        path = base / f"{reference}.md"
+        text = path.read_text() if path.is_file() else ""
+        record(path.is_file(), f"{path.relative_to(root)} exists")
+        for heading in ["## Stop when", "## Never"]:
+            record(heading in text, f"{path.relative_to(root)} includes {heading}")
+
+for human_path in [
+    root / "plugins/prism/skills/lifecycle/references/human.md",
+    root / "plugins/prism/prefixed-skills/prism-lifecycle/references/human.md",
+]:
+    text = human_path.read_text() if human_path.is_file() else ""
+    relative = human_path.relative_to(root)
+    summary_markers = [
+        "`### Design summary`",
+        "`### Task summary`",
+        "`### Approval request`",
+    ]
+    summary_positions = [text.find(marker) for marker in summary_markers]
+    record(
+        all(position >= 0 for position in summary_positions)
+        and summary_positions == sorted(summary_positions),
+        f"{relative} presents design summary, task summary, then approval request",
+    )
+    for snippet, contract in [
+        ("cover **every** current child task", "covers every child task"),
+        ("dependencies, blockers, or execution order", "shows task dependencies and blockers"),
+        ("ordinary free-form language", "accepts free-form approval"),
+        ("unambiguously authorizes implementation", "requires unambiguous approval intent"),
+        (
+            "bd update <story> -a prism/apply --set-labels prism,human:approved",
+            "persists approval and apply assignee atomically",
+        ),
+        ("Then re-read the story", "re-reads persisted approval"),
+        ("ambiguous, conditional", "fails closed for ambiguous or conditional intent"),
+        (
+            "merely discusses how approval should work",
+            "does not mistake approval discussion for approval",
+        ),
+    ]:
+        record(snippet in text, f"{relative} {contract}")
+
+record(
+    not (root / "plugins/prism/skills/lifecycle/references/plan.md").exists(),
+    "canonical plan reference was removed",
+)
+record(
+    not (root / "plugins/prism/prefixed-skills/prism-lifecycle/references/plan.md").exists(),
+    "prefixed plan reference was removed",
+)
+
+for phase in ["specify", "design", "breakdown", "human", "apply", "verify"]:
+    path = root / "pack/callee/prism/phases" / f"{phase}.md"
+    record(path.is_file(), f"public Callee phase exists: prism/phases/{phase}")
+
+stale_tokens = [
+    "phase:specify",
+    "phase:design",
+    "phase:plan",
+    "phase:breakdown",
+    "phase:human",
+    "phase:apply",
+    "phase:verify",
+    "references/plan.md",
+    "prism/interviewer",
+    "prism/designer",
+    "prism/planner",
+    "prism/implementer",
+    "prism/reviewer",
+]
+scan_roots = [
+    root / "README.md",
+    root / "docs",
+    root / "plugins/prism",
+    root / "plugins/prism-callee",
+    root / "pack/callee/prism",
+]
+for scan_root in scan_roots:
+    paths = [scan_root] if scan_root.is_file() else scan_root.rglob("*")
+    for path in paths:
+        if not path.is_file() or path.suffix not in {".md", ".json", ".yaml", ".yml"}:
+            continue
+        text = path.read_text()
+        for token in stale_tokens:
+            record(token not in text, f"{path.relative_to(root)} omits stale token {token}")
 
 if errors:
     print(f"\nValidation failed with {len(errors)} error(s).")

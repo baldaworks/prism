@@ -1,6 +1,6 @@
 # Prism apply phase
 
-Run this reference only when the inferred story phase is `phase:apply` and the
+Run this reference only when the story assignee is `prism/apply` and the
 story already has `human:approved`.
 
 ## Goal
@@ -28,7 +28,7 @@ bd ready
 2. Choose exactly one task that is both:
    - a child of the current story
    - ready / unblocked
-3. Claim it with `bd update <task> -a prism/implementer`.
+3. Claim it with `bd update <task> -a prism/apply/implementer`.
 4. Inspect the task, story, acceptance, and design before editing code.
 5. Implement only the claimed task's scope.
 6. Run the most relevant project checks after code changes.
@@ -39,7 +39,7 @@ bd ready
 If checks pass and review is clean:
 
 ```bash
-bd update <task> -a prism/reviewer
+bd update <task> -a prism/apply/reviewer
 bd close <task> --reason="Implemented, reviewed, checks passed"
 ```
 
@@ -52,7 +52,7 @@ Then re-check the story:
 When no open children remain:
 
 ```bash
-bd update <story> -a prism/reviewer --set-labels prism,phase:verify,human:approved
+bd update <story> -a prism/verify --set-labels prism,human:approved
 ```
 
 ## Stop when

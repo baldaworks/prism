@@ -1,7 +1,7 @@
 # Prism verify phase
 
-Run this reference only when the inferred story phase is `phase:verify` or the
-story is `human:approved` and has no open child tasks.
+Run this reference only when the story assignee is `prism/verify` or the story
+is `human:approved` and has no open child tasks.
 
 ## Goal
 
@@ -42,7 +42,7 @@ If verification fails:
 
 - keep the story open
 - reopen or create child tasks as needed
-- return the story to `phase:apply,human:approved` for implementation gaps
+- return the story to `prism/apply` with `human:approved` for implementation gaps
 - or move it back to an earlier phase if the plan or design itself is invalid
 
 ## Stop when

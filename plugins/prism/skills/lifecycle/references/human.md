@@ -1,6 +1,6 @@
 # Prism human gate
 
-Run this reference only when the inferred story phase is `phase:human` or the
+Run this reference only when the story assignee is `prism/human` or the
 story has open child tasks without `human:approved`.
 
 ## Goal
@@ -11,34 +11,55 @@ Stop safely and wait for explicit human authorization before implementation.
 
 - `bd show <story> --long`
 - `bd children <story>`
+- `bd blocked`
 
 ## Host procedure
 
 1. Confirm the story has planned child tasks and no `human:approved` label.
 2. Confirm the story is actually waiting for authorization, not for more design or planning work.
 3. Do not perform implementation work.
-4. Ask the human to apply approval with:
+4. Before asking for approval, present these sections in order:
+   - `### Design summary`: concisely summarize the saved design's goal,
+     approach, affected areas, and material risks or open questions.
+   - `### Task summary`: cover **every** current child task with its ID, title,
+     state, and meaningful dependencies, blockers, or execution order.
+   Derive both summaries from the current Beads story and child graph. Do not
+   invent scope or omit a child merely to keep the response short.
+5. After the summaries, present `### Approval request`. Explain that the human
+   may approve in ordinary free-form language; they do not need to run `bd`.
+6. If the user's latest message unambiguously authorizes implementation, persist
+   that human decision atomically:
 
 ```bash
-bd update <story> -a prism/implementer --set-labels prism,phase:apply,human:approved
+bd update <story> -a prism/apply --set-labels prism,human:approved
 ```
+
+   Then re-read the story and confirm both the assignee and labels. Free-form
+   approval is explicit when its intent to start implementation is clear; it
+   does not require a fixed token or exact phrase.
+7. If the response is ambiguous, conditional, asks a question, requests design
+   or task changes, or merely discusses how approval should work, do not
+   persist approval. Keep the story at `prism/human` and ask directly whether
+   implementation is approved.
 
 ## Persist and advance
 
-This phase does not self-advance.
-
-Advance only after a human has actually added `human:approved` and the story is
-in `phase:apply`.
+The human owns the authorization decision; the host owns persisting an
+unambiguous decision to Beads. Advance only after explicit human approval has
+been observed and the host has confirmed `human:approved` with assignee
+`prism/apply`.
 
 ## Stop when
 
 - `human:approved` is absent
 - the user has not explicitly granted implementation authority
+- the user's intent is ambiguous or requests changes
 
 Remain stopped until the label is present.
 
 ## Never
 
 - invent or silently add `human:approved`
-- start apply work from a chat implication alone
+- treat discussion of approval, a question, or conditional language as approval
+- start apply work before the explicit decision is persisted and re-read
 - change child-task scope while waiting at the gate

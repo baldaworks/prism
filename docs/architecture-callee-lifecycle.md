@@ -1,126 +1,70 @@
 # Prism Callee Lifecycle Architecture
 
-This document defines the automated lifecycle only. It covers
-`$prism-callee:lifecycle`, `/prism-callee:lifecycle`, the PromptKit mapping
-that feeds Prism Roles and workflows, and the `pack/callee/prism/` execution
-surface.
+This document defines automated Prism only: `$prism-callee:lifecycle`,
+`/prism-callee:lifecycle`, and `/prism-callee-lifecycle`. It advances the
+same Beads-backed story state as the manual host lifecycle through public
+`prism/lifecycle` and `prism/phases/*` Callee workflows.
 
-It does not define the manual host lifecycle contract.
+## Public surface
 
-## Purpose
-
-The automated lifecycle advances the same Beads-backed story state as the manual
-host lifecycle, but it does so by running `prism/*` Callee assets instead of
-performing the work directly in the host.
-
-## Invocation surface
-
-| Surface | Entry point |
+| Host entrypoint | Callee surface |
 | --- | --- |
-| Codex host skill | `$prism-callee:lifecycle` |
-| Claude Code host skill | `/prism-callee:lifecycle` |
-| Flat host skill | `/prism-callee-lifecycle` |
-| Public Callee lifecycle graph | `prism/lifecycle` |
-| Public phase entrypoints | `prism/phases/*` |
+| `$prism-callee:lifecycle` | Codex automation entrypoint |
+| `/prism-callee:lifecycle` | Claude Code automation entrypoint |
+| `/prism-callee-lifecycle` | Flat-name automation entrypoint |
+| `prism/lifecycle` | Canonical Sequential graph |
+| `prism/phases/*` | Public phase entrypoints |
 
-Internal implementation stays behind:
+Internal roles and workflows remain under `prism/roles/*` and
+`prism/<phase>/*`.
 
-- `prism/roles/*`
-- `prism/<phase>/*`
+## Durable state
 
-## PromptKit contract
+The story assignee is the lifecycle phase. The automation must use:
 
-`plugins/prism-callee/skills/lifecycle/references/promptkit.md` is a required
-instruction source for this surface. It maps Prism lifecycle responsibilities to
-PromptKit-backed Role and workflow generation.
-
-That reference belongs only to the automated lifecycle. The manual host skill
-must not depend on it.
-
-## Shared Beads state
-
-The automated lifecycle reuses the same story labels and fields as the manual
-host lifecycle:
-
-- `prism`
-- `phase:specify`
-- `phase:design`
-- `phase:plan`
-- `phase:human`
-- `phase:apply`
-- `phase:verify`
-- `human:approved`
-
-The Beads phase model is shared. The execution contract is not.
-
-## Execution model
-
-The automated Prism host entrypoints (`$prism-callee:lifecycle`,
-`/prism-callee:lifecycle`, and `/prism-callee-lifecycle`) are the only user
-surfaces that may execute:
-
-- `callee agent run prism/lifecycle`
-- `callee agent run prism/phases/*`
-- `callee agent run prism/roles/*`
-- `callee agent run prism/<phase>/*`
-
-The automated lifecycle must:
-
-- inspect current Beads state
-- choose the next public phase
-- run the matching Callee asset
-- collect clarification during `phase:specify` through a Callee Human step when
-  the specify loop still lacks design-ready requirements
-- collect approval at `phase:human` through a Callee Human agent
-- persist outputs back into Beads
-- stop only when approval is withheld or another blocking condition is reached
-
-## Public vs internal surfaces
-
-| Layer | Contract |
+| Assignee | Public workflow |
 | --- | --- |
-| `$prism-callee:lifecycle` / `/prism-callee:lifecycle` / `/prism-callee-lifecycle` | user-facing automation entrypoint |
-| `prism/lifecycle` | canonical automated lifecycle graph |
-| `prism/phases/*` | public phase-level automation entrypoints |
-| `prism/roles/*` | internal role building blocks |
-| `prism/<phase>/*` | internal phase-local executors |
+| `prism/specify` | `prism/phases/specify` |
+| `prism/design` | `prism/phases/design` |
+| `prism/breakdown` | `prism/phases/breakdown` |
+| `prism/human` | `prism/phases/human` |
+| `prism/apply` | `prism/phases/apply` |
+| `prism/verify` | `prism/phases/verify` |
 
-Docs should describe `prism/lifecycle` and `prism/phases/*` as public. Direct
-references to `prism/roles/*` and `prism/<phase>/*` should be framed as
-implementation details unless the change is specifically about maintainers.
+`prism` is membership and `human:approved` permits apply. No phase labels
+are written. Child tasks use `prism/apply/implementer` and
+`prism/apply/reviewer` inside story-level apply.
 
-## Hard rules
+## Story resolution
 
-- Do not describe PromptKit as part of the manual host lifecycle.
-- Do not move automated execution rules into the host phase references.
-- Do not expose internal `prism/<phase>/*` as the primary user-facing surface
-  when `prism/lifecycle` or `prism/phases/*` already owns that behavior.
-- Do not bypass `human:approved` before apply.
+Automation accepts user intent, not a pre-created story. It uses an explicitly
+named story ID when present, otherwise resumes exactly one open Prism story. If
+neither applies, it creates a new `prism/specify` story from the raw request;
+Specify then normalizes the acceptance criteria.
 
-## File boundaries
+## Rules
 
-| Concern | Files |
+- Only this automated surface may execute `callee agent run prism/...`.
+- Persist every Callee result to Beads, then re-read story and child state.
+- Collect clarification in specify through the Callee Human step when needed.
+- Collect human approval through `prism/phases/human`; fail closed until it is explicit.
+- Use `prism/phases/apply` for the outer story loop and
+  `prism/apply/loop` for one child task.
+- Verify closes or bounces; it never repairs code.
+- Use `plugins/prism-callee/skills/lifecycle/references/promptkit.md` only for
+  automated role/workflow mapping, never for manual host phase instructions.
+
+## Ownership
+
+| Concern | Location |
 | --- | --- |
 | Automated host skill | `plugins/prism-callee/skills/lifecycle/` |
-| Flat-name automated host skill | `plugins/prism-callee/prefixed-skills/prism-callee-lifecycle/` |
+| Flat-name automated skill | `plugins/prism-callee/prefixed-skills/prism-callee-lifecycle/` |
 | PromptKit mapping | `plugins/prism-callee/skills/lifecycle/references/promptkit.md` |
-| Reusable Callee assets | `pack/callee/prism/` |
-| Optional local mirror | `.callee/prism/` when present |
-
-`pack/callee/prism/` remains authoritative. `.callee/prism/` is only a local
-discovery mirror.
+| Public workflow graph | `pack/callee/prism/lifecycle.md` |
 
 ## Validation
 
-After changing automation semantics, validate:
-
 ```sh
 ./scripts/validate-lifecycle-ownership.sh
-./scripts/validate-plugin-packaging.sh
 ```
-
-Then verify the automation surface definitions still line up:
-
-- `plugins/prism-callee/skills/lifecycle/SKILL.md`
-- `plugins/prism-callee/skills/lifecycle/references/promptkit.md`
-- `pack/callee/prism/`

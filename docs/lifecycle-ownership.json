@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 5,
   "lifecycle_ref": "prism/lifecycle",
   "manual_host_entrypoints": {
     "codex": "$prism:lifecycle",
@@ -11,22 +11,29 @@
     "claude": "/prism-callee:lifecycle",
     "flat": "/prism-callee-lifecycle"
   },
-  "preferred_assignee_encoding": {
-    "namespace": "prism",
-    "delimiter": "/"
-  },
-  "accepted_assignee_aliases": [
-    {
-      "namespace": "prism",
-      "delimiter": ":"
-    }
+  "lifecycle_labels": [
+    "prism",
+    "human:approved"
   ],
+  "entry_resolution": {
+    "explicit_story_id": "resume",
+    "single_open_prism_story": "resume",
+    "otherwise": "create",
+    "new_story": {
+      "labels": [
+        "prism"
+      ],
+      "assignee": "prism/specify",
+      "description": "raw_user_request"
+    }
+  },
   "story_phases": [
     {
       "phase": "specify",
-      "owner": "interviewer",
-      "assignee": "prism/interviewer",
-      "aliases": ["prism:interviewer"],
+      "assignee": "prism/specify",
+      "aliases": [
+        "prism:specify"
+      ],
       "executor": {
         "kind": "Sequential",
         "manual_phase_reference": "plugins/prism/skills/lifecycle/references/specify.md",
@@ -44,9 +51,10 @@
     },
     {
       "phase": "design",
-      "owner": "designer",
-      "assignee": "prism/designer",
-      "aliases": ["prism:designer"],
+      "assignee": "prism/design",
+      "aliases": [
+        "prism:design"
+      ],
       "executor": {
         "kind": "Sequential",
         "manual_phase_reference": "plugins/prism/skills/lifecycle/references/design.md",
@@ -58,27 +66,31 @@
         ]
       },
       "requires_human_approval": false,
-      "success_transition": "plan"
+      "success_transition": "breakdown"
     },
     {
-      "phase": "plan",
-      "owner": "planner",
-      "assignee": "prism/planner",
-      "aliases": ["prism:planner"],
+      "phase": "breakdown",
+      "assignee": "prism/breakdown",
+      "aliases": [
+        "prism:breakdown"
+      ],
       "executor": {
         "kind": "Sequential",
-        "manual_phase_reference": "plugins/prism/skills/lifecycle/references/plan.md",
+        "manual_phase_reference": "plugins/prism/skills/lifecycle/references/breakdown.md",
         "public_ref": "prism/phases/breakdown",
-        "internal_refs": ["prism/roles/breakdown"]
+        "internal_refs": [
+          "prism/roles/breakdown"
+        ]
       },
       "requires_human_approval": false,
       "success_transition": "human"
     },
     {
       "phase": "human",
-      "owner": "human",
-      "assignee": "human",
-      "aliases": [],
+      "assignee": "prism/human",
+      "aliases": [
+        "prism:human"
+      ],
       "executor": {
         "kind": "Sequential",
         "manual_phase_reference": "plugins/prism/skills/lifecycle/references/human.md",
@@ -93,34 +105,41 @@
     },
     {
       "phase": "apply",
-      "owner": "implementer",
-      "assignee": "prism/implementer",
-      "aliases": ["prism:implementer"],
+      "assignee": "prism/apply",
+      "aliases": [
+        "prism:apply"
+      ],
       "executor": {
         "kind": "Sequential",
         "manual_phase_reference": "plugins/prism/skills/lifecycle/references/apply.md",
         "public_ref": "prism/phases/apply",
-        "internal_refs": ["prism/apply/loop"]
+        "internal_refs": [
+          "prism/apply/loop"
+        ]
       },
       "requires_human_approval": true,
       "success_transition": "verify"
     },
     {
       "phase": "verify",
-      "owner": "reviewer",
-      "assignee": "prism/reviewer",
-      "aliases": ["prism:reviewer"],
+      "assignee": "prism/verify",
+      "aliases": [
+        "prism:verify"
+      ],
       "executor": {
         "kind": "Sequential",
         "manual_phase_reference": "plugins/prism/skills/lifecycle/references/verify.md",
         "public_ref": "prism/phases/verify",
-        "internal_refs": ["prism/verify/review", "prism/roles/reviewer"]
+        "internal_refs": [
+          "prism/verify/review",
+          "prism/roles/reviewer"
+        ]
       },
       "requires_human_approval": true,
       "success_transition": "close",
       "bounce_transitions": {
         "implementation_gap": "apply",
-        "planning_gap": "plan",
+        "breakdown_gap": "breakdown",
         "design_gap": "design",
         "requirements_gap": "specify"
       }
@@ -129,16 +148,18 @@
   "task_states": [
     {
       "state": "implementation",
-      "owner": "implementer",
-      "assignee": "prism/implementer",
-      "aliases": ["prism:implementer"],
+      "assignee": "prism/apply/implementer",
+      "aliases": [
+        "prism:apply:implementer"
+      ],
       "success_transition": "review"
     },
     {
       "state": "review",
-      "owner": "reviewer",
-      "assignee": "prism/reviewer",
-      "aliases": ["prism:reviewer"],
+      "assignee": "prism/apply/reviewer",
+      "aliases": [
+        "prism:apply:reviewer"
+      ],
       "success_transition": "close",
       "failure_transition": "implementation"
     }

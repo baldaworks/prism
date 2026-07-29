@@ -1,4 +1,12 @@
-# Prism plan → beads children
+# Prism breakdown phase
+
+Run this reference only when the story assignee is `prism/breakdown`, or when
+the story has durable design markdown but no child tasks.
+
+## Goal
+
+Turn the story design into a small Beads task graph ready for the human gate.
+The task graph is persisted directly in Beads; do not create a plan file.
 
 Contract for turning a Prism implementation plan into beads task children. The
 host agent **must** extract a machine-usable task list before creating issues.
@@ -40,14 +48,15 @@ Rules:
 
 ## Host procedure (strict)
 
-1. Produce or collect a plan in the JSON shape above.
-   - The manual host lifecycle may author this plan directly in the host after it derives `phase:plan` from Beads state.
+1. Produce or collect a breakdown in the JSON shape above.
+   - The manual host lifecycle authors it directly in the host after it derives
+     `prism/breakdown` from the story assignee.
    - Automated `$prism-callee:lifecycle` may obtain it from `prism/roles/breakdown`.
 2. Parse or normalize into the JSON shape above. Keep a key→bead-id map.
 3. Create children **in any order**, recording ids:
 
 ```bash
-bd create "<title>" --type=task --parent=<story-id> -l prism -a prism/implementer \
+bd create "<title>" --type=task --parent=<story-id> -l prism -a prism/apply/implementer \
   --description="<done-when>" --silent
 # → prints bead id; map key → id
 ```
@@ -65,10 +74,10 @@ bd children <story-id>
 bd blocked
 ```
 
-6. Advance story labels:
+6. Advance the story to the human gate:
 
 ```bash
-bd update <story-id> -a human --set-labels prism,phase:human
+bd update <story-id> -a prism/human --set-labels prism
 ```
 
 ## Reject
@@ -76,3 +85,17 @@ bd update <story-id> -a human --set-labels prism,phase:human
 - Free-form prose without task titles
 - Single mega-task that is the whole story
 - Tasks that require human approval to start code (gate stays on the story)
+
+## Stop when
+
+- the design cannot be decomposed into small reviewable tasks
+- the task graph would exceed story acceptance or design scope
+- dependencies are still unclear
+
+Keep the story assigned to `prism/breakdown` when stopping.
+
+## Never
+
+- create a runtime plan file
+- create a single task for the whole story
+- bypass the human gate or assign the story directly to apply

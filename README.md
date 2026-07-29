@@ -147,54 +147,29 @@ callee agent view prism/lifecycle --json
 bd where
 ```
 
-If you also want the optional documentation-maintenance workflow:
-
-```sh
-callee agent import baldaworks/prism \
-  --path pack/callee/documentation \
-  --prefix documentation
-```
-
-Validate:
-
-```sh
-callee agent list | grep '^documentation/'
-callee agent view documentation/workflows/maintain --json
-```
-
 ## Quick Start
 
-Create a story in your project:
-
-```sh
-bd create "User can export report as CSV" \
-  --type=story \
-  -l prism,phase:specify \
-  -a prism/interviewer \
-  --description="Users can export the current report as CSV." \
-  --acceptance="User can download a CSV export from the report page." \
-  --priority=2
-```
-
-Then run the Prism skill from your host:
+Describe the requested change and run the Prism skill from your host:
 
 ```text
-$prism:lifecycle
+$prism:lifecycle Add CSV export to the report page.
 ```
 
-or:
+Or:
 
 ```text
-/prism:lifecycle
+/prism:lifecycle Add CSV export to the report page.
 ```
 
-or:
+Or:
 
 ```text
-/prism-lifecycle
+/prism-lifecycle Add CSV export to the report page.
 ```
 
-Ask Prism to advance the current story through the next phase. Prism will inspect Beads, determine the current lifecycle state, and perform the next phase directly in the host.
+Prism uses an explicitly named story when supplied, otherwise resumes exactly
+one open Prism story. If neither applies, it creates a new Beads story from the
+request and starts it in `prism/specify`.
 
 If you want automation through `prism/*`, install the Callee pack and run:
 
@@ -212,18 +187,21 @@ or:
 
 Prism advances one phase at a time:
 
-1. `phase:specify`
-2. `phase:design`
-3. `phase:plan`
-4. `phase:human`
-5. `phase:apply`
-6. `phase:verify`
+1. `prism/specify`
+2. `prism/design`
+3. `prism/breakdown`
+4. `prism/human`
+5. `prism/apply`
+6. `prism/verify`
 
 Rules that matter to users:
 
-- `human:approved` must be set by a human before apply.
-- In the automated `prism-callee` surface, the `phase:human` gate is collected through a Callee Human agent before `human:approved` is persisted.
-- Beads assignee is the current phase owner.
+- A human must explicitly authorize apply. In the host lifecycle, ordinary
+  free-form approval is enough for the host to persist `human:approved`; an
+  ambiguous response leaves the gate closed.
+- In the automated `prism-callee` surface, the `prism/human` gate is collected through a Callee Human agent before `human:approved` is persisted.
+- Beads story assignee is the current lifecycle phase.
+- Lifecycle creates a story when no explicit or uniquely resumable Prism story exists.
 - Host Prism derives the current phase from Beads story state; it does not expose separate host phase subskills.
 - Apply closes remaining story work one ready child task at a time.
 - Verify is a close-or-bounce story decision.
@@ -272,17 +250,6 @@ Use `--keep-temp` if you want the captured diagnostics and artifacts left under
 - `plugins/prism-callee/skills/lifecycle/SKILL.md`
 - `pack/callee/prism/lifecycle.md`
 
-## Optional Documentation Workflow
-
-This repository also ships a separate documentation-maintenance workflow:
-
-```sh
-callee agent run documentation/workflows/maintain \
-  --message "Maintain repository documentation so it matches the live tree."
-```
-
-This is **not** part of the Prism story lifecycle. It is optional and mainly useful for maintainers.
-
 ## Repository Notes
 
 If you are using this repository itself as a source checkout, these paths matter:
@@ -290,7 +257,6 @@ If you are using this repository itself as a source checkout, these paths matter
 - `plugins/prism/` contains the shipped host plugin payload.
 - `plugins/prism-callee/` contains the automated Callee lifecycle skill.
 - `pack/callee/prism/` is the source of truth for the Prism Callee pack.
-- `pack/callee/documentation/` is the source of truth for the optional documentation pack.
 - `.callee/*` may exist as a local discovery mirror in this repo, but `pack/callee/*` remains authoritative.
 
 The repository also publishes marketplace metadata for multiple hosts from the repo root.
@@ -329,7 +295,8 @@ Then use the surface-local sources of truth only for the surface you are editing
 
 ## Authority
 
-- Only a human sets `human:approved` before apply.
+- Only explicit human intent authorizes apply. The host may persist
+  `human:approved` on the human's behalf after unambiguous free-form approval.
 - Prism should not invent approval.
 - Commit and push require explicit human authority.
 

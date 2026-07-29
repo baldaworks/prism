@@ -1,126 +1,95 @@
 # Prism Host Lifecycle Architecture
 
-This document defines the manual host lifecycle only. It covers
-`$prism:lifecycle`, `/prism:lifecycle`, and `/prism-lifecycle`. It does not
-define `prism-callee` automation or any `callee agent run prism/...` behavior.
+This document defines only the manual host lifecycle: `$prism:lifecycle`,
+`/prism:lifecycle`, and `/prism-lifecycle`. It does not define Callee
+automation or allow `callee agent run prism/...`.
 
 ## Purpose
 
-The host lifecycle advances one Prism story through the Beads phase machine by
-doing the work directly in the host session:
+The host skill performs each phase directly and persists results in Beads:
 
-- inspect repository state
-- ask for clarification when requirements are incomplete
-- author design markdown
-- decompose into child tasks
+- clarify requirements
+- inspect the repository and write design markdown through Beads
+- break down design into Beads child tasks and dependencies
 - implement and review child tasks
-- verify the story before close
-
-## Invocation surface
-
-| Host shape | Entry point |
-| --- | --- |
-| Codex | `$prism:lifecycle` |
-| Claude Code | `/prism:lifecycle` |
-| Flat slash | `/prism-lifecycle` |
-
-The Codex, Claude Code, and flat-skill variants must stay semantically
-identical. Only layout and invocation syntax may differ.
+- verify before close
 
 ## Durable state
 
-Beads is the only durable lifecycle store.
+Beads is the only durable lifecycle store. A story's assignee is the active
+phase:
 
-The host skill owns:
+| Assignee | Phase |
+| --- | --- |
+| `prism/specify` | Specify |
+| `prism/design` | Design |
+| `prism/breakdown` | Breakdown |
+| `prism/human` | Human approval gate |
+| `prism/apply` | Apply |
+| `prism/verify` | Verify |
 
-- inferring the current phase from Beads state
-- performing one lifecycle phase directly in the host
-- persisting the result back into Beads
+Use label `prism` to find lifecycle stories and `human:approved` to permit
+apply. Do not create a `phase:*` label.
 
-The host skill does not own:
+Child tasks remain inside the story-level apply phase: their assignee moves from
+`prism/apply/implementer` to `prism/apply/reviewer`.
 
-- generating or running `prism/*` Callee Roles/workflows
-- PromptKit role mapping
-- Callee pack installation
+## Story resolution
 
-## Phase contract
+Lifecycle accepts user intent, not a pre-created story. It resolves work in this
+order: an explicitly named story ID; exactly one open Prism story; otherwise a
+new `prism/specify` story. New stories retain the raw user request in their
+description and let Specify normalize the acceptance criteria.
 
-The host lifecycle uses these public story phases:
+## Execution model
 
-- `phase:specify`
-- `phase:design`
-- `phase:plan`
-- `phase:human`
-- `phase:apply`
-- `phase:verify`
-
-The `human:approved` label is the only authorization to enter apply.
-
-## Phase execution model
-
-Before running a phase, the skill must load the matching phase reference from
-`plugins/prism/skills/lifecycle/references/` or the prefixed mirror:
+The host skill derives the phase from story assignee, then loads the matching
+bundled instruction:
 
 - `specify.md`
 - `design.md`
-- `plan.md`
+- `breakdown.md`
 - `human.md`
 - `apply.md`
 - `verify.md`
 
-Those files are the phase-level operating instructions. The lifecycle skill
-chooses which one to load based on current Beads state, not just on what the
-user typed in chat.
+These files are agent instructions, not runtime artifacts. Requirements,
+design, task graph, status, labels, and assignees are written directly to Beads.
 
 ## Authority boundaries
 
 | Actor | Allowed actions |
 | --- | --- |
-| Human | sets `human:approved`, changes requirements, grants commit/push authority |
-| Host lifecycle skill | repository inspection, host-authored phase work, Beads writes, local checks |
-| Beads | durable state for stories, design, child tasks, labels, assignees |
+| Human | explicitly authorizes apply, changes requirements, grants commit/push authority |
+| Host lifecycle skill | repository inspection, host work, Beads writes, local checks, and persisting unambiguous free-form approval as `human:approved` |
+| Beads | durable story and child-task state |
+
+The decision and persistence boundaries are distinct: the human supplies the
+authorization intent, while the host records it in Beads. Questions,
+conditional language, requests for changes, and other ambiguous responses fail
+closed at `prism/human`.
 
 ## Hard rules
 
 - Do not invoke `callee agent run prism/...` from the host lifecycle skill.
-- Do not use PromptKit references as host-phase instructions.
-- Do not skip the per-phase reference load.
+- Do not use PromptKit references as host phase instructions.
 - Do not implement without `human:approved`.
+- Do not persist `human:approved` without unambiguous human authorization.
 - Do not close a story while child tasks remain open.
-- Do not treat global `bd ready` as enough to claim a task; the task must belong
-  to the current story and be ready/unblocked.
+- Claim only a ready/unblocked child of the current story.
+- Verify is close-or-bounce; it does not repair implementation.
 
 ## File boundaries
 
 | Concern | Files |
 | --- | --- |
 | Manual host lifecycle skill | `plugins/prism/skills/lifecycle/` |
-| Flat-name variant with identical behavior | `plugins/prism/prefixed-skills/prism-lifecycle/` |
-| Shared host lifecycle graph | `plugins/prism/skills/lifecycle/references/lifecycle.md` |
-| Phase-specific host instructions | `plugins/prism/skills/lifecycle/references/*.md` and prefixed mirror |
-
-## Out of scope
-
-The following belong to the automated lifecycle, not this document:
-
-- `plugins/prism-callee/skills/lifecycle/SKILL.md`
-- `plugins/prism-callee/skills/lifecycle/references/promptkit.md`
-- `pack/callee/prism/`
-
-If a change needs those files, it is not a host-only lifecycle change anymore.
+| Flat-name mirror | `plugins/prism/prefixed-skills/prism-lifecycle/` |
+| Shared lifecycle graph | `plugins/prism/skills/lifecycle/references/lifecycle.md` |
+| Phase instructions | `plugins/prism/skills/lifecycle/references/*.md` and prefixed mirror |
 
 ## Validation
-
-After changing host lifecycle semantics, validate with:
 
 ```sh
 ./scripts/validate-lifecycle-ownership.sh
 ```
-
-Then re-read:
-
-- `plugins/prism/skills/lifecycle/SKILL.md`
-- `plugins/prism/prefixed-skills/prism-lifecycle/SKILL.md`
-- the affected phase reference(s)
-
-The two host variants must still describe the same behavior.
