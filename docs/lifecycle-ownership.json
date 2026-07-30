@@ -1,6 +1,7 @@
 {
-  "version": 8,
+  "version": 9,
   "lifecycle_ref": "prism/lifecycle",
+  "direct_callee_invocation": "callee agent run prism/lifecycle --message \"...\"",
   "manual_host_entrypoints": {
     "codex": "$prism:lifecycle",
     "claude": "/prism:lifecycle",
@@ -29,6 +30,15 @@
     "phase:apply",
     "phase:verify"
   ],
+  "advance_policy": {
+    "pre_approval_phases": [
+      "specify",
+      "design",
+      "breakdown"
+    ],
+    "mode": "continuous_until_human_gate",
+    "confirmation_between_phases": false
+  },
   "human_gate": {
     "summary_order": [
       "Design summary",
@@ -38,7 +48,21 @@
     "approval_scope": [
       "design",
       "tasks"
-    ]
+    ],
+    "decisions": {
+      "approve": {
+        "transition": "apply",
+        "approval_label": "human:approved"
+      },
+      "refine_design": {
+        "transition": "design",
+        "clear_approval": true,
+        "preserve_children": true
+      },
+      "withhold": {
+        "transition": "human"
+      }
+    }
   },
   "entry_resolution": {
     "explicit_story_id": "resume",
@@ -115,7 +139,12 @@
         ]
       },
       "requires_human_approval": false,
-      "success_transition": "apply"
+      "success_transition": "apply",
+      "decision_transitions": {
+        "approve": "apply",
+        "refine_design": "design",
+        "withhold": "human"
+      }
     },
     {
       "phase": "apply",

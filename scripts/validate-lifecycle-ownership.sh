@@ -49,12 +49,25 @@ phase_labels = [
     "phase:apply",
     "phase:verify",
 ]
-record(mapping.get("version") == 8, "ownership schema version is 8")
+record(mapping.get("version") == 9, "ownership schema version is 9")
+record(
+    mapping.get("direct_callee_invocation")
+    == 'callee agent run prism/lifecycle --message "..."',
+    "ownership schema declares direct Callee binary invocation",
+)
 record(
     mapping.get("lifecycle_labels") == ["prism", "human:approved", *phase_labels],
     "lifecycle labels contain membership, approval, and every supported phase",
 )
 record(mapping.get("phase_labels") == phase_labels, "phase labels declare the supported lifecycle sequence")
+record(
+    mapping.get("advance_policy") == {
+        "pre_approval_phases": ["specify", "design", "breakdown"],
+        "mode": "continuous_until_human_gate",
+        "confirmation_between_phases": False,
+    },
+    "pre-approval phases advance continuously without confirmation",
+)
 retired_mapping_key = "impact_" + "lens"
 record(retired_mapping_key not in mapping, "ownership schema has no retired P5 contract")
 human_gate = mapping.get("human_gate", {})
@@ -66,6 +79,21 @@ record(
 record(
     human_gate.get("approval_scope") == ["design", "tasks"],
     "human approval covers design and tasks",
+)
+record(
+    human_gate.get("decisions") == {
+        "approve": {
+            "transition": "apply",
+            "approval_label": "human:approved",
+        },
+        "refine_design": {
+            "transition": "design",
+            "clear_approval": True,
+            "preserve_children": True,
+        },
+        "withhold": {"transition": "human"},
+    },
+    "human gate declares approval, design refinement, and withhold outcomes",
 )
 record(
     mapping.get("entry_resolution") == {
@@ -92,6 +120,18 @@ story_phases = mapping.get("story_phases", [])
 record(
     [(item.get("phase"), item.get("label")) for item in story_phases] == expected_story,
     "story labels encode specify -> design -> breakdown -> human -> apply -> verify",
+)
+human_phase = next(
+    (item for item in story_phases if item.get("phase") == "human"),
+    {},
+)
+record(
+    human_phase.get("decision_transitions") == {
+        "approve": "apply",
+        "refine_design": "design",
+        "withhold": "human",
+    },
+    "human phase can return design for refinement without authorizing apply",
 )
 
 for phase in story_phases:
@@ -140,6 +180,15 @@ for skill_path in [
         "raw user request",
     ]:
         record(snippet in text, f"{skill_path.relative_to(root)} documents lifecycle-owned story creation: {snippet}")
+    for snippet in [
+        "lifecycle advance loop",
+        "successful Specify, Design, or Breakdown",
+        "confirm those phase transitions",
+    ]:
+        record(
+            snippet in text,
+            f"{skill_path.relative_to(root)} documents automatic pre-approval progression: {snippet}",
+        )
 
 skill_pairs = [
     (
@@ -273,8 +322,20 @@ for human_path in [
         ("Then re-read the story", "re-reads persisted approval"),
         ("ambiguous, conditional", "fails closed for ambiguous or conditional intent"),
         (
-            "merely discusses how approval should work",
+            "discusses how approval should work",
             "does not mistake approval discussion for approval",
+        ),
+        (
+            "bd update <story> --set-labels prism,phase:design",
+            "returns explicit design refinement to Design and clears approval",
+        ),
+        (
+            "Preserve every existing child task",
+            "preserves child state for design refinement",
+        ),
+        (
+            "automatically runs Design and Breakdown",
+            "documents automatic refinement cycle",
         ),
     ]:
         record(snippet in text, f"{relative} {contract}")
@@ -299,8 +360,53 @@ for skill_path in [
         "exact order: `### Design summary`, `### Task summary`, `### Approval request`",
         "exact `APPROVE` classifier decision",
         "Never automatically delete, close, or reopen children",
+        "bd update <story> --set-labels prism,phase:design",
+        "Preserve every existing child task",
+        "automatically runs Design and Breakdown",
     ]:
         record(snippet in text, f"{skill_path.relative_to(root)} documents lifecycle contract: {snippet}")
+
+lifecycle_graph_paths = [
+    root / "plugins/prism/skills/lifecycle/references/lifecycle.md",
+    root / "plugins/prism/prefixed-skills/prism-lifecycle/references/lifecycle.md",
+]
+for path in lifecycle_graph_paths:
+    text = path.read_text() if path.is_file() else ""
+    record(
+        'H -->|"approve"| A' in text,
+        f"{path.relative_to(root)} diagrams Human approval to Apply",
+    )
+    record(
+        'H -->|"request design refinement; clear approval"| D' in text,
+        f"{path.relative_to(root)} diagrams Human design refinement to Design",
+    )
+
+direct_callee_command = "callee agent run prism/lifecycle"
+for path in [
+    root / "README.md",
+    root / "docs/architecture-callee-lifecycle.md",
+    root / "docs/architecture-spec.md",
+]:
+    text = path.read_text() if path.is_file() else ""
+    record(
+        direct_callee_command in text,
+        f"{path.relative_to(root)} documents direct Callee binary execution",
+    )
+
+for snippet in [
+    "$prism-callee:lifecycle",
+    "/prism-callee:lifecycle",
+    "/prism-callee-lifecycle",
+]:
+    record(
+        snippet in readme_text,
+        f"README preserves Callee skill entrypoint: {snippet}",
+    )
+    architecture_spec_text = (root / "docs/architecture-spec.md").read_text()
+    record(
+        snippet in architecture_spec_text,
+        f"architecture spec preserves Callee skill entrypoint: {snippet}",
+    )
 
 callee_contracts = {
     "pack/callee/prism/lifecycle.md": [

@@ -1,14 +1,25 @@
 # Prism Callee Lifecycle Architecture
 
-This document defines the Prism Callee workflow only: `$prism-callee:lifecycle`,
-`/prism-callee:lifecycle`, and `/prism-callee-lifecycle`. It advances the
-same Beads-backed story state as the manual host lifecycle through public
-`prism/lifecycle` and `prism/phases/*` Callee workflows.
+This document defines the Prism Callee workflow: `$prism-callee:lifecycle`,
+`/prism-callee:lifecycle`, and `/prism-callee-lifecycle`. It advances the same
+Beads-backed story state as the manual host lifecycle through public
+`prism/lifecycle` and `prism/phases/*` Callee workflows. The public graph can
+also be invoked directly through the `callee` binary.
+
+## Direct binary invocation
+
+After importing the Prism agent pack, run the full public workflow directly:
+
+```sh
+callee agent run prism/lifecycle \
+  --message "Add CSV export to the report page."
+```
 
 ## Public surface
 
-| Host entrypoint | Callee surface |
+| Host or binary entrypoint | Callee surface |
 | --- | --- |
+| `callee agent run prism/lifecycle --message "..."` | Direct binary execution |
 | `$prism-callee:lifecycle` | Codex automation entrypoint |
 | `/prism-callee:lifecycle` | Claude Code automation entrypoint |
 | `/prism-callee-lifecycle` | Flat-name automation entrypoint |
@@ -54,14 +65,22 @@ preserving existing child state and dependencies.
 At `prism/phases/human`, the host prepares Design summary → Task summary →
 Approval request from current Beads state. The Human agent accepts ordinary
 language; `prism/human/intent` classifies it without tools and fails closed,
-and the deterministic check accepts only exact `APPROVE`.
+and the deterministic check accepts only exact `APPROVE`. Unambiguous approval
+writes `phase:apply` with `human:approved`. An explicit request to refine the
+design remains non-approval, clears any approval label, returns durable state
+to `phase:design`, and preserves child state for Breakdown reconciliation.
+Other non-approval remains at `phase:human`.
 
 ## Rules
 
 - Only this automated surface may execute `callee agent run prism/...`.
 - Persist every Callee result to Beads, then re-read story and child state.
+- After successful Specify, Design, or Breakdown persistence, invoke the newly
+  selected phase immediately in the same lifecycle run. Do not request human
+  confirmation between pre-approval phases.
 - Collect clarification in specify through the Callee Human step when needed.
-- Collect free-form human approval through `prism/phases/human`; fail closed until intent is unambiguous.
+- Collect free-form human approval or an explicit design-refinement decision
+  through `prism/phases/human`; fail closed until intent is unambiguous.
 - Use `prism/phases/apply` for the outer story loop and
   `prism/apply/loop` for one child task.
 - Verify closes or bounces; it never repairs code.

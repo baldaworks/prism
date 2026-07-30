@@ -19,6 +19,7 @@ documents for actual behavior:
 | --- | --- | --- | --- |
 | Manual host lifecycle | `$prism:lifecycle`, `/prism:lifecycle`, or `/prism-lifecycle` | Direct host execution, repository inspection, Beads writes, host-authored phase work | `callee agent run prism/...`, PromptKit role generation |
 | Automated lifecycle | `$prism-callee:lifecycle`, `/prism-callee:lifecycle`, or `/prism-callee-lifecycle` | `callee agent run prism/...`, PromptKit role/workflow mapping, automated phase execution | Manual host-only phase procedure |
+| Direct Callee binary | `callee agent run prism/lifecycle --message "..."` | Direct execution of the public Callee workflow graph | Host-managed Beads persistence |
 | Prism Callee pack | `pack/callee/prism/` | Reusable `prism/*` Roles, phases, workflows | Manual host lifecycle behavior |
 | Documentation pack | `pack/callee/documentation/` | Documentation maintenance workflow | Prism story execution |
 

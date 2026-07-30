@@ -15,8 +15,11 @@ PromptKit role/workflow contract: [references/promptkit.md](references/promptkit
 ## Goal
 
 - Advance a story through `specify → design → breakdown → human → apply → verify`.
+- Run successful pre-approval phases continuously in one invocation until the
+  Human gate.
 - Persist state after every Callee return.
-- Collect approval through the Callee Human phase, then continue only after explicit approval.
+- Collect approval or an explicit design-refinement decision through the Callee
+  Human phase, then continue to Apply only after explicit approval.
 - Resume from the story's single `phase:*` label.
 
 ## Durable lifecycle state
@@ -63,7 +66,12 @@ If needed, import `pack/callee/prism` under the `prism` prefix or expose it as
    existing assignee-driven stories are intentionally unsupported. Reconcile
    with requirements, design, approval, and children.
 6. Before direct role or workflow execution details, load [references/promptkit.md](references/promptkit.md).
-7. Advance until a stop condition, persisting and re-checking after every Callee return.
+7. Enter the lifecycle advance loop, persisting and re-checking after every
+   Callee return. After successful Specify, Design, or Breakdown persistence,
+   invoke the newly selected phase immediately in the same lifecycle
+   invocation. Do not ask the human to confirm those phase transitions.
+8. Stop the advance loop only for missing or blocking input, invalid lifecycle
+   state, an unresolved Callee failure, or the Human gate.
 
 ## Rules
 
@@ -74,6 +82,15 @@ If needed, import `pack/callee/prism` under the `prism` prefix or expose it as
 - Treat unambiguous free-form approval as explicit. The Callee human phase
   classifies intent fail-closed; only its exact `APPROVE` decision authorizes
   the host to persist the label.
+- Treat an explicit request to refine the design as a durable transition back
+  to `phase:design`, not as approval. Clear `human:approved`, preserve every
+  child and dependency for Breakdown reconciliation, start no implementation,
+  and stop the current invocation.
+- Keep ambiguous, conditional, inquisitive, or otherwise unclear non-approval
+  at `phase:human`.
+- Ask for human input before the gate only when requirements or another
+  blocking input are genuinely missing; never ask merely to confirm a
+  successful pre-approval phase transition.
 - Apply is the outer story loop over ready children. `prism/apply/loop` is the inner one-task implementation/review loop.
 - Verify is close-or-bounce, never an implementation repair loop.
 - Persist design output directly through `bd update --design-file -`.
@@ -145,8 +162,19 @@ The prepared message must be derived from those three Beads reads and use this
 exact order: `### Design summary`, `### Task summary`, `### Approval request`.
 Cover every child and explain that one approval covers the design and task
 graph. Persist approval only when the phase succeeds with the exact `APPROVE` classifier decision.
-On non-approval or classifier failure, stop with the story open and labeled
-`phase:human`.
+
+If the operator explicitly requests design refinement, the fail-closed
+classifier must not authorize Apply. Clear approval and persist the refinement
+decision instead:
+
+```bash
+bd update <story> --set-labels prism,phase:design
+```
+
+Preserve every existing child task, status, and dependency, then stop. The next
+lifecycle invocation automatically runs Design and Breakdown and returns to the
+Human gate. On ambiguous non-approval or classifier failure without an explicit
+refinement instruction, stop with the story open and labeled `phase:human`.
 
 ### Apply
 

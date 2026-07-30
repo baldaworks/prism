@@ -5,8 +5,9 @@ present, otherwise resumes exactly one open Prism story; if neither applies, it
 creates a new story labeled `phase:specify`. Exactly one supported `phase:*`
 label is the durable lifecycle state. `prism` marks lifecycle membership and,
 after approval, `human:approved` authorizes apply. The host-native Prism skill
-advances one phase directly; the Prism Callee workflow runs the same label
-graph through specialized `prism/*` subagents.
+continues through successful pre-approval phases in one invocation; the Prism
+Callee workflow runs the same advance-until-gate contract through specialized
+`prism/*` subagents.
 
 ## Graph
 
@@ -23,7 +24,9 @@ flowchart TB
   V["7 Verify<br/>label: phase:verify<br/>close-or-bounce decision"]
   C["8 Close story"]
 
-  I --> S --> D --> B --> H --> A
+  I --> S --> D --> B --> H
+  H -->|"approve"| A
+  H -->|"request design refinement; clear approval"| D
   A -->|"open tasks remain"| A
   A -->|"all children closed"| V
   V -->|"follow-up work"| A
@@ -54,7 +57,7 @@ assignee state; assignee-driven stories are intentionally unsupported.
 | Specify | Clarify directly in chat and refine story requirements | description, acceptance, `phase:design` |
 | Design | Inspect repository; write a concrete design with relevant risks and verification | design, `phase:breakdown` |
 | Breakdown | Create or reconcile children that cover the design | children, dependencies, `phase:human` |
-| Human | Show Design summary → Task summary → Approval request | `human:approved`, `phase:apply` only after unambiguous free-form approval |
+| Human | Show Design summary → Task summary → Approval request | approval writes `human:approved`, `phase:apply`; explicit design refinement clears approval and writes `phase:design` |
 | Apply | Close ready children through the inner loop | task `prism/apply/implementer` → `prism/apply/reviewer`; story stays `phase:apply` |
 | Verify | Make the close-or-bounce decision | close story or return it to the needed phase label |
 

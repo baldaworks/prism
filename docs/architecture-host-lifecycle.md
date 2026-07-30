@@ -68,6 +68,11 @@ then loads the matching bundled instruction:
 
 These files are agent instructions, not runtime artifacts. Requirements,
 design, task graph, status, labels, and assignees are written directly to Beads.
+After a successful Specify, Design, or Breakdown write, the host re-reads Beads
+and immediately runs the newly selected phase in the same invocation. It does
+not ask the human to confirm transitions between these pre-approval phases.
+The automatic loop stops at the Human gate, invalid state, or a genuinely
+missing or blocking input.
 
 ## Authority boundaries
 
@@ -78,9 +83,12 @@ design, task graph, status, labels, and assignees are written directly to Beads.
 | Beads | durable story and child-task state |
 
 The decision and persistence boundaries are distinct: the human supplies the
-authorization intent, while the host records it in Beads. Questions,
-conditional language, requests for changes, and other ambiguous responses fail
-closed at `phase:human`.
+authorization or refinement intent, while the host records it in Beads.
+Unambiguous approval writes `phase:apply` with `human:approved`. An explicit
+request to refine the design clears approval, writes `phase:design`, preserves
+the existing child graph for reconciliation, and starts no implementation.
+Questions, conditional language, unclear change requests, and other ambiguous
+responses fail closed at `phase:human`.
 
 Before asking, the host presents Design summary → Task summary → Approval
 request. One unambiguous free-form approval covers the design and task graph.

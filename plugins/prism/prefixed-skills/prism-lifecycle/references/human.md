@@ -42,24 +42,40 @@ bd update <story> --set-labels prism,phase:apply,human:approved
    Then re-read the story and confirm the phase and approval labels. Free-form
    approval is explicit when its intent to start implementation is clear; it
    does not require a fixed token or exact phrase.
-8. If the response is ambiguous, conditional, asks a question, requests design
-   or task changes, or merely discusses how approval should work, do not
-   persist approval. Keep the story at `phase:human` and ask directly whether
-   implementation is approved.
+8. If the response explicitly requests design refinement, do not persist
+   approval and do not start implementation. Clear any prior approval while
+   returning the story to Design:
+
+```bash
+bd update <story> --set-labels prism,phase:design
+```
+
+   Preserve every existing child task and its status and dependencies. The next
+   lifecycle invocation automatically runs Design and Breakdown, reconciles the
+   child graph, and returns to the Human gate.
+9. If the response is ambiguous, conditional, asks a question, requests
+   changes without clearly sending the design for refinement, or merely
+   discusses how approval should work, do not persist approval. Keep the story
+   at `phase:human` and ask directly whether implementation is approved.
 
 ## Persist and advance
 
-The human owns the authorization decision; the host owns persisting an
-unambiguous decision to Beads. Advance only after explicit human approval has
-been observed and the host has confirmed `human:approved` with `phase:apply`.
+The human owns the authorization or refinement decision; the host owns
+persisting an unambiguous decision to Beads. Advance to Apply only after
+explicit human approval has been observed and the host has confirmed
+`human:approved` with `phase:apply`. An explicit design-refinement request
+instead clears approval, persists `phase:design`, preserves child state, and
+stops this invocation.
 
 ## Stop when
 
 - `human:approved` is absent
 - the user has not explicitly granted implementation authority
-- the user's intent is ambiguous or requests changes
+- the user's intent is ambiguous
+- an explicit design-refinement request has been persisted as `phase:design`
 
-Remain stopped until the label is present.
+At `phase:human`, remain stopped until approval or an explicit refinement
+decision is persisted.
 
 ## Never
 
@@ -67,3 +83,4 @@ Remain stopped until the label is present.
 - treat discussion of approval, a question, or conditional language as approval
 - start apply work before the explicit decision is persisted and re-read
 - change child-task scope while waiting at the gate
+- delete, close, or reopen child tasks when returning to Design

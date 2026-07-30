@@ -74,8 +74,15 @@ Phase references:
    state: existing assignee-driven stories are intentionally unsupported.
    Reconcile the phase with description, acceptance, design,
    `human:approved`, and child task state.
-5. Load exactly one matching phase reference and run that phase directly in the host.
-6. Persist the result to Beads, then re-check the story and children before deciding whether another lifecycle run is needed.
+5. Enter the lifecycle advance loop: load exactly one matching phase reference
+   and run that phase directly in the host.
+6. Persist the result to Beads, then re-check the story and children. After a
+   successful Specify, Design, or Breakdown transition, immediately load the
+   newly selected phase reference and continue in the same invocation. Do not
+   ask the human to confirm those phase transitions.
+7. Stop the advance loop only when the current reference requires missing or
+   blocking human input, lifecycle state is invalid, or the story reaches the
+   Human gate.
 
 ## Hard rules
 
@@ -88,6 +95,8 @@ Phase references:
    `phase:*` label, and after the gate retain `human:approved`.
 6. Do not commit or push without explicit user authority.
 7. Ask directly when requirements are incomplete; never invent missing requirements.
+   Do not ask for confirmation merely to advance between successful
+   pre-approval phases.
 8. After changed code, inspect project tooling and run the relevant repository-native checks. Do not close a task if required checks fail.
 9. Claim only a ready, unblocked child of the current story; never claim from global `bd ready` alone.
 10. A story enters verify only when it has `human:approved` and no open child tasks.
@@ -107,19 +116,23 @@ Phase references:
 
 ## Phase execution contract
 
-The phase references own phase-local procedure. For every lifecycle run:
+The phase references own phase-local procedure. Within one lifecycle
+invocation, repeat:
 
 1. infer the phase from exactly one supported `phase:*` story label
 2. load exactly one matching reference
 3. follow its inputs, procedure, persistence, and stop conditions
-4. re-check Beads state before the next run
+4. re-check Beads state
+5. continue immediately after successful Specify, Design, or Breakdown
+   persistence; never pause for phase-transition confirmation
+6. stop at the Human gate or another explicit stop condition
 
 | Phase | Load | Successful outcome |
 | --- | --- | --- |
 | Specify | [references/specify.md](references/specify.md) | story label is `phase:design` |
 | Design | [references/design.md](references/design.md) | concrete design exists; story label is `phase:breakdown` |
 | Breakdown | [references/breakdown.md](references/breakdown.md) | child graph covers the design; story label is `phase:human` |
-| Human | [references/human.md](references/human.md) | stop until explicit approval moves the story to `phase:apply` |
+| Human | [references/human.md](references/human.md) | approval moves to `phase:apply`; explicit design refinement moves to `phase:design`; otherwise stop |
 | Apply | [references/apply.md](references/apply.md) | one ready child closes, story enters verify, or apply stops blocked |
 | Verify | [references/verify.md](references/verify.md) | story closes on pass; otherwise it bounces to an earlier phase label |
 

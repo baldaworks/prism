@@ -20,7 +20,7 @@ flowchart TB
     D --> B["Breakdown<br/>ready, dependent tasks"]
     B --> H{"Human gate<br/>approve the plan?"}
     H -->|approved| A["Apply<br/>implement and review"]
-    H -->|revise| S
+    H -->|refine design| D
     A --> V{"Verify<br/>close or bounce"}
     V -->|pass| C["Verified change"]
     V -->|gap found| S
@@ -86,6 +86,13 @@ pack:
 - Claude Code: `/prism-callee:lifecycle`
 - Flat-slash hosts: `/prism-callee-lifecycle`
 
+The same agent pack also supports direct binary execution:
+
+```sh
+callee agent run prism/lifecycle \
+  --message "Add CSV export to the report page."
+```
+
 ## Quick Start
 
 After installing the host plugin, describe the change and run Prism:
@@ -104,6 +111,13 @@ request and starts it with `phase:specify`.
 To use the specialized `prism/*` workflow instead, install the Prism Callee
 plugin and agent pack, then run `$prism-callee:lifecycle`,
 `/prism-callee:lifecycle`, or `/prism-callee-lifecycle` for your host.
+
+To run the same public workflow directly through the binary:
+
+```sh
+callee agent run prism/lifecycle \
+  --message "Add CSV export to the report page."
+```
 
 ## Before You Start
 
@@ -207,6 +221,8 @@ Invoke `prism-lifecycle` for host-native execution or
 Only required for the Prism Callee workflow entrypoints:
 `$prism-callee:lifecycle`, `/prism-callee:lifecycle`, or
 `/prism-callee-lifecycle`, regardless of which supported host invokes them.
+The same agent installation is used for direct `callee agent run prism/...`
+execution.
 
 For most users, the right install path is:
 
@@ -226,7 +242,8 @@ bd where
 
 ## Lifecycle Summary
 
-Prism advances one phase at a time:
+Prism stores one current phase at a time. A lifecycle invocation automatically
+continues through successful pre-approval phases until the Human gate:
 
 1. `phase:specify`
 2. `phase:design`
@@ -242,7 +259,8 @@ Rules that matter to users:
   tasks.
 - A human must explicitly authorize apply. In the host lifecycle, ordinary
   free-form approval is enough for the host to persist `human:approved`; an
-  ambiguous response leaves the gate closed.
+  explicit design-refinement request clears approval and returns the story to
+  `phase:design`; an ambiguous response leaves the gate closed.
 - Before approval, Prism shows Design summary → Task summary → Approval
   request. One informed approval covers the design and task graph.
 - In the `prism-callee` workflow, a no-tools classifier interprets the
@@ -256,7 +274,8 @@ Rules that matter to users:
 - Apply closes remaining story work one ready child task at a time.
 - Verify is a close-or-bounce story decision.
 - `$prism:lifecycle`, `/prism:lifecycle`, and `/prism-lifecycle` perform the work directly in the host.
-- `$prism-callee:lifecycle`, `/prism-callee:lifecycle`, and `/prism-callee-lifecycle` are the only Prism entrypoints that run `prism/*` Callee assets.
+- `$prism-callee:lifecycle`, `/prism-callee:lifecycle`, and `/prism-callee-lifecycle` run `prism/*` Callee assets through the host integration.
+- `callee agent run prism/lifecycle` runs the same public Callee graph directly.
 
 For the formal split between host-native and Callee workflow behavior,
 start with:
@@ -267,20 +286,27 @@ start with:
 
 ## When to Use Direct Callee Commands
 
-Most users should use the normal host entrypoints, not raw workflow IDs:
+Most users should use the normal host entrypoints:
 `$prism:lifecycle`, `/prism:lifecycle`, `/prism-lifecycle`,
 `$prism-callee:lifecycle`, `/prism-callee:lifecycle`, or
 `/prism-callee-lifecycle`.
 
-Direct `callee agent run prism/...` commands are mainly for:
+Direct `callee agent run prism/...` commands are useful for:
 
 - debugging the lifecycle
 - validating a local Prism install
 - advanced operator workflows
 
-For ordinary Callee workflow execution, prefer the host plugin entrypoint:
-`$prism-callee:lifecycle`, `/prism-callee:lifecycle`, or
-`/prism-callee-lifecycle`.
+Run the full public workflow directly with:
+
+```sh
+callee agent run prism/lifecycle \
+  --message "Add CSV export to the report page."
+```
+
+For ordinary host-integrated execution, the `prism-callee` skill entrypoints
+remain available. Use `prism/phases/*` IDs when debugging or running an
+individual phase.
 
 If you want the full operational behavior, see:
 
