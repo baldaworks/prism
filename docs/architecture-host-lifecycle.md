@@ -54,6 +54,19 @@ has children, it preserves open and closed tasks plus dependencies, reuses
 sufficient work, and creates only missing implementation or verification tasks.
 It never automatically deletes, closes, or reopens existing children.
 
+## Specify clarification loop
+
+Specify repeatedly checks whether actor, behavior, constraints, scope
+boundaries, and observable acceptance outcomes are clear enough for Design.
+When product intent is missing, the host asks the human only the minimum
+blocking questions, merges the answer into the same story context, and repeats
+the readiness check. The story remains in `phase:specify` until its description
+and acceptance criteria are usable.
+
+Clarification is not approval and does not authorize Apply. The host does not
+impose an iteration limit: it pauses for genuinely missing human input and
+resumes the same loop when the answer arrives.
+
 ## Execution model
 
 The host skill derives the phase from exactly one supported `phase:*` label,

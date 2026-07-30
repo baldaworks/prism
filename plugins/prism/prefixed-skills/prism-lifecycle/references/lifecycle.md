@@ -16,7 +16,9 @@ Keep workflow diagrams vertical and top-to-bottom.
 ```mermaid
 flowchart TB
   I["1 Intake<br/>label: phase:specify"]
-  S["2 Specify<br/>description + acceptance"]
+  S["2a Specify normalize<br/>description + acceptance"]
+  G{"2b Specify gate<br/>ready for design?"}
+  Q["2c Human clarification<br/>minimum missing answers"]
   D["3 Design<br/>label: phase:design"]
   B["4 Breakdown<br/>label: phase:breakdown<br/>Beads child graph"]
   H["5 Human gate<br/>label: phase:human"]
@@ -24,7 +26,11 @@ flowchart TB
   V["7 Verify<br/>label: phase:verify<br/>close-or-bounce decision"]
   C["8 Close story"]
 
-  I --> S --> D --> B --> H
+  I --> S --> G
+  G -->|"ready"| D
+  G -->|"needs clarification"| Q
+  Q -->|"answer"| S
+  D --> B --> H
   H -->|"approve"| A
   H -->|"request design refinement; clear approval"| D
   A -->|"open tasks remain"| A
@@ -54,7 +60,7 @@ assignee state; assignee-driven stories are intentionally unsupported.
 
 | Step | Host action | Beads writes |
 | --- | --- | --- |
-| Specify | Clarify directly in chat and refine story requirements | description, acceptance, `phase:design` |
+| Specify | Normalize, check readiness, and loop through Human clarification when needed | description, acceptance, `phase:design` |
 | Design | Inspect repository; write a concrete design with relevant risks and verification | design, `phase:breakdown` |
 | Breakdown | Create or reconcile children that cover the design | children, dependencies, `phase:human` |
 | Human | Show Design summary → Task summary → Approval request | approval writes `human:approved`, `phase:apply`; explicit design refinement clears approval and writes `phase:design` |

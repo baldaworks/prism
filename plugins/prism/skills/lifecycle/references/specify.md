@@ -26,13 +26,21 @@ Turn the requested change into a durable Beads story with:
    - behavior change
    - constraints / non-goals
    - observable acceptance outcomes
-3. Ask direct clarifying questions in chat when any of those are missing or ambiguous.
-4. Rewrite the story into:
+3. When any dimension is missing or ambiguous, ask only the minimum direct
+   clarifying questions needed from the human. Do not ask for confirmation to
+   remain in Specify or to start another Specify iteration.
+4. After the human answers, combine the answer with the current story, return
+   to step 2, and repeat the readiness check. Keep the story in
+   `phase:specify` throughout this clarification loop.
+5. Once no core requirement dimension remains unresolved, rewrite the story into:
    - `description`: what changes and why
    - `acceptance`: observable outcomes, not implementation guesses
    Capture known constraints and non-goals in either field when they affect
    observable behavior or design choices.
-5. Re-read the rewritten description and acceptance before persisting. They must be specific enough that a designer can inspect the repository without guessing product intent.
+6. Re-read the rewritten description and acceptance before persisting. If this
+   reveals another material ambiguity, return to step 3. Otherwise they must be
+   specific enough that a designer can inspect the repository without guessing
+   product intent.
 
 ## Persist and advance
 
@@ -53,7 +61,9 @@ Advance only to `phase:design`.
 - acceptance would be speculative
 - the human needs to answer a scope or intent question
 
-If you stop, leave the story in specify and ask the human directly in chat.
+If you stop to await an answer, leave the story in Specify and ask the human
+directly in chat. The answer resumes the same clarification loop; it is not a
+phase-transition approval.
 
 ## Never
 

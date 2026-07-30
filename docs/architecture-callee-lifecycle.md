@@ -58,6 +58,20 @@ named story ID when present, otherwise resumes exactly one open Prism story. If
 neither applies, it creates a new story labeled `prism,phase:specify` from the
 raw request; Specify then normalizes the acceptance criteria.
 
+## Specify clarification loop
+
+`prism/phases/specify` is a public Sequential workflow containing the internal
+`prism/specify/loop`. Each iteration normalizes the current requirements and
+runs the Specify gate. A ready gate escalates out of the loop and allows the
+phase result to advance to Design. A gate that needs clarification invokes the
+`prism/specify/questions` Human agent, feeds its answer into the next normalizer
+iteration, and checks readiness again.
+
+This clarification interaction is distinct from the informed Human approval
+gate after Breakdown. It does not authorize Apply or require confirmation of a
+phase transition. The Callee loop allows five iterations and fails on
+exhaustion rather than inventing missing product intent.
+
 ## Design and approval
 
 The Callee workflow uses the same free-form design contract as the host
@@ -82,7 +96,8 @@ Breakdown reconciliation. `WITHHOLD` remains at `phase:human`.
 - After successful Specify, Design, or Breakdown persistence, invoke the newly
   selected phase immediately in the same lifecycle run. Do not request human
   confirmation between pre-approval phases.
-- Collect clarification in specify through the Callee Human step when needed.
+- Collect clarification in Specify through the Callee Human step and repeat the
+  Specify normalizer and gate when needed.
 - Collect free-form human approval or an explicit design-refinement decision
   through `prism/phases/human`; fail closed until intent is unambiguous.
 - Use `prism/phases/apply` for the outer story loop and

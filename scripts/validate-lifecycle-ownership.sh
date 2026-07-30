@@ -51,7 +51,7 @@ phase_labels = [
     "phase:apply",
     "phase:verify",
 ]
-record(mapping.get("version") == 10, "ownership schema version is 10")
+record(mapping.get("version") == 11, "ownership schema version is 11")
 record(
     mapping.get("direct_callee_invocation")
     == 'callee agent run prism/lifecycle --message "..."',
@@ -137,6 +137,25 @@ human_phase = next(
     (item for item in story_phases if item.get("phase") == "human"),
     {},
 )
+specify_phase = next(
+    (item for item in story_phases if item.get("phase") == "specify"),
+    {},
+)
+specify_loop = specify_phase.get("executor", {}).get("clarification_loop", {})
+record(
+    specify_loop == {
+        "ref": "prism/specify/loop",
+        "kind": "Loop",
+        "normalizer_ref": "prism/roles/interviewer",
+        "gate_ref": "prism/specify/gate",
+        "human_ref": "prism/specify/questions",
+        "ready_transition": "exit",
+        "clarification_transition": "repeat",
+        "max_iterations": 5,
+        "on_exhausted": "fail",
+    },
+    "specify declares its Human clarification loop contract",
+)
 record(
     human_phase.get("decision_transitions") == {
         "approve": "apply",
@@ -164,6 +183,25 @@ for phase in story_phases:
             (root / "pack/callee" / f"{internal_ref}.md").is_file(),
             f"{name} internal Callee ref exists: {internal_ref}",
         )
+
+specify_loop_path = root / "pack/callee/prism/specify/loop.md"
+specify_questions_path = root / "pack/callee/prism/specify/questions.md"
+specify_loop_text = specify_loop_path.read_text() if specify_loop_path.is_file() else ""
+specify_questions_text = (
+    specify_questions_path.read_text() if specify_questions_path.is_file() else ""
+)
+for snippet, message in [
+    ("kind: Loop", "specify executor is a Loop"),
+    ("alias: normalizer", "specify loop runs the normalizer"),
+    ("alias: gate", "specify loop runs the readiness gate"),
+    ("canEscalate: true", "specify ready gate can exit the loop"),
+    ("alias: clarifications", "specify loop reaches Human clarification"),
+    ('index .State.outputs "clarifications"', "specify feeds Human answers into the next iteration"),
+    ("maxIterations: 5", "specify loop allows five iterations"),
+    ("onExhausted: fail", "specify loop fails closed on exhaustion"),
+]:
+    record(snippet in specify_loop_text, message)
+record("kind: Human" in specify_questions_text, "specify clarification ref is a Human agent")
 
 expected_task_states = [
     ("implementation", "prism/apply/implementer"),
@@ -253,6 +291,41 @@ for canonical_dir, prefixed_dir, filenames, label in reference_pairs:
             and canonical.read_bytes() == prefixed.read_bytes(),
             f"{label} is identical in canonical and prefixed skills: {filename}",
         )
+
+host_lifecycle_diagrams = [
+    root / "README.md",
+    root / "plugins/prism/skills/lifecycle/references/lifecycle.md",
+    root / "plugins/prism/prefixed-skills/prism-lifecycle/references/lifecycle.md",
+]
+for diagram_path in host_lifecycle_diagrams:
+    text = diagram_path.read_text() if diagram_path.is_file() else ""
+    relative = diagram_path.relative_to(root)
+    record("Specify gate" in text, f"{relative} shows the Specify readiness gate")
+    record(
+        "needs clarification" in text and "Human clarification" in text,
+        f"{relative} shows the Specify Human clarification branch",
+    )
+    record(
+        re.search(r"Q\s*-->.*S", text) is not None,
+        f"{relative} returns Human clarification to Specify",
+    )
+
+host_specify_references = [
+    root / "plugins/prism/skills/lifecycle/references/specify.md",
+    root / "plugins/prism/prefixed-skills/prism-lifecycle/references/specify.md",
+]
+for specify_path in host_specify_references:
+    text = specify_path.read_text() if specify_path.is_file() else ""
+    relative = specify_path.relative_to(root)
+    record(
+        re.search(r"return\s+to step 2", text) is not None
+        and "clarification loop" in text,
+        f"{relative} repeats Specify after Human clarification",
+    )
+    record(
+        "phase-transition approval" in text,
+        f"{relative} distinguishes clarification from Human approval",
+    )
 
 readme_path = root / "README.md"
 readme_text = readme_path.read_text() if readme_path.is_file() else ""

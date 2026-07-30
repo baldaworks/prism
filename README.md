@@ -15,8 +15,11 @@ transcript that quietly becomes the project plan.
 
 ```mermaid
 flowchart TB
-    I["Change intent"] --> S["Specify<br/>requirements and acceptance"]
-    S --> D["Design<br/>solution, risks, verification"]
+    I["Change intent"] --> S["Specify normalize<br/>requirements and acceptance"]
+    S --> G{"Specify gate<br/>ready for design?"}
+    G -->|needs clarification| Q["Human clarification<br/>minimum missing answers"]
+    Q -->|answer| S
+    G -->|ready| D["Design<br/>solution, risks, verification"]
     D --> B["Breakdown<br/>ready, dependent tasks"]
     B --> H{"Human gate<br/>approve the plan?"}
     H -->|approved| A["Apply<br/>implement and review"]

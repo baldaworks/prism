@@ -1,5 +1,5 @@
 {
-  "version": 10,
+  "version": 11,
   "lifecycle_ref": "prism/lifecycle",
   "direct_callee_invocation": "callee agent run prism/lifecycle --message \"...\"",
   "manual_host_entrypoints": {
@@ -96,7 +96,18 @@
           "prism/specify/extract",
           "prism/roles/interviewer",
           "prism/specify/gate"
-        ]
+        ],
+        "clarification_loop": {
+          "ref": "prism/specify/loop",
+          "kind": "Loop",
+          "normalizer_ref": "prism/roles/interviewer",
+          "gate_ref": "prism/specify/gate",
+          "human_ref": "prism/specify/questions",
+          "ready_transition": "exit",
+          "clarification_transition": "repeat",
+          "max_iterations": 5,
+          "on_exhausted": "fail"
+        }
       },
       "requires_human_approval": false,
       "success_transition": "design"
