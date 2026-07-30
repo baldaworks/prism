@@ -1,6 +1,6 @@
 # Prism human gate
 
-Run this reference only when the story assignee is `prism/human` or the
+Run this reference only when the story label is `phase:human` or the
 story has open child tasks without `human:approved`.
 
 ## Goal
@@ -18,8 +18,9 @@ Stop safely and wait for explicit human authorization before implementation.
 1. Confirm the story has planned child tasks and no `human:approved` label.
 2. Confirm the story is actually waiting for authorization, not for more design or planning work.
 3. Confirm the saved design is concrete and the task graph covers it. If not,
-   move the story to `prism/design` or `prism/breakdown` as appropriate and do
-   not ask for approval.
+   move the story to `phase:design` or `phase:breakdown` as appropriate and do
+   not ask for approval. Clear approval by writing only
+   `prism,phase:design` or `prism,phase:breakdown` with `--set-labels`.
 4. Do not perform implementation work.
 5. Before asking for approval, present these sections in order:
    - `### Design summary`: concisely summarize the saved design's goal,
@@ -35,23 +36,22 @@ Stop safely and wait for explicit human authorization before implementation.
    that human decision atomically:
 
 ```bash
-bd update <story> -a prism/apply --set-labels prism,human:approved
+bd update <story> --set-labels prism,phase:apply,human:approved
 ```
 
-   Then re-read the story and confirm both the assignee and labels. Free-form
+   Then re-read the story and confirm the phase and approval labels. Free-form
    approval is explicit when its intent to start implementation is clear; it
    does not require a fixed token or exact phrase.
 8. If the response is ambiguous, conditional, asks a question, requests design
    or task changes, or merely discusses how approval should work, do not
-   persist approval. Keep the story at `prism/human` and ask directly whether
+   persist approval. Keep the story at `phase:human` and ask directly whether
    implementation is approved.
 
 ## Persist and advance
 
 The human owns the authorization decision; the host owns persisting an
 unambiguous decision to Beads. Advance only after explicit human approval has
-been observed and the host has confirmed `human:approved` with assignee
-`prism/apply`.
+been observed and the host has confirmed `human:approved` with `phase:apply`.
 
 ## Stop when
 

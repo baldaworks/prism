@@ -1,6 +1,6 @@
 # Prism specify phase
 
-Run this reference only when the story assignee is `prism/specify` or the
+Run this reference only when the story label is `phase:specify` or the
 story is still missing usable description or acceptance criteria.
 
 ## Goal
@@ -42,11 +42,10 @@ When description and acceptance are both usable:
 bd update <story> \
   --description="..." \
   --acceptance="..." \
-  -a prism/design \
-  --set-labels prism
+  --set-labels prism,phase:design
 ```
 
-Advance only to `prism/design`.
+Advance only to `phase:design`.
 
 ## Stop when
 

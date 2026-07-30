@@ -7,6 +7,7 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 python3 - "$repo_root" <<'PY'
 import json
 import pathlib
+import re
 import sys
 
 root = pathlib.Path(sys.argv[1])
@@ -40,8 +41,20 @@ mapping_path = root / "docs/lifecycle-ownership.json"
 record(mapping_path.is_file(), "lifecycle ownership mapping exists")
 mapping = load_json(mapping_path) if mapping_path.is_file() else {}
 
-record(mapping.get("version") == 7, "ownership schema version is 7")
-record(mapping.get("lifecycle_labels") == ["prism", "human:approved"], "only prism and human:approved are lifecycle labels")
+phase_labels = [
+    "phase:specify",
+    "phase:design",
+    "phase:breakdown",
+    "phase:human",
+    "phase:apply",
+    "phase:verify",
+]
+record(mapping.get("version") == 8, "ownership schema version is 8")
+record(
+    mapping.get("lifecycle_labels") == ["prism", "human:approved", *phase_labels],
+    "lifecycle labels contain membership, approval, and every supported phase",
+)
+record(mapping.get("phase_labels") == phase_labels, "phase labels declare the supported lifecycle sequence")
 retired_mapping_key = "impact_" + "lens"
 record(retired_mapping_key not in mapping, "ownership schema has no retired P5 contract")
 human_gate = mapping.get("human_gate", {})
@@ -60,32 +73,31 @@ record(
         "single_open_prism_story": "resume",
         "otherwise": "create",
         "new_story": {
-            "labels": ["prism"],
-            "assignee": "prism/specify",
+            "labels": ["prism", "phase:specify"],
             "description": "raw_user_request",
         },
     },
-    "entry resolution resumes explicit or sole stories and otherwise creates prism/specify",
+    "entry resolution resumes explicit or sole stories and otherwise creates phase:specify",
 )
 
 expected_story = [
-    ("specify", "prism/specify"),
-    ("design", "prism/design"),
-    ("breakdown", "prism/breakdown"),
-    ("human", "prism/human"),
-    ("apply", "prism/apply"),
-    ("verify", "prism/verify"),
+    ("specify", "phase:specify"),
+    ("design", "phase:design"),
+    ("breakdown", "phase:breakdown"),
+    ("human", "phase:human"),
+    ("apply", "phase:apply"),
+    ("verify", "phase:verify"),
 ]
 story_phases = mapping.get("story_phases", [])
 record(
-    [(item.get("phase"), item.get("assignee")) for item in story_phases] == expected_story,
-    "story assignees encode specify -> design -> breakdown -> human -> apply -> verify",
+    [(item.get("phase"), item.get("label")) for item in story_phases] == expected_story,
+    "story labels encode specify -> design -> breakdown -> human -> apply -> verify",
 )
 
 for phase in story_phases:
     name = phase.get("phase")
-    assignee = phase.get("assignee")
-    record(phase.get("aliases") == [assignee.replace("/", ":")], f"{name} has a matching colon alias")
+    record("assignee" not in phase, f"{name} has no story-phase assignee")
+    record("aliases" not in phase, f"{name} has no assignee aliases")
     executor = phase.get("executor", {})
     manual_ref = executor.get("manual_phase_reference")
     public_ref = executor.get("public_ref")
@@ -118,13 +130,13 @@ for skill_path in [
 ]:
     text = skill_path.read_text() if skill_path.is_file() else ""
     record(skill_path.is_file(), f"{skill_path.relative_to(root)} exists")
-    for assignee in [value for _, value in expected_story]:
-        record(assignee in text, f"{skill_path.relative_to(root)} mentions {assignee}")
-    record("phase:*" in text, f"{skill_path.relative_to(root)} forbids phase labels")
+    for phase_label in phase_labels:
+        record(phase_label in text, f"{skill_path.relative_to(root)} mentions {phase_label}")
+    record("exactly one" in text and "phase:*" in text, f"{skill_path.relative_to(root)} requires exactly one phase label")
     for snippet in [
         "story ID",
         "exactly one open Prism stor",
-        "--type=story -a prism/specify -l prism",
+        "--type=story -l prism,phase:specify",
         "raw user request",
     ]:
         record(snippet in text, f"{skill_path.relative_to(root)} documents lifecycle-owned story creation: {snippet}")
@@ -219,7 +231,7 @@ for architecture_path in [
 ]:
     architecture_text = architecture_path.read_text() if architecture_path.is_file() else ""
     record("exactly one open Prism story" in architecture_text, f"{architecture_path.relative_to(root)} documents sole-story resume")
-    record("prism/specify" in architecture_text, f"{architecture_path.relative_to(root)} documents new-story assignee")
+    record("phase:specify" in architecture_text, f"{architecture_path.relative_to(root)} documents new-story phase label")
 
 for reference in ["specify", "design", "breakdown", "human", "apply", "verify"]:
     for base in [
@@ -255,8 +267,8 @@ for human_path in [
         ("ordinary free-form language", "accepts free-form approval"),
         ("unambiguously authorizes implementation", "requires unambiguous approval intent"),
         (
-            "bd update <story> -a prism/apply --set-labels prism,human:approved",
-            "persists approval and apply assignee atomically",
+            "bd update <story> --set-labels prism,phase:apply,human:approved",
+            "persists approval and apply phase atomically",
         ),
         ("Then re-read the story", "re-reads persisted approval"),
         ("ambiguous, conditional", "fails closed for ambiguous or conditional intent"),
@@ -332,13 +344,7 @@ for phase in ["specify", "design", "breakdown", "human", "apply", "verify"]:
     record(path.is_file(), f"public Callee phase exists: prism/phases/{phase}")
 
 stale_tokens = [
-    "phase:specify",
-    "phase:design",
     "phase:plan",
-    "phase:breakdown",
-    "phase:human",
-    "phase:apply",
-    "phase:verify",
     "references/plan.md",
     "prism/interviewer",
     "prism/designer",
@@ -361,6 +367,29 @@ for scan_root in scan_roots:
         text = path.read_text()
         for token in stale_tokens:
             record(token not in text, f"{path.relative_to(root)} omits stale token {token}")
+
+story_phase_assignees = [
+    "prism/specify",
+    "prism/design",
+    "prism/breakdown",
+    "prism/human",
+    "prism/apply",
+    "prism/verify",
+]
+for scan_root in scan_roots:
+    paths = [scan_root] if scan_root.is_file() else scan_root.rglob("*")
+    for path in paths:
+        if not path.is_file() or path.suffix not in {".md", ".json", ".yaml", ".yml"}:
+            continue
+        text = path.read_text()
+        for assignee in story_phase_assignees:
+            encoded_assignee = re.compile(
+                rf"(?:-a|--assignee|assignee:)\s+{re.escape(assignee)}(?!/)"
+            )
+            record(
+                encoded_assignee.search(text) is None,
+                f"{path.relative_to(root)} does not encode story phase with assignee {assignee}",
+            )
 
 if errors:
     print(f"\nValidation failed with {len(errors)} error(s).")

@@ -26,14 +26,16 @@ documents for actual behavior:
 
 Both Prism skills operate on the same durable Beads model:
 
-- story labels: `prism`, `human:approved`
-- story assignee: the active lifecycle phase, from `prism/specify` through `prism/verify`
+- story labels: `prism`, `human:approved`, and exactly one phase label from
+  `phase:specify` through `phase:verify`
+- story assignee: not used for lifecycle phase state
 - story fields: description, acceptance, design
 - child tasks and dependencies
 
 Both skills accept user intent rather than requiring a pre-created story: use
 an explicitly named story ID, otherwise resume exactly one open Prism story,
-otherwise create a new story assigned to `prism/specify`.
+otherwise create a new story labeled `prism,phase:specify`. Existing
+assignee-driven stories are not migrated or supported.
 
 Design is durable free-form markdown. It records the proposed solution,
 relevant risks, constraints, tradeoffs, and verification without a required

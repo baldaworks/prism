@@ -2,11 +2,11 @@
 
 Lifecycle starts from user intent. It uses an explicitly named story ID when
 present, otherwise resumes exactly one open Prism story; if neither applies, it
-creates a new story assigned to `prism/specify`. The story assignee is the
-durable lifecycle state. Beads labels contain only
-`prism` membership and, after approval, `human:approved`. The host-native Prism
-skill advances one phase directly; the Prism Callee workflow runs the same
-assignee graph through specialized `prism/*` subagents.
+creates a new story labeled `phase:specify`. Exactly one supported `phase:*`
+label is the durable lifecycle state. `prism` marks lifecycle membership and,
+after approval, `human:approved` authorizes apply. The host-native Prism skill
+advances one phase directly; the Prism Callee workflow runs the same label
+graph through specialized `prism/*` subagents.
 
 ## Graph
 
@@ -14,13 +14,13 @@ Keep workflow diagrams vertical and top-to-bottom.
 
 ```mermaid
 flowchart TB
-  I["1 Intake<br/>assignee: prism/specify"]
+  I["1 Intake<br/>label: phase:specify"]
   S["2 Specify<br/>description + acceptance"]
-  D["3 Design<br/>assignee: prism/design"]
-  B["4 Breakdown<br/>assignee: prism/breakdown<br/>Beads child graph"]
-  H["5 Human gate<br/>assignee: prism/human"]
-  A["6 Apply<br/>assignee: prism/apply<br/>one-task implementer/reviewer subloop"]
-  V["7 Verify<br/>assignee: prism/verify<br/>close-or-bounce decision"]
+  D["3 Design<br/>label: phase:design"]
+  B["4 Breakdown<br/>label: phase:breakdown<br/>Beads child graph"]
+  H["5 Human gate<br/>label: phase:human"]
+  A["6 Apply<br/>label: phase:apply<br/>one-task implementer/reviewer subloop"]
+  V["7 Verify<br/>label: phase:verify<br/>close-or-bounce decision"]
   C["8 Close story"]
 
   I --> S --> D --> B --> H --> A
@@ -33,34 +33,35 @@ flowchart TB
 
 ## Story state
 
-| Step | Story assignee | Labels |
+| Step | Story phase label | Other labels |
 | --- | --- | --- |
-| Intake / specify | `prism/specify` | `prism` |
-| Design | `prism/design` | `prism` |
-| Breakdown | `prism/breakdown` | `prism` |
-| Human gate | `prism/human` | `prism` |
-| Apply | `prism/apply` | `prism`, `human:approved` |
-| Verify | `prism/verify` | `prism`, `human:approved` |
+| Intake / specify | `phase:specify` | `prism` |
+| Design | `phase:design` | `prism` |
+| Breakdown | `phase:breakdown` | `prism` |
+| Human gate | `phase:human` | `prism` |
+| Apply | `phase:apply` | `prism`, `human:approved` |
+| Verify | `phase:verify` | `prism`, `human:approved` |
 | Done | closed | unchanged |
 
-Derive phase from the story assignee. Reconcile it with requirements, design,
-children, and approval rather than adding a phase label.
+Derive phase from exactly one supported story `phase:*` label. Reconcile it
+with requirements, design, children, and approval. Do not fall back to story
+assignee state; assignee-driven stories are intentionally unsupported.
 
 ## Host actions per phase
 
 | Step | Host action | Beads writes |
 | --- | --- | --- |
-| Specify | Clarify directly in chat and refine story requirements | description, acceptance, `prism/design` |
-| Design | Inspect repository; write a concrete design with relevant risks and verification | design, `prism/breakdown` |
-| Breakdown | Create or reconcile children that cover the design | children, dependencies, `prism/human` |
-| Human | Show Design summary → Task summary → Approval request | `human:approved`, `prism/apply` only after unambiguous free-form approval |
-| Apply | Close ready children through the inner loop | task `prism/apply/implementer` → `prism/apply/reviewer`; story stays `prism/apply` |
-| Verify | Make the close-or-bounce decision | close story or return it to the needed assignee |
+| Specify | Clarify directly in chat and refine story requirements | description, acceptance, `phase:design` |
+| Design | Inspect repository; write a concrete design with relevant risks and verification | design, `phase:breakdown` |
+| Breakdown | Create or reconcile children that cover the design | children, dependencies, `phase:human` |
+| Human | Show Design summary → Task summary → Approval request | `human:approved`, `phase:apply` only after unambiguous free-form approval |
+| Apply | Close ready children through the inner loop | task `prism/apply/implementer` → `prism/apply/reviewer`; story stays `phase:apply` |
+| Verify | Make the close-or-bounce decision | close story or return it to the needed phase label |
 
 ## Authority boundaries
 
 ```text
-Human ──human:approved──► prism/apply / prism/verify consent
+Human ──human:approved──► phase:apply / phase:verify consent
 Manual Prism skill ──bd + host work──► durable state + repo changes
 Prism Callee skill ──prism/*──► provider work
 ```

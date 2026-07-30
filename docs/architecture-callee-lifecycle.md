@@ -20,27 +20,28 @@ Internal roles and workflows remain under `prism/roles/*` and
 
 ## Durable state
 
-The story assignee is the lifecycle phase. The automation must use:
+Exactly one story label is the lifecycle phase. The automation must use:
 
-| Assignee | Public workflow |
+| Story label | Public workflow |
 | --- | --- |
-| `prism/specify` | `prism/phases/specify` |
-| `prism/design` | `prism/phases/design` |
-| `prism/breakdown` | `prism/phases/breakdown` |
-| `prism/human` | `prism/phases/human` |
-| `prism/apply` | `prism/phases/apply` |
-| `prism/verify` | `prism/phases/verify` |
+| `phase:specify` | `prism/phases/specify` |
+| `phase:design` | `prism/phases/design` |
+| `phase:breakdown` | `prism/phases/breakdown` |
+| `phase:human` | `prism/phases/human` |
+| `phase:apply` | `prism/phases/apply` |
+| `phase:verify` | `prism/phases/verify` |
 
-`prism` is membership and `human:approved` permits apply. No phase labels
-are written. Child tasks use `prism/apply/implementer` and
+`prism` is membership and `human:approved` permits apply. Story assignees do
+not encode lifecycle phases. Existing assignee-driven stories are intentionally
+not migrated or supported. Child tasks use `prism/apply/implementer` and
 `prism/apply/reviewer` inside story-level apply.
 
 ## Story resolution
 
 Automation accepts user intent, not a pre-created story. It uses an explicitly
 named story ID when present, otherwise resumes exactly one open Prism story. If
-neither applies, it creates a new `prism/specify` story from the raw request;
-Specify then normalizes the acceptance criteria.
+neither applies, it creates a new story labeled `prism,phase:specify` from the
+raw request; Specify then normalizes the acceptance criteria.
 
 ## Design and approval
 

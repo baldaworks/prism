@@ -1,6 +1,6 @@
 # Prism breakdown phase
 
-Run this reference only when the story assignee is `prism/breakdown`, or when
+Run this reference only when the story label is `phase:breakdown`, or when
 the story has durable design markdown but no child tasks.
 
 ## Goal
@@ -52,10 +52,11 @@ Rules:
 
 1. Validate that the saved design is concrete enough to decompose. If it is
    missing or incomplete, clear `human:approved`, return the story to
-   `prism/design`, and stop.
+   `phase:design` with
+   `bd update <story-id> --set-labels prism,phase:design`, and stop.
 2. Produce or collect a breakdown in the JSON shape above.
    - The manual host lifecycle authors it directly in the host after it derives
-     `prism/breakdown` from the story assignee.
+     `phase:breakdown` from the story labels.
    - The Prism Callee workflow may obtain it from `prism/roles/breakdown`.
 3. Parse or normalize into the JSON shape above. Keep a key→bead-id map.
 4. If the story already has children, enter reconciliation mode:
@@ -92,7 +93,7 @@ bd blocked
    constraints, and verification. Then advance the story to the human gate:
 
 ```bash
-bd update <story-id> -a prism/human --set-labels prism
+bd update <story-id> --set-labels prism,phase:human
 ```
 
 ## Reject
@@ -108,11 +109,11 @@ bd update <story-id> -a prism/human --set-labels prism
 - dependencies are still unclear
 - existing or completed work conflicts with the repaired design
 
-Keep the story assigned to `prism/breakdown` when stopping.
+Keep the story labeled `phase:breakdown` when stopping.
 
 ## Never
 
 - create a runtime plan file
 - create a single task for the whole story
 - delete, close, or reopen existing children merely to reconcile a migration
-- bypass the human gate or assign the story directly to apply
+- bypass the human gate or move the story directly to `phase:apply`

@@ -1,5 +1,5 @@
 {
-  "version": 7,
+  "version": 8,
   "lifecycle_ref": "prism/lifecycle",
   "manual_host_entrypoints": {
     "codex": "$prism:lifecycle",
@@ -13,7 +13,21 @@
   },
   "lifecycle_labels": [
     "prism",
-    "human:approved"
+    "human:approved",
+    "phase:specify",
+    "phase:design",
+    "phase:breakdown",
+    "phase:human",
+    "phase:apply",
+    "phase:verify"
+  ],
+  "phase_labels": [
+    "phase:specify",
+    "phase:design",
+    "phase:breakdown",
+    "phase:human",
+    "phase:apply",
+    "phase:verify"
   ],
   "human_gate": {
     "summary_order": [
@@ -32,19 +46,16 @@
     "otherwise": "create",
     "new_story": {
       "labels": [
-        "prism"
+        "prism",
+        "phase:specify"
       ],
-      "assignee": "prism/specify",
       "description": "raw_user_request"
     }
   },
   "story_phases": [
     {
       "phase": "specify",
-      "assignee": "prism/specify",
-      "aliases": [
-        "prism:specify"
-      ],
+      "label": "phase:specify",
       "executor": {
         "kind": "Sequential",
         "manual_phase_reference": "plugins/prism/skills/lifecycle/references/specify.md",
@@ -62,10 +73,7 @@
     },
     {
       "phase": "design",
-      "assignee": "prism/design",
-      "aliases": [
-        "prism:design"
-      ],
+      "label": "phase:design",
       "executor": {
         "kind": "Sequential",
         "manual_phase_reference": "plugins/prism/skills/lifecycle/references/design.md",
@@ -81,10 +89,7 @@
     },
     {
       "phase": "breakdown",
-      "assignee": "prism/breakdown",
-      "aliases": [
-        "prism:breakdown"
-      ],
+      "label": "phase:breakdown",
       "executor": {
         "kind": "Sequential",
         "manual_phase_reference": "plugins/prism/skills/lifecycle/references/breakdown.md",
@@ -98,10 +103,7 @@
     },
     {
       "phase": "human",
-      "assignee": "prism/human",
-      "aliases": [
-        "prism:human"
-      ],
+      "label": "phase:human",
       "executor": {
         "kind": "Sequential",
         "manual_phase_reference": "plugins/prism/skills/lifecycle/references/human.md",
@@ -117,10 +119,7 @@
     },
     {
       "phase": "apply",
-      "assignee": "prism/apply",
-      "aliases": [
-        "prism:apply"
-      ],
+      "label": "phase:apply",
       "executor": {
         "kind": "Sequential",
         "manual_phase_reference": "plugins/prism/skills/lifecycle/references/apply.md",
@@ -134,10 +133,7 @@
     },
     {
       "phase": "verify",
-      "assignee": "prism/verify",
-      "aliases": [
-        "prism:verify"
-      ],
+      "label": "phase:verify",
       "executor": {
         "kind": "Sequential",
         "manual_phase_reference": "plugins/prism/skills/lifecycle/references/verify.md",

@@ -15,7 +15,7 @@ spec:
         {{ .Input }}
       params:
         constraints: |
-          Story phase assignee: prism/breakdown.
+          Story phase label: phase:breakdown.
           Require a concrete design. For a new graph, produce 3-12 small
           reviewable Beads tasks with explicit dependencies. If existing
           children are supplied, reconcile them: preserve open and closed tasks

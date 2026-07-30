@@ -45,7 +45,7 @@ spec:
       params:
         audience: expert engineers
         context: |
-          Story phase assignee: prism/specify.
+          Story phase label: phase:specify.
           Normalize scope, constraints, non-goals, and acceptance only.
           Stop short of design or implementation decisions.
         project_name: prism-story

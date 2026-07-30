@@ -17,22 +17,24 @@ PromptKit role/workflow contract: [references/promptkit.md](references/promptkit
 - Advance a story through `specify → design → breakdown → human → apply → verify`.
 - Persist state after every Callee return.
 - Collect approval through the Callee Human phase, then continue only after explicit approval.
-- Resume from the story's current assignee.
+- Resume from the story's single `phase:*` label.
 
 ## Durable lifecycle state
 
-| Phase | Story assignee | Public Callee entrypoint |
+| Phase | Story label | Public Callee entrypoint |
 | --- | --- | --- |
-| Specify | `prism/specify` | `prism/phases/specify` |
-| Design | `prism/design` | `prism/phases/design` |
-| Breakdown | `prism/breakdown` | `prism/phases/breakdown` |
-| Human | `prism/human` | `prism/phases/human` |
-| Apply | `prism/apply` | `prism/phases/apply` |
-| Verify | `prism/verify` | `prism/phases/verify` |
+| Specify | `phase:specify` | `prism/phases/specify` |
+| Design | `phase:design` | `prism/phases/design` |
+| Breakdown | `phase:breakdown` | `prism/phases/breakdown` |
+| Human | `phase:human` | `prism/phases/human` |
+| Apply | `phase:apply` | `prism/phases/apply` |
+| Verify | `phase:verify` | `prism/phases/verify` |
 
 `prism` is the lifecycle membership label. `human:approved` authorizes apply.
-Never persist `phase:*` labels. Child tasks use `prism/apply/implementer` and
-`prism/apply/reviewer` inside the outer `prism/apply` story phase.
+Persist exactly one supported `phase:*` label on every open story. Story
+assignees do not encode lifecycle phase state. Child tasks continue to use
+`prism/apply/implementer` and `prism/apply/reviewer` inside the outer
+`phase:apply` story phase.
 
 ## Prerequisites
 
@@ -50,13 +52,16 @@ If needed, import `pack/callee/prism` under the `prism` prefix or expose it as
 3. Resolve the target story: use an explicitly named story ID, otherwise resume exactly one open Prism story, otherwise derive a concise title and create a story from the user's raw request:
 
    ```bash
-   bd create "<derived title>" --type=story -a prism/specify -l prism \
+   bd create "<derived title>" --type=story -l prism,phase:specify \
      --description="<raw user request>" --priority=2 --silent
    ```
 
    The new story starts in Specify, which normalizes acceptance criteria.
 4. Load `bd show <story> --long` plus `bd children <story>`.
-5. Derive the phase from story assignee; reconcile with requirements, design, approval, and children.
+5. Derive the phase from exactly one supported `phase:*` story label. Stop on a
+   missing or conflicting phase label, and do not fall back to assignee state;
+   existing assignee-driven stories are intentionally unsupported. Reconcile
+   with requirements, design, approval, and children.
 6. Before direct role or workflow execution details, load [references/promptkit.md](references/promptkit.md).
 7. Advance until a stop condition, persisting and re-checking after every Callee return.
 
@@ -74,7 +79,8 @@ If needed, import `pack/callee/prism` under the `prism` prefix or expose it as
 - Persist design output directly through `bd update --design-file -`.
 - Run project checks after every apply iteration. Do not close a task when checks fail.
 - Select only ready, unblocked children of the current story.
-- Always preserve `prism` in `--set-labels`, and preserve `human:approved` after the gate.
+- Always preserve `prism` and exactly one target `phase:*` label in
+  `--set-labels`, and preserve `human:approved` after the gate.
 - Do not commit or push without explicit authority.
 
 ## Phase → action
@@ -82,30 +88,30 @@ If needed, import `pack/callee/prism` under the `prism` prefix or expose it as
 | Condition (priority order) | Do next |
 | --- | --- |
 | Missing usable description or acceptance | Run specify and persist requirements |
-| `prism/verify` or (`human:approved` and no open children) | Verify; close only on pass |
-| `prism/apply` + `human:approved` + open children | Continue the outer apply loop |
-| Open children without approval or `prism/human` | Run human phase; stop on non-approval |
-| `prism/breakdown` or (design set and no children) | Run breakdown, create child graph, move to `prism/human` |
-| `prism/design` or (requirements set and design empty) | Run design, persist it, move to `prism/breakdown` |
-| `prism/specify` | Run specify, persist requirements, move to `prism/design` |
+| `phase:verify` or (`human:approved` and no open children) | Verify; close only on pass |
+| `phase:apply` + `human:approved` + open children | Continue the outer apply loop |
+| Open children without approval or `phase:human` | Run human phase; stop on non-approval |
+| `phase:breakdown` or (design set and no children) | Run breakdown, create child graph, move to `phase:human` |
+| `phase:design` or (requirements set and design empty) | Run design, persist it, move to `phase:breakdown` |
+| `phase:specify` | Run specify, persist requirements, move to `phase:design` |
 
 ## Lifecycle commands
 
 ### Specify
 
 ```bash
-bd create "<title>" --type=story -a prism/specify -l prism \
+bd create "<title>" --type=story -l prism,phase:specify \
   --description="…" --acceptance="…" --priority=2
 callee agent run prism/phases/specify --message "$(bd show <story>)"
 bd update <story> --description="…" --acceptance="…" \
-  -a prism/design --set-labels prism
+  --set-labels prism,phase:design
 ```
 
 ### Design
 
 ```bash
 callee agent run prism/phases/design --message "$(bd show <story>)" \
-  | bd update <story> --design-file - -a prism/breakdown --set-labels prism
+  | bd update <story> --design-file - --set-labels prism,phase:breakdown
 ```
 
 Advance only when the saved design is concrete, addresses the requirements,
@@ -122,7 +128,7 @@ children, create only missing work needed by the repaired design, preserve
 dependencies and statuses, and stop for human direction on conflicts. Never automatically delete, close, or reopen children.
 
 ```bash
-bd update <story> -a prism/human --set-labels prism
+bd update <story> --set-labels prism,phase:human
 ```
 
 ### Human gate
@@ -132,15 +138,15 @@ bd show <story> --long
 bd children <story>
 bd blocked
 callee agent run prism/phases/human --message "<prepared informed-approval summary>"
-bd update <story> -a prism/apply --set-labels prism,human:approved
+bd update <story> --set-labels prism,phase:apply,human:approved
 ```
 
 The prepared message must be derived from those three Beads reads and use this
 exact order: `### Design summary`, `### Task summary`, `### Approval request`.
 Cover every child and explain that one approval covers the design and task
 graph. Persist approval only when the phase succeeds with the exact `APPROVE` classifier decision.
-On non-approval or classifier failure, stop with the story open and assigned to
-`prism/human`.
+On non-approval or classifier failure, stop with the story open and labeled
+`phase:human`.
 
 ### Apply
 
@@ -157,7 +163,7 @@ or closing the task.
 Repeat for ready children of the same story. With no open children, transition:
 
 ```bash
-bd update <story> -a prism/verify --set-labels prism,human:approved
+bd update <story> --set-labels prism,phase:verify,human:approved
 ```
 
 ### Verify
@@ -167,8 +173,9 @@ callee agent run prism/phases/verify --message "$(bd show <story>)"
 bd close <story> --reason="Acceptance met"
 ```
 
-If verification fails, keep the story open and return it to the appropriate
-assignee. For implementation gaps, use `prism/apply` and preserve
-`human:approved`; for task coverage gaps use `prism/breakdown` and clear
-approval; for design or requirements gaps, move to that phase and clear
-approval.
+If verification fails, keep the story open and write the appropriate phase
+label. For implementation gaps, use
+`--set-labels prism,phase:apply,human:approved`; for task coverage gaps use
+`--set-labels prism,phase:breakdown`; for design gaps use
+`--set-labels prism,phase:design`; and for requirements gaps use
+`--set-labels prism,phase:specify`.

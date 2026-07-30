@@ -1,6 +1,6 @@
 # Prism design phase
 
-Run this reference only when the story assignee is `prism/design` or the
+Run this reference only when the story label is `phase:design` or the
 story already has requirements but does not yet have durable design markdown.
 
 ## Goal
@@ -36,10 +36,10 @@ how the requested change should be implemented.
 When the design is concrete enough to decompose into small tasks:
 
 ```bash
-bd update <story> --design-file - -a prism/breakdown --set-labels prism
+bd update <story> --design-file - --set-labels prism,phase:breakdown
 ```
 
-Advance only to `prism/breakdown`.
+Advance only to `phase:breakdown`.
 
 ## Stop when
 

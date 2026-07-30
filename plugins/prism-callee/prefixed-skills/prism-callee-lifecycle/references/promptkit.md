@@ -227,7 +227,7 @@ Inspect live keys with `callee agent view <id> --json` (authoritative if drift).
 | `prism/lifecycle` | Sequential | Root lifecycle graph for specify → design → breakdown → human → apply → verify |
 | `prism/phases/specify` | Sequential | Public specify phase entrypoint |
 | `prism/phases/design` | Sequential | Public design phase entrypoint |
-| `prism/phases/breakdown` | Sequential | Public breakdown phase entrypoint for stories assigned to `prism/breakdown` |
+| `prism/phases/breakdown` | Sequential | Public breakdown phase entrypoint for stories labeled `phase:breakdown` |
 | `prism/phases/human` | Sequential | Public human approval gate that collects approval through a Human agent |
 | `prism/phases/apply` | Sequential | Public apply phase entrypoint delegating to the one-task loop |
 | `prism/phases/verify` | Sequential | Public verify phase entrypoint delegating to the close-or-bounce review |

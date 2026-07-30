@@ -16,20 +16,21 @@ The host skill performs each phase directly and persists results in Beads:
 
 ## Durable state
 
-Beads is the only durable lifecycle store. A story's assignee is the active
-phase:
+Beads is the only durable lifecycle store. Exactly one story label is the
+active phase:
 
-| Assignee | Phase |
+| Label | Phase |
 | --- | --- |
-| `prism/specify` | Specify |
-| `prism/design` | Design |
-| `prism/breakdown` | Breakdown |
-| `prism/human` | Human approval gate |
-| `prism/apply` | Apply |
-| `prism/verify` | Verify |
+| `phase:specify` | Specify |
+| `phase:design` | Design |
+| `phase:breakdown` | Breakdown |
+| `phase:human` | Human approval gate |
+| `phase:apply` | Apply |
+| `phase:verify` | Verify |
 
 Use label `prism` to find lifecycle stories and `human:approved` to permit
-apply. Do not create a `phase:*` label.
+apply. Story assignees do not encode lifecycle phases. Existing assignee-driven
+stories are intentionally not migrated or supported.
 
 Child tasks remain inside the story-level apply phase: their assignee moves from
 `prism/apply/implementer` to `prism/apply/reviewer`.
@@ -38,8 +39,9 @@ Child tasks remain inside the story-level apply phase: their assignee moves from
 
 Lifecycle accepts user intent, not a pre-created story. It resolves work in this
 order: an explicitly named story ID; exactly one open Prism story; otherwise a
-new `prism/specify` story. New stories retain the raw user request in their
-description and let Specify normalize the acceptance criteria.
+new story labeled `prism,phase:specify`. New stories retain the raw user
+request in their description and let Specify normalize the acceptance
+criteria.
 
 ## Design and task coverage
 
@@ -54,8 +56,8 @@ It never automatically deletes, closes, or reopens existing children.
 
 ## Execution model
 
-The host skill derives the phase from story assignee, then loads the matching
-bundled instruction:
+The host skill derives the phase from exactly one supported `phase:*` label,
+then loads the matching bundled instruction:
 
 - `specify.md`
 - `design.md`
@@ -78,7 +80,7 @@ design, task graph, status, labels, and assignees are written directly to Beads.
 The decision and persistence boundaries are distinct: the human supplies the
 authorization intent, while the host records it in Beads. Questions,
 conditional language, requests for changes, and other ambiguous responses fail
-closed at `prism/human`.
+closed at `phase:human`.
 
 Before asking, the host presents Design summary → Task summary → Approval
 request. One unambiguous free-form approval covers the design and task graph.

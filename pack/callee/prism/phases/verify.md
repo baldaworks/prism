@@ -12,10 +12,10 @@ spec:
         Prism verify phase for the same story.
 
         Treat verify as a close-or-bounce decision phase. Do not perform
-        implementation work here. Bounce implementation gaps to prism/apply;
-        bounce missing task coverage to prism/breakdown and clear approval;
-        bounce an invalid or incomplete design to prism/design and clear
-        approval.
+        implementation work here. Bounce implementation gaps to phase:apply;
+        bounce missing task coverage to phase:breakdown and clear approval;
+        bounce an invalid or incomplete design to phase:design and clear
+        approval. Bounce incomplete requirements to phase:specify.
 
         {{ .Input }}
   output: |

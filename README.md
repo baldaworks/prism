@@ -99,7 +99,7 @@ hosts.
 
 Prism uses an explicitly named story when supplied, otherwise resumes exactly
 one open Prism story. If neither applies, it creates a new Beads story from the
-request and starts it in `prism/specify`.
+request and starts it with `phase:specify`.
 
 To use the specialized `prism/*` workflow instead, install the Prism Callee
 plugin and agent pack, then run `$prism-callee:lifecycle`,
@@ -228,12 +228,12 @@ bd where
 
 Prism advances one phase at a time:
 
-1. `prism/specify`
-2. `prism/design`
-3. `prism/breakdown`
-4. `prism/human`
-5. `prism/apply`
-6. `prism/verify`
+1. `phase:specify`
+2. `phase:design`
+3. `phase:breakdown`
+4. `phase:human`
+5. `phase:apply`
+6. `phase:verify`
 
 Rules that matter to users:
 
@@ -248,7 +248,9 @@ Rules that matter to users:
 - In the `prism-callee` workflow, a no-tools classifier interprets the
   Human agent's free-form response and a deterministic gate accepts only an
   unambiguous approval decision.
-- Beads story assignee is the current lifecycle phase.
+- Exactly one `phase:*` Beads story label is the current lifecycle phase.
+- Story assignees do not encode lifecycle phases. Existing assignee-driven
+  stories are not migrated or supported.
 - Lifecycle creates a story when no explicit or uniquely resumable Prism story exists.
 - Host Prism derives the current phase from Beads story state; it does not expose separate host phase subskills.
 - Apply closes remaining story work one ready child task at a time.
