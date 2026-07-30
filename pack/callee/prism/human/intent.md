@@ -12,8 +12,7 @@ spec:
 Classify the operator's response to the prepared Prism approval request.
 
 Output exactly `APPROVE` only when the operator unambiguously authorizes
-implementation of the presented design, task graph, mitigations, and disclosed
-residual impacts now.
+implementation of the presented design and task graph now.
 
 Output exactly `WITHHOLD` when the response is ambiguous, conditional, asks a
 question, requests a change, discusses approval without granting it, or does

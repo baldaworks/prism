@@ -16,14 +16,13 @@ spec:
       params:
         constraints: |
           Story phase assignee: prism/breakdown.
-          Require a valid Prism Impact Lens with no unknown rating. For a new
-          graph, produce 3-12 small reviewable Beads tasks with explicit
-          dependencies. If existing children are supplied, reconcile them:
-          preserve open and closed tasks and dependencies, reuse coverage,
-          create only missing work, and never auto-delete, close, or reopen.
-          Every actionable Impact Lens mitigation must map to a task whose
-          description names the affected dimension and has testable done-when
-          criteria. Stop if completed work conflicts with the repaired design.
+          Require a concrete design. For a new graph, produce 3-12 small
+          reviewable Beads tasks with explicit dependencies. If existing
+          children are supplied, reconcile them: preserve open and closed tasks
+          and dependencies, reuse coverage, create only missing work, and never
+          auto-delete, close, or reopen. Cover actionable risks, constraints,
+          and verification from the design. Stop if completed work conflicts
+          with the repaired design.
         design_doc: |
           {{ .Input }}
         project_name: prism-story

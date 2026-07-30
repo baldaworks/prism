@@ -17,25 +17,20 @@ Stop safely and wait for explicit human authorization before implementation.
 
 1. Confirm the story has planned child tasks and no `human:approved` label.
 2. Confirm the story is actually waiting for authorization, not for more design or planning work.
-3. Validate the saved `## Prism Impact Lens` and task coverage. If the lens is
-   missing, invalid, contains `unknown`, or has an uncovered actionable
-   mitigation, clear `human:approved`, move the story to `prism/design` or
-   `prism/breakdown` as appropriate, and do not ask for approval.
+3. Confirm the saved design is concrete and the task graph covers it. If not,
+   move the story to `prism/design` or `prism/breakdown` as appropriate and do
+   not ask for approval.
 4. Do not perform implementation work.
 5. Before asking for approval, present these sections in order:
    - `### Design summary`: concisely summarize the saved design's goal,
      approach, affected areas, and material risks or open questions.
-   - `### Prism Impact Lens`: reproduce or faithfully summarize all five
-     dimensions, ratings, evidence, and mitigations or residual-impact
-     dispositions.
    - `### Task summary`: cover **every** current child task with its ID, title,
      state, and meaningful dependencies, blockers, or execution order.
    Derive all summaries from the current Beads story and child graph. Do not
    invent scope or omit a child merely to keep the response short.
 6. After the summaries, present `### Approval request`. Explain that one
-   informed approval covers the design, task graph, mitigations, and explicitly
-   disclosed residual impacts. The human may approve in ordinary free-form language;
-   they do not need a fixed token or to run `bd`.
+   informed approval covers the design and task graph. The human may approve in
+   ordinary free-form language; they do not need a fixed token or to run `bd`.
 7. If the user's latest message unambiguously authorizes implementation, persist
    that human decision atomically:
 

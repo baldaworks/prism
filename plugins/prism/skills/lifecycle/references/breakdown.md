@@ -44,25 +44,24 @@ Rules:
 - `description` states **done-when** (testable).
 - `depends_on` lists earlier `key`s that must complete first.
 - No scope beyond story acceptance / design.
-- Every actionable Impact Lens mitigation must be covered by a child task.
-  Name the affected dimension in that task's description and state a testable
-  done-when condition.
+- Relevant design risks, constraints, and verification work must be represented
+  by a child task when they require implementation.
 - If the plan has no extractable tasks, revise the plan or stop and ask the human — do not invent a graph.
 
 ## Host procedure (strict)
 
-1. Validate the saved `## Prism Impact Lens`. If it is missing, invalid, or
-   contains `unknown`, clear `human:approved`, return the story to
+1. Validate that the saved design is concrete enough to decompose. If it is
+   missing or incomplete, clear `human:approved`, return the story to
    `prism/design`, and stop.
 2. Produce or collect a breakdown in the JSON shape above.
    - The manual host lifecycle authors it directly in the host after it derives
      `prism/breakdown` from the story assignee.
-   - Automated `$prism-callee:lifecycle` may obtain it from `prism/roles/breakdown`.
+   - The Prism Callee workflow may obtain it from `prism/roles/breakdown`.
 3. Parse or normalize into the JSON shape above. Keep a key→bead-id map.
 4. If the story already has children, enter reconciliation mode:
    - preserve every open and closed child and its dependencies
-   - reuse tasks that already cover the design and actionable mitigations
-   - create only missing mitigation or implementation tasks
+   - reuse tasks that already cover the design
+   - create only missing implementation or verification tasks
    - never auto-delete, auto-close, or reopen a child
    - stop for human direction when the new design conflicts with completed
      work or cannot be reconciled safely
@@ -89,8 +88,8 @@ bd children <story-id>
 bd blocked
 ```
 
-8. Confirm every actionable Impact Lens mitigation maps to an existing or new
-   child task. Then advance the story to the human gate:
+8. Confirm the child graph covers the design, including actionable risks,
+   constraints, and verification. Then advance the story to the human gate:
 
 ```bash
 bd update <story-id> -a prism/human --set-labels prism
@@ -107,7 +106,7 @@ bd update <story-id> -a prism/human --set-labels prism
 - the design cannot be decomposed into small reviewable tasks
 - the task graph would exceed story acceptance or design scope
 - dependencies are still unclear
-- existing or completed work conflicts with the repaired design or lens
+- existing or completed work conflicts with the repaired design
 
 Keep the story assigned to `prism/breakdown` when stopping.
 

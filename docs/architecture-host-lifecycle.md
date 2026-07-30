@@ -9,8 +9,8 @@ automation or allow `callee agent run prism/...`.
 The host skill performs each phase directly and persists results in Beads:
 
 - clarify requirements
-- inspect the repository and write design markdown plus Prism Impact Lens
-- break down design into Beads child tasks, including actionable mitigations
+- inspect the repository and write concrete design markdown
+- break down design into Beads child tasks with dependencies and verification
 - implement and review child tasks
 - verify before close
 
@@ -41,18 +41,16 @@ order: an explicitly named story ID; exactly one open Prism story; otherwise a
 new `prism/specify` story. New stories retain the raw user request in their
 description and let Specify normalize the acceptance criteria.
 
-## Prism Impact Lens
+## Design and task coverage
 
-Design stores an exact `## Prism Impact Lens` table with Product, Process,
-People, Planet, and Prosperity rows. Ratings are `positive`, `negative`,
-`mixed`, `not-material`, or `unknown`; every row needs evidence, and negative
-or mixed rows need mitigation or an explicit residual-impact disposition.
-`unknown` blocks Breakdown.
+Design records the proposed solution, relevant risks, constraints, tradeoffs,
+and verification in ordinary prose. Prism does not require a fixed assessment
+matrix or rating system.
 
-Any open legacy story without a complete lens returns to `prism/design`,
-clears `human:approved`, and preserves every open or closed child. Breakdown
-then reconciles the graph without automatic deletion or closure. Closed stories
-are unchanged.
+Breakdown creates tasks that cover the actionable design. When a story already
+has children, it preserves open and closed tasks plus dependencies, reuses
+sufficient work, and creates only missing implementation or verification tasks.
+It never automatically deletes, closes, or reopens existing children.
 
 ## Execution model
 
@@ -82,9 +80,8 @@ authorization intent, while the host records it in Beads. Questions,
 conditional language, requests for changes, and other ambiguous responses fail
 closed at `prism/human`.
 
-Before asking, the host presents Design summary → Prism Impact Lens → Task
-summary → Approval request. One unambiguous free-form approval covers the
-design, task graph, mitigations, and disclosed residual impacts.
+Before asking, the host presents Design summary → Task summary → Approval
+request. One unambiguous free-form approval covers the design and task graph.
 
 ## Hard rules
 

@@ -13,7 +13,7 @@ time, reviewing it, and repeating while ready work remains.
 - `bd show <story> --long`
 - `bd children <story>`
 - `bd ready`
-- the story description, acceptance, design, and `## Prism Impact Lens`
+- the story description, acceptance, and design
 
 ## Host procedure
 
@@ -29,14 +29,11 @@ bd ready
    - a child of the current story
    - ready / unblocked
 3. Claim it with `bd update <task> -a prism/apply/implementer`.
-4. Inspect the task, story, acceptance, design, and Impact Lens before editing
-   code. Stop and return to design if the lens is invalid or contains
-   `unknown`.
-5. Implement only the claimed task's scope, including any Impact Lens
-   mitigation and verification criteria assigned to it.
+4. Inspect the task, story, acceptance, and design before editing code.
+5. Implement only the claimed task's scope and verification criteria.
 6. Run the most relevant project checks after code changes.
 7. Review the result for correctness, scope fit, regressions, missing
-   verification, and adherence to the relevant Impact Lens mitigation.
+   verification, security concerns, and adherence to the saved design.
 
 ## Persist and advance
 

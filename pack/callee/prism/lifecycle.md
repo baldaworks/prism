@@ -3,8 +3,8 @@ apiVersion: callee.metalagman.dev/v1alpha1
 kind: Sequential
 spec:
   description: |
-    Prism lifecycle phase chain — specify, design with Prism Impact Lens,
-    breakdown, informed human approval, apply, and verify in order. The human
+    Prism lifecycle phase chain — specify, design, breakdown, informed human
+    approval, apply, and verify in order. The human
     gate accepts free-form intent through a fail-closed classifier before apply
     begins, while apply owns story-level operational closure through the inner
     one-task loop.
@@ -36,17 +36,12 @@ spec:
         ### Design summary
         {{ index .State.outputs "design" }}
 
-        ### Prism Impact Lens
-        Reproduce the exact `## Prism Impact Lens` section from this design:
-        {{ index .State.outputs "design" }}
-
         ### Task summary
         {{ index .State.outputs "breakdown" }}
 
         ### Approval request
         Approve automated implementation of this design and task graph? One
-        informed approval covers the design, tasks, mitigations, and disclosed
-        residual impacts.
+        informed approval covers the design and tasks.
     - ref: prism/phases/apply
       alias: apply
       input: |

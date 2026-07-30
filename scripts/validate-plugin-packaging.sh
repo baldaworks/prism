@@ -116,8 +116,8 @@ expected_default_prompts = {
         "claude": "Use /prism:lifecycle to inspect the current Beads story state and advance the Prism lifecycle in this repository.",
     },
     "prism-callee": {
-        "codex": "Use $prism-callee:lifecycle to advance a Prism story automatically through the Callee Human-agent approval gate and the remaining prism/* lifecycle phases.",
-        "claude": "Use /prism-callee:lifecycle to advance a Prism story automatically through the Callee Human-agent approval gate and the remaining prism/* lifecycle phases.",
+        "codex": "Use $prism-callee:lifecycle to run a Prism story through specialized prism/* subagents and the explicit Callee Human approval gate.",
+        "claude": "Use /prism-callee:lifecycle to run a Prism story through specialized prism/* subagents and the explicit Callee Human approval gate.",
     },
 }
 

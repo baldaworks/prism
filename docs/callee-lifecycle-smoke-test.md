@@ -9,7 +9,7 @@ changing Prism entrypoints or lifecycle semantics.
 Use this page when you need a repeatable local check for the automated Human
 path in the Prism Callee lifecycle.
 
-The public automation surfaces remain:
+The public workflow entrypoints remain:
 
 - `prism/lifecycle`
 - `prism/phases/*`

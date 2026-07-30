@@ -13,9 +13,8 @@ spec:
 
         Use the following lifecycle entry context to iteratively clarify and
         normalize the story description and acceptance criteria for the same
-        story only. Capture known Product, Process, People, Planet, and
-        Prosperity constraints or non-goals, but do not rate them; the design
-        phase owns the Prism Impact Lens:
+        story only. Capture known constraints and non-goals when they affect
+        observable behavior or design choices:
 
         {{ .Input }}
     - ref: prism/specify/extract

@@ -16,7 +16,7 @@ transcript that quietly becomes the project plan.
 ```mermaid
 flowchart TB
     I["Change intent"] --> S["Specify<br/>requirements and acceptance"]
-    S --> D["Design<br/>solution and Impact Lens"]
+    S --> D["Design<br/>solution, risks, verification"]
     D --> B["Breakdown<br/>ready, dependent tasks"]
     B --> H{"Human gate<br/>approve the plan?"}
     H -->|approved| A["Apply<br/>implement and review"]
@@ -38,9 +38,9 @@ flowchart TB
 
 - **Durable context.** Requirements, design, dependencies, decisions, and
   progress live in Beads rather than disappearing with a chat session.
-- **Impact-aware planning.** Design considers Product, Process, People, Planet,
-  and Prosperity before work is broken into tasks.
-- **Explicit control.** A human reviews the design, impact, and task graph
+- **Reviewable planning.** Design records the solution, relevant risks,
+  tradeoffs, and verification before work is broken into tasks.
+- **Explicit control.** A human reviews the design and task graph
   before implementation can begin.
 - **Verified delivery.** Apply includes implementation and review; Verify
   closes only a complete story and sends gaps back to the right phase.
@@ -237,15 +237,14 @@ Prism advances one phase at a time:
 
 Rules that matter to users:
 
-- Design includes a Prism Impact Lens across Product, Process, People, Planet,
-  and Prosperity. Unknown impact blocks planning; actionable mitigations must
-  be represented in the child-task graph.
+- Design captures the solution, relevant risks, constraints, and verification
+  in ordinary prose. Breakdown turns actionable work into dependent child
+  tasks.
 - A human must explicitly authorize apply. In the host lifecycle, ordinary
   free-form approval is enough for the host to persist `human:approved`; an
   ambiguous response leaves the gate closed.
-- Before approval, Prism shows Design summary → Impact Lens → Task summary →
-  Approval request. One informed approval covers design, tasks, mitigations,
-  and disclosed residual impacts.
+- Before approval, Prism shows Design summary → Task summary → Approval
+  request. One informed approval covers the design and task graph.
 - In the `prism-callee` workflow, a no-tools classifier interprets the
   Human agent's free-form response and a deterministic gate accepts only an
   unambiguous approval decision.
@@ -350,8 +349,6 @@ editing:
 
 - Only explicit human intent authorizes apply. The host may persist
   `human:approved` on the human's behalf after unambiguous free-form approval.
-- The Impact Lens is Prism's own qualitative decision aid; it does not claim
-  compliance with an external framework.
 - Prism should not invent approval.
 - Commit and push require explicit human authority.
 

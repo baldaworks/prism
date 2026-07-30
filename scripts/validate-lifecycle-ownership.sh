@@ -27,40 +27,33 @@ def load_json(path):
         return {}
 
 
+def normalized_skill(path):
+    lines = path.read_text().splitlines(keepends=True)
+    for index, line in enumerate(lines):
+        if line.startswith("name: "):
+            lines[index] = "name: lifecycle\n"
+            break
+    return "".join(lines)
+
+
 mapping_path = root / "docs/lifecycle-ownership.json"
 record(mapping_path.is_file(), "lifecycle ownership mapping exists")
 mapping = load_json(mapping_path) if mapping_path.is_file() else {}
 
-record(mapping.get("version") == 6, "ownership schema version is 6")
+record(mapping.get("version") == 7, "ownership schema version is 7")
 record(mapping.get("lifecycle_labels") == ["prism", "human:approved"], "only prism and human:approved are lifecycle labels")
-impact_lens = mapping.get("impact_lens", {})
-record(impact_lens.get("design_heading") == "## Prism Impact Lens", "Impact Lens has the durable design heading")
+retired_mapping_key = "impact_" + "lens"
+record(retired_mapping_key not in mapping, "ownership schema has no retired P5 contract")
+human_gate = mapping.get("human_gate", {})
 record(
-    impact_lens.get("dimensions") == ["Product", "Process", "People", "Planet", "Prosperity"],
-    "Impact Lens owns exactly the five Prism dimensions",
+    human_gate.get("summary_order")
+    == ["Design summary", "Task summary", "Approval request"],
+    "human gate summary covers design, tasks, then approval",
 )
 record(
-    impact_lens.get("ratings") == ["positive", "negative", "mixed", "not-material", "unknown"],
-    "Impact Lens ratings are qualitative and closed",
+    human_gate.get("approval_scope") == ["design", "tasks"],
+    "human approval covers design and tasks",
 )
-record(impact_lens.get("numeric_score") is False, "Impact Lens forbids a numeric score")
-record(impact_lens.get("unknown_blocks_transition") == "breakdown", "unknown impact blocks Breakdown")
-record(
-    impact_lens.get("human_summary_order")
-    == ["Design summary", "Prism Impact Lens", "Task summary", "Approval request"],
-    "human summary order includes the Impact Lens before tasks",
-)
-record(
-    impact_lens.get("open_story_migration")
-    == {
-        "missing_or_invalid": "design",
-        "clear_human_approval": True,
-        "preserve_child_statuses": True,
-        "reconcile_children_in": "breakdown",
-    },
-    "open legacy stories return to Design and preserve children for reconciliation",
-)
-record(impact_lens.get("closed_story_migration") == "unchanged", "closed stories are not migrated")
 record(
     mapping.get("entry_resolution") == {
         "explicit_story_id": "resume",
@@ -136,11 +129,89 @@ for skill_path in [
     ]:
         record(snippet in text, f"{skill_path.relative_to(root)} documents lifecycle-owned story creation: {snippet}")
 
+skill_pairs = [
+    (
+        root / "plugins/prism/skills/lifecycle/SKILL.md",
+        root / "plugins/prism/prefixed-skills/prism-lifecycle/SKILL.md",
+        "host lifecycle skills differ only by frontmatter name",
+    ),
+    (
+        root / "plugins/prism-callee/skills/lifecycle/SKILL.md",
+        root / "plugins/prism-callee/prefixed-skills/prism-callee-lifecycle/SKILL.md",
+        "Callee lifecycle skills differ only by frontmatter name",
+    ),
+]
+for canonical, prefixed, message in skill_pairs:
+    record(
+        canonical.is_file()
+        and prefixed.is_file()
+        and normalized_skill(canonical) == normalized_skill(prefixed),
+        message,
+    )
+
+reference_pairs = [
+    (
+        root / "plugins/prism/skills/lifecycle/references",
+        root / "plugins/prism/prefixed-skills/prism-lifecycle/references",
+        ["specify.md", "design.md", "breakdown.md", "human.md", "apply.md", "verify.md", "lifecycle.md"],
+        "host lifecycle reference",
+    ),
+    (
+        root / "plugins/prism-callee/skills/lifecycle/references",
+        root / "plugins/prism-callee/prefixed-skills/prism-callee-lifecycle/references",
+        ["promptkit.md", "breakdown.md"],
+        "Callee lifecycle reference",
+    ),
+]
+for canonical_dir, prefixed_dir, filenames, label in reference_pairs:
+    canonical_files = sorted(path.name for path in canonical_dir.iterdir() if path.is_file())
+    prefixed_files = sorted(path.name for path in prefixed_dir.iterdir() if path.is_file())
+    record(
+        canonical_files == sorted(filenames) and prefixed_files == sorted(filenames),
+        f"{label} directories contain exactly the required files",
+    )
+    for filename in filenames:
+        canonical = canonical_dir / filename
+        prefixed = prefixed_dir / filename
+        record(
+            canonical.is_file()
+            and prefixed.is_file()
+            and canonical.read_bytes() == prefixed.read_bytes(),
+            f"{label} is identical in canonical and prefixed skills: {filename}",
+        )
+
 readme_path = root / "README.md"
 readme_text = readme_path.read_text() if readme_path.is_file() else ""
 record("bd create" not in readme_text, "README does not require manual story creation")
 for internal_workflow in ["documentation-maintenance", "documentation/workflows/maintain", "pack/callee/documentation/"]:
     record(internal_workflow not in readme_text, f"README omits internal workflow reference: {internal_workflow}")
+
+retired_contract_tokens = [
+    "Prism " + "Impact Lens",
+    "Product, " + "Process, " + "People, " + "Planet, " + "Prosperity",
+    "impact_" + "lens",
+]
+retired_scan_roots = [
+    root / "README.md",
+    root / "docs",
+    root / "plugins/prism",
+    root / "plugins/prism-callee",
+    root / "pack/callee/prism",
+]
+for token in retired_contract_tokens:
+    offenders = []
+    for scan_root in retired_scan_roots:
+        paths = [scan_root] if scan_root.is_file() else scan_root.rglob("*")
+        for path in paths:
+            if not path.is_file() or path.suffix not in {".md", ".json", ".yaml", ".yml"}:
+                continue
+            if token in path.read_text():
+                offenders.append(str(path.relative_to(root)))
+    record(
+        not offenders,
+        f"active lifecycle artifacts omit retired P5 token {token!r}"
+        + (f": {', '.join(offenders)}" if offenders else ""),
+    )
 
 for architecture_path in [
     root / "docs/architecture-host-lifecycle.md",
@@ -169,7 +240,6 @@ for human_path in [
     relative = human_path.relative_to(root)
     summary_markers = [
         "`### Design summary`",
-        "`### Prism Impact Lens`",
         "`### Task summary`",
         "`### Approval request`",
     ]
@@ -177,7 +247,7 @@ for human_path in [
     record(
         all(position >= 0 for position in summary_positions)
         and summary_positions == sorted(summary_positions),
-        f"{relative} presents design summary, Impact Lens, task summary, then approval request",
+        f"{relative} presents design summary, task summary, then approval request",
     )
     for snippet, contract in [
         ("cover **every** current child task", "covers every child task"),
@@ -201,28 +271,12 @@ for base in [
     root / "plugins/prism/skills/lifecycle/references",
     root / "plugins/prism/prefixed-skills/prism-lifecycle/references",
 ]:
-    design_text = (base / "design.md").read_text()
-    for snippet in [
-        "## Prism Impact Lens",
-        "| Dimension | Rating | Rationale / evidence | Mitigation / verification |",
-        "`positive`, `negative`, `mixed`",
-        "`not-material`, and `unknown`",
-        "Do not advance while any rating is `unknown`",
-    ]:
-        record(snippet in design_text, f"{(base / 'design.md').relative_to(root)} enforces Impact Lens contract: {snippet}")
-
     breakdown_text = (base / "breakdown.md").read_text()
     for snippet in [
-        "Every actionable Impact Lens mitigation",
         "preserve every open and closed child",
         "never auto-delete, auto-close, or reopen a child",
     ]:
         record(snippet in breakdown_text, f"{(base / 'breakdown.md').relative_to(root)} enforces reconciliation: {snippet}")
-
-    apply_text = (base / "apply.md").read_text()
-    verify_text = (base / "verify.md").read_text()
-    record("Impact Lens mitigation" in apply_text, f"{(base / 'apply.md').relative_to(root)} honors mitigation criteria")
-    record("actionable Impact Lens mitigation" in verify_text, f"{(base / 'verify.md').relative_to(root)} verifies mitigation evidence")
 
 for skill_path in [
     root / "plugins/prism-callee/skills/lifecycle/SKILL.md",
@@ -230,18 +284,18 @@ for skill_path in [
 ]:
     text = skill_path.read_text()
     for snippet in [
-        "missing, invalid, or `unknown` Impact Lens",
-        "`### Design summary`, `### Prism Impact Lens`",
+        "exact order: `### Design summary`, `### Task summary`, `### Approval request`",
         "exact `APPROVE` classifier decision",
         "Never automatically delete, close, or reopen children",
     ]:
-        record(snippet in text, f"{skill_path.relative_to(root)} documents automated Impact Lens contract: {snippet}")
+        record(snippet in text, f"{skill_path.relative_to(root)} documents lifecycle contract: {snippet}")
 
 callee_contracts = {
-    "pack/callee/prism/roles/architect.md": ["## Prism Impact Lens", "| Product |", "| Prosperity |", "No Impact Lens rating is `unknown`"],
-    "pack/callee/prism/phases/breakdown.md": ["Every actionable Impact Lens mitigation", "never auto-delete, close, or reopen"],
-    "pack/callee/prism/apply/loop.md": ["Prism Impact Lens", "mitigation adherence"],
-    "pack/callee/prism/verify/review.md": ["every actionable", "residual impacts"],
+    "pack/callee/prism/lifecycle.md": [
+        "### Design summary",
+        "### Task summary",
+        "### Approval request",
+    ],
     "pack/callee/prism/phases/human.md": ["prism/human/intent", "approval_intent"],
     "pack/callee/prism/human/intent.md": ["mode: deny", "Output exactly `APPROVE`", "Output exactly `WITHHOLD`"],
     "pack/callee/prism/human/check.md": ['[ "$normalized" = "APPROVE" ]', "APPROVAL_INTENT"],
@@ -252,6 +306,17 @@ for relative_path, snippets in callee_contracts.items():
     record(path.is_file(), f"{relative_path} exists")
     for snippet in snippets:
         record(snippet in text, f"{relative_path} contains contract marker: {snippet}")
+
+callee_lifecycle_text = (root / "pack/callee/prism/lifecycle.md").read_text()
+callee_summary_positions = [
+    callee_lifecycle_text.find(marker)
+    for marker in ["### Design summary", "### Task summary", "### Approval request"]
+]
+record(
+    all(position >= 0 for position in callee_summary_positions)
+    and callee_summary_positions == sorted(callee_summary_positions),
+    "Callee lifecycle presents design summary, task summary, then approval request",
+)
 
 record(
     not (root / "plugins/prism/skills/lifecycle/references/plan.md").exists(),

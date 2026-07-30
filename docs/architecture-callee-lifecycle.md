@@ -1,6 +1,6 @@
 # Prism Callee Lifecycle Architecture
 
-This document defines automated Prism only: `$prism-callee:lifecycle`,
+This document defines the Prism Callee workflow only: `$prism-callee:lifecycle`,
 `/prism-callee:lifecycle`, and `/prism-callee-lifecycle`. It advances the
 same Beads-backed story state as the manual host lifecycle through public
 `prism/lifecycle` and `prism/phases/*` Callee workflows.
@@ -42,17 +42,18 @@ named story ID when present, otherwise resumes exactly one open Prism story. If
 neither applies, it creates a new `prism/specify` story from the raw request;
 Specify then normalizes the acceptance criteria.
 
-## Prism Impact Lens and approval
+## Design and approval
 
-The automated surface enforces the same five-dimension design contract and
-legacy migration as the host lifecycle: incomplete open stories return to
-Design, approval is cleared, children are preserved, and Breakdown reconciles
-mitigation coverage.
+The Callee workflow uses the same free-form design contract as the host
+lifecycle. Design records the solution, relevant risks, constraints, tradeoffs,
+and verification without requiring an assessment matrix or rating system.
+Breakdown covers actionable implementation and verification work while
+preserving existing child state and dependencies.
 
-At `prism/phases/human`, the host prepares Design summary → Prism Impact Lens →
-Task summary → Approval request from current Beads state. The Human agent
-accepts ordinary language; `prism/human/intent` classifies it without tools and
-fails closed, and the deterministic check accepts only exact `APPROVE`.
+At `prism/phases/human`, the host prepares Design summary → Task summary →
+Approval request from current Beads state. The Human agent accepts ordinary
+language; `prism/human/intent` classifies it without tools and fails closed,
+and the deterministic check accepts only exact `APPROVE`.
 
 ## Rules
 

@@ -1,0 +1,6 @@
+{
+  "enabledPlugins": {
+    "prism@prism": true,
+    "prism-callee@prism": true
+  }
+}

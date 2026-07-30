@@ -29,12 +29,9 @@ spec:
         project_name: prism-story
         technical_context: |
           Prefer the smallest design that satisfies acceptance.
-          The returned design MUST end with a complete `## Prism Impact Lens`
-          table covering Product, Process, People, Planet, and Prosperity.
-          Allowed qualitative ratings: positive, negative, mixed,
-          not-material, unknown. Every row needs rationale/evidence; negative
-          and mixed require mitigation or an explicit residual-impact
-          disposition. Do not advance with unknown.
+          Capture relevant risks, constraints, tradeoffs, security concerns,
+          and verification in ordinary design prose. Do not require a fixed
+          assessment matrix or rating system.
           Explorer behavioral model:
 
           {{ index .State.outputs "explorer" }}

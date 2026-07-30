@@ -9,7 +9,7 @@ Turn the requested change into a durable Beads story with:
 
 - a concrete problem / change description
 - explicit acceptance criteria
-- known Product, Process, People, Planet, or Prosperity constraints and non-goals
+- known constraints and non-goals
 - enough scope clarity to hand off to design without inventing requirements
 
 ## Required inputs
@@ -30,8 +30,8 @@ Turn the requested change into a durable Beads story with:
 4. Rewrite the story into:
    - `description`: what changes and why
    - `acceptance`: observable outcomes, not implementation guesses
-   Capture any known impact constraints in either field, but do not rate the
-   five Impact Lens dimensions in Specify; Design owns that assessment.
+   Capture known constraints and non-goals in either field when they affect
+   observable behavior or design choices.
 5. Re-read the rewritten description and acceptance before persisting. They must be specific enough that a designer can inspect the repository without guessing product intent.
 
 ## Persist and advance

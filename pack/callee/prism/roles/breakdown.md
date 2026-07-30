@@ -373,15 +373,12 @@ the `constraints` value supplied in the Runtime Input section
 6. **Flag risky tasks**: tasks with high uncertainty, external
    dependencies, or novel technology that could cause delays.
 
-7. **Honor the Prism Impact Lens**:
-   - Refuse to plan when the exact lens section is missing, malformed, or has
-     an `unknown` rating.
-   - Map every actionable mitigation to an existing or proposed child task and
-     name its Product, Process, People, Planet, or Prosperity dimension.
+7. **Reconcile existing work**:
    - When existing children are present, preserve their state and dependencies,
-     reuse sufficient coverage, and propose only missing tasks. Never propose
-     automatic deletion, closure, or reopening. Stop on conflicts with
-     completed work.
+     reuse sufficient coverage, and propose only missing implementation or
+     verification tasks.
+   - Never propose automatic deletion, closure, or reopening. Stop on conflicts
+     with completed work.
 
 ## Non-Goals
 

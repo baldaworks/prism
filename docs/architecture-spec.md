@@ -28,18 +28,17 @@ Both Prism skills operate on the same durable Beads model:
 
 - story labels: `prism`, `human:approved`
 - story assignee: the active lifecycle phase, from `prism/specify` through `prism/verify`
-- story fields: description, acceptance, design (including the durable
-  `## Prism Impact Lens`)
+- story fields: description, acceptance, design
 - child tasks and dependencies
 
 Both skills accept user intent rather than requiring a pre-created story: use
 an explicitly named story ID, otherwise resume exactly one open Prism story,
 otherwise create a new story assigned to `prism/specify`.
 
-The Impact Lens is a Prism-owned qualitative assessment of Product, Process,
-People, Planet, and Prosperity. It adds no lifecycle label or phase. A complete
-lens is required before Breakdown, and actionable mitigations must be covered
-by the durable child-task graph before informed human approval.
+Design is durable free-form markdown. It records the proposed solution,
+relevant risks, constraints, tradeoffs, and verification without a required
+assessment matrix or rating system. Breakdown maps actionable implementation
+and verification work into the durable child-task graph before human approval.
 
 What differs is execution:
 

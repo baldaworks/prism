@@ -6,7 +6,7 @@ is `human:approved` and has no open child tasks.
 ## Goal
 
 Make the close-or-bounce story decision against the story description,
-acceptance criteria, design, Impact Lens, and implemented result.
+acceptance criteria, design, and implemented result.
 
 ## Required inputs
 
@@ -27,8 +27,7 @@ bd children <story>
    - the description was implemented
    - the acceptance criteria are satisfied
    - the design intent still matches the final result
-   - every actionable Impact Lens mitigation was implemented and has evidence
-   - disclosed residual impacts still match the approved design
+   - relevant risks, security concerns, regressions, and tests were addressed
    - no follow-up work is required for correctness
 3. Decide whether the story should close or bounce back for more work.
 
@@ -45,10 +44,10 @@ If verification fails:
 - keep the story open
 - reopen or create child tasks as needed
 - return the story to `prism/apply` with `human:approved` for implementation gaps
-- move it to `prism/breakdown` and clear approval when mitigation task coverage
-  is defective
-- move it to `prism/design` and clear approval when the design or Impact Lens is
-  invalid, including unsupported evidence or a newly discovered `unknown`
+- move it to `prism/breakdown` and clear approval when task coverage is
+  defective
+- move it to `prism/design` and clear approval when the design is invalid or
+  incomplete
 
 ## Stop when
 

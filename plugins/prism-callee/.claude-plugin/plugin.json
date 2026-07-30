@@ -1,7 +1,7 @@
 {
   "name": "prism-callee",
-  "version": "0.3.0+codex.20260729000000",
-  "description": "Run the automated Prism lifecycle through Callee subagents.",
+  "version": "0.3.0+codex.20260730052808",
+  "description": "Run the Prism lifecycle as a workflow of specialized Callee subagents.",
   "author": {
     "name": "Alexey Samoylov",
     "url": "https://github.com/baldaworks"
@@ -19,14 +19,14 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "Prism Callee",
-    "shortDescription": "Automated Prism lifecycle with Callee subagents.",
-    "longDescription": "Runs the Prism lifecycle through Callee subagents, collects approval through a Callee Human agent at the human gate, and stops only when approval is withheld, verification completes, or another blocking condition is hit.",
+    "shortDescription": "Prism workflow with specialized Callee subagents.",
+    "longDescription": "Runs the Prism lifecycle as a workflow composed of specialized, phase-specific Callee subagents, collects approval through a Callee Human agent at the human gate, and stops only when approval is withheld, verification completes, or another blocking condition is hit.",
     "developerName": "Alexey Samoylov",
     "category": "Developer Tools",
     "capabilities": [
       "Local filesystem",
       "CLI orchestration"
     ],
-    "defaultPrompt": "Use /prism-callee:lifecycle to advance a Prism story automatically through the Callee Human-agent approval gate and the remaining prism/* lifecycle phases."
+    "defaultPrompt": "Use /prism-callee:lifecycle to run a Prism story through specialized prism/* subagents and the explicit Callee Human approval gate."
   }
 }
