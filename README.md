@@ -243,7 +243,8 @@ bd where
 ## Lifecycle Summary
 
 Prism stores one current phase at a time. A lifecycle invocation automatically
-continues through successful pre-approval phases until the Human gate:
+continues through successful pre-approval phases, enters the Human gate, and
+presents its informed approval request:
 
 1. `phase:specify`
 2. `phase:design`
@@ -264,8 +265,9 @@ Rules that matter to users:
 - Before approval, Prism shows Design summary → Task summary → Approval
   request. One informed approval covers the design and task graph.
 - In the `prism-callee` workflow, a no-tools classifier interprets the
-  Human agent's free-form response and a deterministic gate accepts only an
-  unambiguous approval decision.
+  Human agent's free-form response as approval, design refinement, or
+  fail-closed withholding. A deterministic gate permits Apply only for
+  approval and emits a machine-readable stop for refinement.
 - Exactly one `phase:*` Beads story label is the current lifecycle phase.
 - Story assignees do not encode lifecycle phases. Existing assignee-driven
   stories are not migrated or supported.
@@ -303,6 +305,10 @@ Run the full public workflow directly with:
 callee agent run prism/lifecycle \
   --message "Add CSV export to the report page."
 ```
+
+This direct command runs the Callee graph but does not persist or resume Beads
+state. Use a `prism-callee` host entrypoint when host-managed Beads persistence
+is required.
 
 For ordinary host-integrated execution, the `prism-callee` skill entrypoints
 remain available. Use `prism/phases/*` IDs when debugging or running an

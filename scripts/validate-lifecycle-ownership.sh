@@ -6,8 +6,10 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 python3 - "$repo_root" <<'PY'
 import json
+import os
 import pathlib
 import re
+import subprocess
 import sys
 
 root = pathlib.Path(sys.argv[1])
@@ -49,7 +51,7 @@ phase_labels = [
     "phase:apply",
     "phase:verify",
 ]
-record(mapping.get("version") == 9, "ownership schema version is 9")
+record(mapping.get("version") == 10, "ownership schema version is 10")
 record(
     mapping.get("direct_callee_invocation")
     == 'callee agent run prism/lifecycle --message "..."',
@@ -63,7 +65,7 @@ record(mapping.get("phase_labels") == phase_labels, "phase labels declare the su
 record(
     mapping.get("advance_policy") == {
         "pre_approval_phases": ["specify", "design", "breakdown"],
-        "mode": "continuous_until_human_gate",
+        "mode": "continuous_through_human_request",
         "confirmation_between_phases": False,
     },
     "pre-approval phases advance continuously without confirmation",
@@ -79,6 +81,16 @@ record(
 record(
     human_gate.get("approval_scope") == ["design", "tasks"],
     "human approval covers design and tasks",
+)
+record(
+    human_gate.get("classifier_decisions")
+    == ["APPROVE", "REFINE_DESIGN", "WITHHOLD"],
+    "human classifier exposes approval, refinement, and withhold decisions",
+)
+record(
+    human_gate.get("refine_stop_marker")
+    == "PRISM_HUMAN_DECISION=REFINE_DESIGN",
+    "human refinement has a machine-readable fail-closed stop marker",
 )
 record(
     human_gate.get("decisions") == {
@@ -182,8 +194,9 @@ for skill_path in [
         record(snippet in text, f"{skill_path.relative_to(root)} documents lifecycle-owned story creation: {snippet}")
     for snippet in [
         "lifecycle advance loop",
-        "successful Specify, Design, or Breakdown",
-        "confirm those phase transitions",
+        "successful Specify or Design",
+        "successful Breakdown",
+        "`phase:human` is not a stop condition",
     ]:
         record(
             snippet in text,
@@ -363,6 +376,7 @@ for skill_path in [
         "bd update <story> --set-labels prism,phase:design",
         "Preserve every existing child task",
         "automatically runs Design and Breakdown",
+        "PRISM_HUMAN_DECISION=REFINE_DESIGN",
     ]:
         record(snippet in text, f"{skill_path.relative_to(root)} documents lifecycle contract: {snippet}")
 
@@ -415,8 +429,18 @@ callee_contracts = {
         "### Approval request",
     ],
     "pack/callee/prism/phases/human.md": ["prism/human/intent", "approval_intent"],
-    "pack/callee/prism/human/intent.md": ["mode: deny", "Output exactly `APPROVE`", "Output exactly `WITHHOLD`"],
-    "pack/callee/prism/human/check.md": ['[ "$normalized" = "APPROVE" ]', "APPROVAL_INTENT"],
+    "pack/callee/prism/human/intent.md": [
+        "mode: deny",
+        "Output exactly `APPROVE`",
+        "Output exactly `REFINE_DESIGN`",
+        "Output exactly `WITHHOLD`",
+    ],
+    "pack/callee/prism/human/check.md": [
+        "APPROVAL_INTENT",
+        "REFINE_DESIGN)",
+        "PRISM_HUMAN_DECISION=REFINE_DESIGN",
+        "exit 2",
+    ],
 }
 for relative_path, snippets in callee_contracts.items():
     path = root / relative_path
@@ -424,6 +448,52 @@ for relative_path, snippets in callee_contracts.items():
     record(path.is_file(), f"{relative_path} exists")
     for snippet in snippets:
         record(snippet in text, f"{relative_path} contains contract marker: {snippet}")
+
+human_check_path = root / "pack/callee/prism/human/check.md"
+human_check_text = human_check_path.read_text()
+human_check_parts = human_check_text.split("---", 2)
+record(
+    len(human_check_parts) == 3,
+    "human decision check has executable script body",
+)
+if len(human_check_parts) == 3:
+    human_check_body = human_check_parts[2].lstrip()
+    decision_cases = [
+        ("APPROVE", 0, "APPROVE", ""),
+        (
+            "REFINE_DESIGN",
+            2,
+            "",
+            "PRISM_HUMAN_DECISION=REFINE_DESIGN",
+        ),
+        ("WITHHOLD", 1, "", "withheld approval: WITHHOLD"),
+    ]
+    for decision, expected_code, stdout_marker, stderr_marker in decision_cases:
+        env = os.environ.copy()
+        env["APPROVAL_INTENT"] = decision
+        result = subprocess.run(
+            ["sh"],
+            input=human_check_body,
+            text=True,
+            capture_output=True,
+            cwd=root,
+            env=env,
+            check=False,
+        )
+        record(
+            result.returncode == expected_code,
+            f"human decision check returns {expected_code} for {decision}",
+        )
+        if stdout_marker:
+            record(
+                stdout_marker in result.stdout,
+                f"human decision check emits stdout marker for {decision}",
+            )
+        if stderr_marker:
+            record(
+                stderr_marker in result.stderr,
+                f"human decision check emits stderr marker for {decision}",
+            )
 
 callee_lifecycle_text = (root / "pack/callee/prism/lifecycle.md").read_text()
 callee_summary_positions = [

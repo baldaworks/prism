@@ -76,13 +76,15 @@ Phase references:
    `human:approved`, and child task state.
 5. Enter the lifecycle advance loop: load exactly one matching phase reference
    and run that phase directly in the host.
-6. Persist the result to Beads, then re-check the story and children. After a
-   successful Specify, Design, or Breakdown transition, immediately load the
-   newly selected phase reference and continue in the same invocation. Do not
-   ask the human to confirm those phase transitions.
-7. Stop the advance loop only when the current reference requires missing or
-   blocking human input, lifecycle state is invalid, or the story reaches the
-   Human gate.
+6. Persist the result to Beads, then re-check the story and children. After
+   successful Specify or Design persistence, immediately load the newly
+   selected phase reference. After successful Breakdown persistence,
+   immediately load the Human reference and present its informed approval
+   request. Do not ask the human to confirm any phase transition.
+7. Stop the advance loop only when the Human reference is awaiting the
+   authorization or refinement decision, another reference requires missing or
+   blocking human input, or lifecycle state is invalid. Merely writing
+   `phase:human` is not a stop condition.
 
 ## Hard rules
 
@@ -123,9 +125,11 @@ invocation, repeat:
 2. load exactly one matching reference
 3. follow its inputs, procedure, persistence, and stop conditions
 4. re-check Beads state
-5. continue immediately after successful Specify, Design, or Breakdown
-   persistence; never pause for phase-transition confirmation
-6. stop at the Human gate or another explicit stop condition
+5. continue immediately after successful Specify or Design persistence
+6. after successful Breakdown persistence, load the Human reference and present
+   the approval request without asking for phase-transition confirmation
+7. stop while the Human reference awaits a decision or at another explicit
+   stop condition
 
 | Phase | Load | Successful outcome |
 | --- | --- | --- |

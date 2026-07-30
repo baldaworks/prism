@@ -15,6 +15,10 @@ callee agent run prism/lifecycle \
   --message "Add CSV export to the report page."
 ```
 
+Direct binary execution runs the public Callee graph only. It does not persist
+or resume Beads state; use a `prism-callee` host entrypoint when the durable
+lifecycle wrapper is required.
+
 ## Public surface
 
 | Host or binary entrypoint | Callee surface |
@@ -65,11 +69,11 @@ preserving existing child state and dependencies.
 At `prism/phases/human`, the host prepares Design summary → Task summary →
 Approval request from current Beads state. The Human agent accepts ordinary
 language; `prism/human/intent` classifies it without tools and fails closed,
-and the deterministic check accepts only exact `APPROVE`. Unambiguous approval
-writes `phase:apply` with `human:approved`. An explicit request to refine the
-design remains non-approval, clears any approval label, returns durable state
-to `phase:design`, and preserves child state for Breakdown reconciliation.
-Other non-approval remains at `phase:human`.
+and emits exactly `APPROVE`, `REFINE_DESIGN`, or `WITHHOLD`. The deterministic
+check accepts only `APPROVE`. `REFINE_DESIGN` stops the Sequential workflow with
+`PRISM_HUMAN_DECISION=REFINE_DESIGN`, allowing the host wrapper to clear
+approval, return durable state to `phase:design`, and preserve child state for
+Breakdown reconciliation. `WITHHOLD` remains at `phase:human`.
 
 ## Rules
 

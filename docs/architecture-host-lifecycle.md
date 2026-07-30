@@ -71,8 +71,9 @@ design, task graph, status, labels, and assignees are written directly to Beads.
 After a successful Specify, Design, or Breakdown write, the host re-reads Beads
 and immediately runs the newly selected phase in the same invocation. It does
 not ask the human to confirm transitions between these pre-approval phases.
-The automatic loop stops at the Human gate, invalid state, or a genuinely
-missing or blocking input.
+After Breakdown, it enters the Human reference and presents the informed
+approval request. It stops while awaiting that decision, on invalid state, or
+for a genuinely missing or blocking input.
 
 ## Authority boundaries
 

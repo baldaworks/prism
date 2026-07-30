@@ -22,8 +22,8 @@ Validator-style roles use **`gpt-5.3-codex-spark`**:
 - `prism/roles/reviewer`
 Permissions: default / **`ask`**.
 The directly authored `prism/human/intent` classifier is the sole exception:
-it uses `spec.permissions.mode: deny` because approval classification requires
-no tools and must fail closed.
+it uses `spec.permissions.mode: deny` because approval/refinement
+classification requires no tools and must fail closed.
 
 ## Contents
 
@@ -241,8 +241,8 @@ Inspect live keys with `callee agent view <id> --json` (authoritative if drift).
 | `prism/specify/extract` | Script | final requirements document extractor | **none** |
 | `prism/design/flow` | Sequential | `explorer` → `architect` | **none** (child params bound in workflow) |
 | `prism/human/prompt` | Human | operator approval prompt | **none** |
-| `prism/human/intent` | Role | fail-closed free-form approval intent classifier | **none** |
-| `prism/human/check` | Script | exact classifier decision validator | **none** |
+| `prism/human/intent` | Role | fail-closed approval/refinement intent classifier | **none** |
+| `prism/human/check` | Script | approval pass / refinement stop validator | **none** |
 | `prism/apply/loop` | Loop | `worker`=`implementer` ↔ `validator`=`reviewer` (`canEscalate`) | **none** |
 | `prism/verify/review` | Sequential | `reviewer` | **none** |
 

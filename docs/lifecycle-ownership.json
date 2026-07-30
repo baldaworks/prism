@@ -1,5 +1,5 @@
 {
-  "version": 9,
+  "version": 10,
   "lifecycle_ref": "prism/lifecycle",
   "direct_callee_invocation": "callee agent run prism/lifecycle --message \"...\"",
   "manual_host_entrypoints": {
@@ -36,7 +36,7 @@
       "design",
       "breakdown"
     ],
-    "mode": "continuous_until_human_gate",
+    "mode": "continuous_through_human_request",
     "confirmation_between_phases": false
   },
   "human_gate": {
@@ -49,6 +49,12 @@
       "design",
       "tasks"
     ],
+    "classifier_decisions": [
+      "APPROVE",
+      "REFINE_DESIGN",
+      "WITHHOLD"
+    ],
+    "refine_stop_marker": "PRISM_HUMAN_DECISION=REFINE_DESIGN",
     "decisions": {
       "approve": {
         "transition": "apply",

@@ -52,7 +52,8 @@ bd update <story> --set-labels prism,phase:design
 
    Preserve every existing child task and its status and dependencies. The next
    lifecycle invocation automatically runs Design and Breakdown, reconciles the
-   child graph, and returns to the Human gate.
+   child graph, re-enters this Human reference, and presents the refreshed
+   approval request.
 9. If the response is ambiguous, conditional, asks a question, requests
    changes without clearly sending the design for refinement, or merely
    discusses how approval should work, do not persist approval. Keep the story

@@ -15,10 +15,17 @@ normalized="$(
     | tr '[:lower:]' '[:upper:]'
 )"
 
-if [ "$normalized" = "APPROVE" ]; then
-  printf 'APPROVE\n'
-  exit 0
-fi
-
-printf 'Prism human gate withheld approval: %s\n' "$APPROVAL_INTENT" >&2
-exit 1
+case "$normalized" in
+  APPROVE)
+    printf 'APPROVE\n'
+    exit 0
+    ;;
+  REFINE_DESIGN)
+    printf 'PRISM_HUMAN_DECISION=REFINE_DESIGN\n' >&2
+    exit 2
+    ;;
+  *)
+    printf 'Prism human gate withheld approval: %s\n' "$APPROVAL_INTENT" >&2
+    exit 1
+    ;;
+esac

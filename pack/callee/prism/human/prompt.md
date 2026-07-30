@@ -10,5 +10,6 @@ Prism human gate
 {{ .Input }}
 
 Reply in ordinary free-form language. Approval is granted only when your intent
-to start implementation is unambiguous; questions, conditions, or requested
-changes withhold approval.
+to start implementation is unambiguous. Clearly request design refinement when
+the design or task graph must change before implementation. Questions,
+conditions, and unclear responses withhold approval.

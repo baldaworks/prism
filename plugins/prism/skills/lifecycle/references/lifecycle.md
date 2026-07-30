@@ -5,9 +5,9 @@ present, otherwise resumes exactly one open Prism story; if neither applies, it
 creates a new story labeled `phase:specify`. Exactly one supported `phase:*`
 label is the durable lifecycle state. `prism` marks lifecycle membership and,
 after approval, `human:approved` authorizes apply. The host-native Prism skill
-continues through successful pre-approval phases in one invocation; the Prism
-Callee workflow runs the same advance-until-gate contract through specialized
-`prism/*` subagents.
+continues through successful pre-approval phases and presents the Human request
+in one invocation; the Prism Callee workflow runs the same contract through
+specialized `prism/*` subagents.
 
 ## Graph
 

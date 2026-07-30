@@ -3,8 +3,9 @@ apiVersion: callee.metalagman.dev/v1alpha1
 kind: Sequential
 spec:
   description: |
-    Public Prism human phase entrypoint. Collects operator approval through a
-    Callee Human agent and fails closed unless the operator explicitly approves.
+    Public Prism human phase entrypoint. Collects an operator decision through
+    a Callee Human agent. Approval succeeds; explicit design refinement stops
+    with a machine-readable marker; all other decisions fail closed.
   children:
     - ref: prism/human/prompt
       alias: approval_prompt

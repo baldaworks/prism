@@ -15,8 +15,8 @@ PromptKit role/workflow contract: [references/promptkit.md](references/promptkit
 ## Goal
 
 - Advance a story through `specify → design → breakdown → human → apply → verify`.
-- Run successful pre-approval phases continuously in one invocation until the
-  Human gate.
+- Run successful pre-approval phases continuously, then enter the Human phase
+  and present its informed approval request in the same invocation.
 - Persist state after every Callee return.
 - Collect approval or an explicit design-refinement decision through the Callee
   Human phase, then continue to Apply only after explicit approval.
@@ -67,11 +67,14 @@ If needed, import `pack/callee/prism` under the `prism` prefix or expose it as
    with requirements, design, approval, and children.
 6. Before direct role or workflow execution details, load [references/promptkit.md](references/promptkit.md).
 7. Enter the lifecycle advance loop, persisting and re-checking after every
-   Callee return. After successful Specify, Design, or Breakdown persistence,
-   invoke the newly selected phase immediately in the same lifecycle
-   invocation. Do not ask the human to confirm those phase transitions.
-8. Stop the advance loop only for missing or blocking input, invalid lifecycle
-   state, an unresolved Callee failure, or the Human gate.
+   Callee return. After successful Specify or Design persistence, immediately
+   invoke the newly selected phase. After successful Breakdown persistence,
+   immediately invoke `prism/phases/human` with the informed approval request.
+   Do not ask the human to confirm any phase transition.
+8. Stop the advance loop only while the Human phase awaits or returns an
+   authorization or refinement decision, for another missing or blocking
+   input, invalid lifecycle state, or an unresolved Callee failure. Merely
+   writing `phase:human` is not a stop condition.
 
 ## Rules
 
@@ -83,7 +86,9 @@ If needed, import `pack/callee/prism` under the `prism` prefix or expose it as
   classifies intent fail-closed; only its exact `APPROVE` decision authorizes
   the host to persist the label.
 - Treat an explicit request to refine the design as a durable transition back
-  to `phase:design`, not as approval. Clear `human:approved`, preserve every
+  to `phase:design`, not as approval. The Callee human phase reports this as
+  `REFINE_DESIGN`, and its deterministic gate stops with
+  `PRISM_HUMAN_DECISION=REFINE_DESIGN`. Clear `human:approved`, preserve every
   child and dependency for Breakdown reconciliation, start no implementation,
   and stop the current invocation.
 - Keep ambiguous, conditional, inquisitive, or otherwise unclear non-approval
@@ -155,7 +160,6 @@ bd show <story> --long
 bd children <story>
 bd blocked
 callee agent run prism/phases/human --message "<prepared informed-approval summary>"
-bd update <story> --set-labels prism,phase:apply,human:approved
 ```
 
 The prepared message must be derived from those three Beads reads and use this
@@ -163,8 +167,14 @@ exact order: `### Design summary`, `### Task summary`, `### Approval request`.
 Cover every child and explain that one approval covers the design and task
 graph. Persist approval only when the phase succeeds with the exact `APPROVE` classifier decision.
 
-If the operator explicitly requests design refinement, the fail-closed
-classifier must not authorize Apply. Clear approval and persist the refinement
+On successful output `APPROVE`, persist authorization:
+
+```bash
+bd update <story> --set-labels prism,phase:apply,human:approved
+```
+
+If the command stops with
+`PRISM_HUMAN_DECISION=REFINE_DESIGN`, clear approval and persist the refinement
 decision instead:
 
 ```bash
@@ -172,9 +182,9 @@ bd update <story> --set-labels prism,phase:design
 ```
 
 Preserve every existing child task, status, and dependency, then stop. The next
-lifecycle invocation automatically runs Design and Breakdown and returns to the
-Human gate. On ambiguous non-approval or classifier failure without an explicit
-refinement instruction, stop with the story open and labeled `phase:human`.
+lifecycle invocation automatically runs Design and Breakdown, re-enters the
+Human phase, and presents the refreshed approval request. On any other nonzero
+outcome, stop with the story open and labeled `phase:human`.
 
 ### Apply
 
