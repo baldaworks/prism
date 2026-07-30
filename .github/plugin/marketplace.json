@@ -5,13 +5,13 @@
   },
   "metadata": {
     "description": "Prism story lifecycle plugins for GitHub Copilot CLI.",
-    "version": "0.3.0+codex.20260730052808"
+    "version": "0.4.0+codex.20260730000000"
   },
   "plugins": [
     {
       "name": "prism",
       "description": "Run the Prism beads-backed story lifecycle directly in the host by deriving the current phase from Beads state.",
-      "version": "0.3.0+codex.20260730052808",
+      "version": "0.4.0+codex.20260730000000",
       "source": "./plugins/prism",
       "author": {
         "name": "Alexey Samoylov",
@@ -25,7 +25,7 @@
     {
       "name": "prism-callee",
       "description": "Run the Prism lifecycle as a workflow of specialized Callee subagents.",
-      "version": "0.3.0+codex.20260730052808",
+      "version": "0.4.0+codex.20260730000000",
       "source": "./plugins/prism-callee",
       "author": {
         "name": "Alexey Samoylov",
