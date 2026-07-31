@@ -105,5 +105,6 @@ and preserves children. Ambiguity remains at Human.
 
 ```sh
 ./scripts/validate-lifecycle-ownership.sh
+./scripts/test-lifecycle-drift-detection.sh
 ./scripts/validate-plugin-packaging.sh
 ```

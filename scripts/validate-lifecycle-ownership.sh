@@ -52,7 +52,7 @@ phase_labels = [
     "phase:apply",
     "phase:verify",
 ]
-record(mapping.get("version") == 12, "ownership schema version is 12")
+record(mapping.get("version") == 13, "ownership schema version is 13")
 record(
     mapping.get("direct_callee_invocation")
     == 'callee agent run prism/lifecycle --message "..."',
@@ -232,6 +232,7 @@ for phase in story_phases:
     record("aliases" not in phase, f"{name} has no assignee aliases")
     executor = phase.get("executor", {})
     full_ref = executor.get("full_host_reference")
+    full_ref_sha256 = executor.get("full_host_reference_sha256")
     light_ref = executor.get("light_host_reference")
     public_ref = executor.get("public_ref")
     record(bool(executor.get("kind")), f"{name} declares executor kind")
@@ -239,6 +240,18 @@ for phase in story_phases:
         bool(full_ref) and (root / full_ref).is_file(),
         f"{name} full host phase reference exists",
     )
+    full_ref_path = root / full_ref if full_ref else root / "__missing__"
+    record(
+        isinstance(full_ref_sha256, str)
+        and re.fullmatch(r"[0-9a-f]{64}", full_ref_sha256) is not None,
+        f"{name} declares a frozen full-host reference digest",
+    )
+    if full_ref_path.is_file():
+        record(
+            hashlib.sha256(full_ref_path.read_bytes()).hexdigest()
+            == full_ref_sha256,
+            f"{name} full host reference matches its reviewed semantic digest",
+        )
     record(
         bool(light_ref) and (root / light_ref).is_file(),
         f"{name} Light phase reference exists",
@@ -273,8 +286,67 @@ for phase in story_phases:
         and bool(host_contract.get("on_exhausted")),
         f"{name} declares a complete full-host contract projection",
     )
+    if name == "specify":
+        record(
+            host_contract.get("required_inputs")
+            == [
+                "story-record",
+                "raw-user-intent",
+                "human-clarifications",
+                "system-context",
+            ],
+            "specify projection preserves its required inputs",
+        )
+        record(
+            host_contract.get("quality_gates")
+            == [
+                "readiness-invariants",
+                "minimum-blocking-questions",
+                "self-verification",
+                "non-empty-requirements-extract",
+            ],
+            "specify projection preserves its quality gates",
+        )
+        record(
+            host_contract.get("protocol")
+            == {
+                "normalizer_sections": [
+                    "SPECIFY_DECISION",
+                    "MISSING_DIMENSIONS",
+                    "FOLLOW_UP_QUESTIONS",
+                    "REQUIREMENTS_DOCUMENT",
+                ],
+                "gate_sections": [
+                    "SPECIFY_GATE_DECISION",
+                    "GATE_SUMMARY",
+                    "MISSING_DIMENSIONS",
+                    "FOLLOW_UP_QUESTIONS",
+                    "REQUIREMENTS_RISKS",
+                ],
+                "requirements_sections": [
+                    "Pre-Authoring Analysis",
+                    "Overview",
+                    "Scope",
+                    "Definitions and Glossary",
+                    "Requirements",
+                    "Dependencies",
+                    "Assumptions",
+                    "Risks",
+                    "Revision History",
+                ],
+                "epistemic_labels": [
+                    "KNOWN",
+                    "INFERRED",
+                    "ASSUMED",
+                    "UNKNOWN",
+                ],
+                "human_response": "numbered-follow-ups-or-UNKNOWN",
+                "extract": "non-empty-REQUIREMENTS_DOCUMENT",
+            },
+            "specify projection preserves output envelopes and protocol obligations",
+        )
     for reference_path in [
-        root / full_ref if full_ref else root / "__missing__",
+        full_ref_path,
         root
         / "plugins/prism/prefixed-skills/prism-lifecycle/references"
         / f"{name}.md",

@@ -396,6 +396,7 @@ execution semantics, run:
 
 ```sh
 ./scripts/validate-lifecycle-ownership.sh
+./scripts/test-lifecycle-drift-detection.sh
 ```
 
 ## Maintainer Docs

@@ -1,5 +1,5 @@
 {
-  "version": 12,
+  "version": 13,
   "lifecycle_ref": "prism/lifecycle",
   "direct_callee_invocation": "callee agent run prism/lifecycle --message \"...\"",
   "callee_pack": {
@@ -103,6 +103,7 @@
       "executor": {
         "kind": "Sequential",
         "full_host_reference": "plugins/prism/skills/lifecycle/references/specify.md",
+        "full_host_reference_sha256": "6b24b7cd2b34d79ee361581196deb58c5ef9bb67bd48f4453f2807399c665aa6",
         "light_host_reference": "plugins/prism/skills/light/references/specify.md",
         "public_ref": "prism/phases/specify",
         "internal_refs": [
@@ -146,12 +147,63 @@
             "human-clarification",
             "requirements-extract"
           ],
+          "required_inputs": [
+            "story-record",
+            "raw-user-intent",
+            "human-clarifications",
+            "system-context"
+          ],
           "required_outputs": [
+            "normalizer-envelope",
+            "gate-report-envelope",
+            "structured-requirements-document",
             "atomic-req-ids",
             "rfc2119-requirements",
             "per-requirement-acceptance",
-            "constraints-and-non-goals"
+            "constraints-and-non-goals",
+            "epistemic-and-self-verification",
+            "fail-closed-requirements-extract"
           ],
+          "quality_gates": [
+            "readiness-invariants",
+            "minimum-blocking-questions",
+            "self-verification",
+            "non-empty-requirements-extract"
+          ],
+          "protocol": {
+            "normalizer_sections": [
+              "SPECIFY_DECISION",
+              "MISSING_DIMENSIONS",
+              "FOLLOW_UP_QUESTIONS",
+              "REQUIREMENTS_DOCUMENT"
+            ],
+            "gate_sections": [
+              "SPECIFY_GATE_DECISION",
+              "GATE_SUMMARY",
+              "MISSING_DIMENSIONS",
+              "FOLLOW_UP_QUESTIONS",
+              "REQUIREMENTS_RISKS"
+            ],
+            "requirements_sections": [
+              "Pre-Authoring Analysis",
+              "Overview",
+              "Scope",
+              "Definitions and Glossary",
+              "Requirements",
+              "Dependencies",
+              "Assumptions",
+              "Risks",
+              "Revision History"
+            ],
+            "epistemic_labels": [
+              "KNOWN",
+              "INFERRED",
+              "ASSUMED",
+              "UNKNOWN"
+            ],
+            "human_response": "numbered-follow-ups-or-UNKNOWN",
+            "extract": "non-empty-REQUIREMENTS_DOCUMENT"
+          },
           "max_iterations": 5,
           "on_exhausted": "fail"
         },
@@ -176,6 +228,7 @@
       "executor": {
         "kind": "Sequential",
         "full_host_reference": "plugins/prism/skills/lifecycle/references/design.md",
+        "full_host_reference_sha256": "78e75118b4c1777f565381304417d969668f6a9a899151d1788c526b5d9126ef",
         "light_host_reference": "plugins/prism/skills/light/references/design.md",
         "public_ref": "prism/phases/design",
         "internal_refs": [
@@ -226,6 +279,7 @@
       "executor": {
         "kind": "Sequential",
         "full_host_reference": "plugins/prism/skills/lifecycle/references/breakdown.md",
+        "full_host_reference_sha256": "8db9834cf2e5e74e155c03ce85f0785fbb6cbd2e1bdb5d7c7d741817b725541b",
         "light_host_reference": "plugins/prism/skills/light/references/breakdown.md",
         "public_ref": "prism/phases/breakdown",
         "internal_refs": [
@@ -266,6 +320,7 @@
       "executor": {
         "kind": "Sequential",
         "full_host_reference": "plugins/prism/skills/lifecycle/references/human.md",
+        "full_host_reference_sha256": "01e85d95346448bcfebe1bfa423b120d17c0568fd72858b622a92d4ad1675961",
         "light_host_reference": "plugins/prism/skills/light/references/human.md",
         "public_ref": "prism/phases/human",
         "internal_refs": [
@@ -321,6 +376,7 @@
       "executor": {
         "kind": "Sequential",
         "full_host_reference": "plugins/prism/skills/lifecycle/references/apply.md",
+        "full_host_reference_sha256": "722424cfd2e7bbc4fc0abe0e272d6064a28ae5339769c3d11801289f6b78e603",
         "light_host_reference": "plugins/prism/skills/light/references/apply.md",
         "public_ref": "prism/phases/apply",
         "internal_refs": [
@@ -371,6 +427,7 @@
       "executor": {
         "kind": "Sequential",
         "full_host_reference": "plugins/prism/skills/lifecycle/references/verify.md",
+        "full_host_reference_sha256": "7b63ccc2fb1eab0c389ada6a49ffaba1d0a261b97ffcf521e956b090ffda9666",
         "light_host_reference": "plugins/prism/skills/light/references/verify.md",
         "public_ref": "prism/phases/verify",
         "internal_refs": [
