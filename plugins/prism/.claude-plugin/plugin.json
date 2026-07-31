@@ -1,6 +1,6 @@
 {
   "name": "prism",
-  "version": "0.4.2+codex.20260731000000",
+  "version": "0.5.0+codex.20260731000000",
   "description": "Run the full role-aligned or concise Light Prism lifecycle directly in the host.",
   "author": {
     "name": "Alexey Samoylov",

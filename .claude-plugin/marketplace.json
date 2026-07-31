@@ -5,13 +5,13 @@
   },
   "metadata": {
     "description": "Prism story lifecycle plugins for Claude Code.",
-    "version": "0.4.2+codex.20260731000000"
+    "version": "0.5.0+codex.20260731000000"
   },
   "plugins": [
     {
       "name": "prism",
       "description": "Run the full role-aligned or concise Light Prism lifecycle directly in the host.",
-      "version": "0.4.2+codex.20260731000000",
+      "version": "0.5.0+codex.20260731000000",
       "author": {
         "name": "Alexey Samoylov"
       },
@@ -20,7 +20,7 @@
     {
       "name": "prism-callee",
       "description": "Run the Prism lifecycle as a workflow of specialized Callee subagents.",
-      "version": "0.4.2+codex.20260731000000",
+      "version": "0.5.0+codex.20260731000000",
       "author": {
         "name": "Alexey Samoylov"
       },
