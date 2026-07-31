@@ -9,6 +9,7 @@ keep_temp=0
 temp_dir=""
 active_pid=""
 active_fifo_fd=""
+specify_human_timeout_seconds=600
 
 story_message=$'Story: update the Prism lifecycle ownership validator so it recognizes phase-local internal agents under prism/<phase>/* instead of expecting prism/workflows/*. Actor: repository maintainers running validation locally and in CI. Scope: only the lifecycle ownership validation logic and matching ownership metadata expectations for internal agent paths. Non-goals: do not change manual host lifecycle semantics, public phase IDs, or plugin manifests. Acceptance: 1) scripts/validate-lifecycle-ownership.sh passes when specify uses prism/specify/{loop,questions,extract,gate}, design uses prism/design/flow, human uses prism/human/{prompt,check}, apply uses prism/apply/loop, and verify uses prism/verify/review; 2) the validator no longer requires files under pack/callee/prism/workflows/ for those moved internal agents; 3) existing checks for public phase refs, assignee ownership, and manual phase references remain unchanged; 4) the change is limited to repository validation and lifecycle metadata expectations, not runtime behavior.'
 
@@ -198,7 +199,7 @@ run_specify_smoke() {
 
   echo "Running specify smoke test..."
   start_script_run "${command_string}" "${fifo_path}"
-  wait_for_pattern "${diagnostics_path}" "running agent id=clarifications kind=Human ref=prism/specify/questions visit=1" 300 "specify reaches first Human clarification"
+  wait_for_pattern "${diagnostics_path}" "running agent id=clarifications kind=Human ref=prism/specify/questions visit=1" "${specify_human_timeout_seconds}" "specify reaches first Human clarification"
   cat <<'EOF' >&"${active_fifo_fd}"
 1. The canonical ownership metadata artifact is docs/lifecycle-ownership.json; update only story_phases[*].executor.internal_refs for the moved phase-local agents.
 2. The non-regression baseline is the current validator behavior in scripts/validate-lifecycle-ownership.sh for public_ref, assignee ownership and accepted aliases, and manual_phase_reference checks; those pass/fail outcomes must remain unchanged.

@@ -33,7 +33,9 @@ What they validate:
 - `specify --keep-temp` runs `prism/phases/specify`, waits for the first
   clarification step, sends grounded answers, and treats resumed `normalizer`
   visit 2 as the success boundary. `--keep-temp` preserves the captured
-  diagnostics and artifacts under `/tmp` for inspection.
+  diagnostics and artifacts under `/tmp` for inspection. The provider-backed
+  path allows up to 600 seconds to reach the first Human clarification; the
+  shorter post-reply progress checks retain their 30-second deadlines.
 
 ## Why the smoke tests need a real PTY-backed launch
 
