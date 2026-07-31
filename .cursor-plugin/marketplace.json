@@ -5,14 +5,14 @@
   },
   "metadata": {
     "description": "Prism story lifecycle plugins for Cursor.",
-    "version": "0.4.1+codex.20260730000000"
+    "version": "0.4.2+codex.20260731000000"
   },
   "plugins": [
     {
       "name": "prism",
       "source": "./plugins/prism",
       "description": "Run the Prism beads-backed story lifecycle directly in the host by deriving the current phase from Beads state.",
-      "version": "0.4.1+codex.20260730000000",
+      "version": "0.4.2+codex.20260731000000",
       "category": "developer-tools",
       "tags": ["prism", "beads", "callee", "story-lifecycle"]
     },
@@ -20,7 +20,7 @@
       "name": "prism-callee",
       "source": "./plugins/prism-callee",
       "description": "Run the Prism lifecycle as a workflow of specialized Callee subagents.",
-      "version": "0.4.1+codex.20260730000000",
+      "version": "0.4.2+codex.20260731000000",
       "category": "developer-tools",
       "tags": ["prism", "beads", "callee", "story-lifecycle", "subagents"]
     }
