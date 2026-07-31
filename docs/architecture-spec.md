@@ -1,84 +1,76 @@
 # Prism Architecture Index
 
-This repository ships two different Prism host skills that share the same Beads
-story state but do not share the same execution contract:
+Prism exposes three execution surfaces over one Beads state machine:
 
-- `plugins/prism/` exposes the manual host lifecycle skill.
-- `plugins/prism-callee/` exposes the automated Callee lifecycle skill.
-
-The old single architecture spec mixed those surfaces together. This file is now
-only the repository-level index and boundary map. Read the surface-specific
-documents for actual behavior:
-
-- Host lifecycle: [architecture-host-lifecycle.md](architecture-host-lifecycle.md)
-- Automated lifecycle: [architecture-callee-lifecycle.md](architecture-callee-lifecycle.md)
+- full host lifecycle: `$prism:lifecycle`, `/prism:lifecycle`, `/prism-lifecycle`;
+- concise host lifecycle: `$prism:light`, `/prism:light`, `/prism-light`;
+- Callee lifecycle: `$prism-callee:lifecycle`, `/prism-callee:lifecycle`,
+  `/prism-callee-lifecycle`, or direct
+  `callee agent run prism/lifecycle --message "..."`.
 
 ## Repository surfaces
 
-| Surface | Entry point | Owns | Does not own |
-| --- | --- | --- | --- |
-| Manual host lifecycle | `$prism:lifecycle`, `/prism:lifecycle`, or `/prism-lifecycle` | Direct host execution, repository inspection, Beads writes, host-authored phase work | `callee agent run prism/...`, PromptKit role generation |
-| Automated lifecycle | `$prism-callee:lifecycle`, `/prism-callee:lifecycle`, or `/prism-callee-lifecycle` | `callee agent run prism/...`, PromptKit role/workflow mapping, automated phase execution | Manual host-only phase procedure |
-| Direct Callee binary | `callee agent run prism/lifecycle --message "..."` | Direct execution of the public Callee workflow graph | Host-managed Beads persistence |
-| Prism Callee pack | `pack/callee/prism/` | Reusable `prism/*` Roles, phases, workflows | Manual host lifecycle behavior |
-| Documentation pack | `pack/callee/documentation/` | Documentation maintenance workflow | Prism story execution |
+| Surface | Execution | Behavioral contract |
+| --- | --- | --- |
+| Full host lifecycle | Current host performs all work; never invokes Callee | Read-only projection of `pack/callee/prism` phases, workflows, and roles |
+| Prism Light | Current host performs a concise workflow | Intentionally simplified Light references |
+| Prism Callee | Host wrapper invokes `prism/*` agents | Original `pack/callee/prism` files |
+| Direct Callee binary | Runs public Callee graph without Beads wrapper | Original `pack/callee/prism` files |
 
-## Shared state vs separate execution
+The original files under `pack/callee/**` are immutable. Full host parity is
+implemented only through Prism skill references, ownership metadata, validators,
+manifests, and documentation.
 
-Both Prism skills operate on the same durable Beads model:
+## Shared durable state
 
-- story labels: `prism`, `human:approved`, and exactly one phase label from
-  `phase:specify` through `phase:verify`
-- story assignee: not used for lifecycle phase state
-- story fields: description, acceptance, design
-- child tasks and dependencies
+All host entrypoints use the same Beads model:
 
-Both skills accept user intent rather than requiring a pre-created story: use
-an explicitly named story ID, otherwise resume exactly one open Prism story,
-otherwise create a new story labeled `prism,phase:specify`. Existing
-assignee-driven stories are not migrated or supported.
+- `prism` lifecycle membership;
+- `human:approved` Apply authorization;
+- exactly one label from `phase:specify`, `phase:design`, `phase:breakdown`,
+  `phase:human`, `phase:apply`, and `phase:verify`;
+- description, acceptance, design, child tasks, dependencies, and status;
+- Apply child assignees `prism/apply/implementer` and `prism/apply/reviewer`.
 
-Design is durable free-form markdown. It records the proposed solution,
-relevant risks, constraints, tradeoffs, and verification without a required
-assessment matrix or rating system. Breakdown maps actionable implementation
-and verification work into the durable child-task graph before human approval.
+Entrypoints accept either an explicit story ID or user intent. They otherwise
+resume exactly one open Prism story or create a new `phase:specify` story.
+No Beads migration is required when choosing another execution surface.
 
-What differs is execution:
+## Full contract vs Light
 
-- `prism` performs lifecycle work directly in the host.
-- `prism-callee` delegates lifecycle work to `prism/*` Callee assets.
+The full host and Callee surfaces share role order, outputs, gates, iteration
+limits, and failure behavior:
 
-That separation is intentional and must remain explicit in docs and skills.
+1. interviewer → readiness gate → Human clarification → extract;
+2. explorer → architect;
+3. implementation planner → Beads normalization;
+4. approval prompt → intent classifier → decision check;
+5. implementer → independent reviewer repair loop;
+6. story reviewer → close or phase-specific bounce.
+
+Prism Light preserves the previous concise phase instructions and does not claim
+this role-level parity.
 
 ## Source of truth
 
-| Topic | Source of truth |
+| Topic | Source |
 | --- | --- |
-| Manual host lifecycle contract | `plugins/prism/skills/lifecycle/SKILL.md` and its phase references |
-| Automated lifecycle contract | `plugins/prism-callee/skills/lifecycle/SKILL.md`, `plugins/prism-callee/prefixed-skills/prism-callee-lifecycle/SKILL.md`, and `references/promptkit.md` |
-| Shared Beads lifecycle graph | `plugins/prism/skills/lifecycle/references/lifecycle.md` |
-| Automated `prism/*` agent graph | `pack/callee/prism/` |
-| Repository packaging and install surface | `README.md` plus host manifests under `plugins/` and marketplace files |
+| Immutable full behavior | `pack/callee/prism/` |
+| Machine-checkable projection and source digests | `docs/lifecycle-ownership.json` |
+| Full host execution | `plugins/prism/skills/lifecycle/` |
+| Light host execution | `plugins/prism/skills/light/` |
+| Callee host execution | `plugins/prism-callee/skills/lifecycle/` |
+| Shared labels and transitions | `docs/lifecycle-ownership.json` and lifecycle references |
+| Packaging | plugin manifests, marketplace manifests, and `README.md` |
 
 ## Documentation map
 
-Read the smallest document that matches the change:
+- Full host behavior: [architecture-host-lifecycle.md](architecture-host-lifecycle.md)
+- Light behavior: [architecture-light-lifecycle.md](architecture-light-lifecycle.md)
+- Callee execution: [architecture-callee-lifecycle.md](architecture-callee-lifecycle.md)
 
-1. Editing manual host lifecycle behavior:
-   `docs/architecture-host-lifecycle.md`
-2. Editing automated `prism-callee` behavior or PromptKit mappings:
-   `docs/architecture-callee-lifecycle.md`
-3. Editing repo-level packaging, installation, or distribution boundaries:
-   this file plus `README.md`
+## Validation
 
-## Non-goals
-
-This repository-level document does not define:
-
-- per-phase host instructions
-- PromptKit template choices
-- exact `callee agent run` command shapes
-- consumer-project test strategy
-
-Those details belong in the surface-specific architecture docs and the skill
-references they point to.
+`scripts/validate-lifecycle-ownership.sh` checks the immutable source digests,
+contract projections, mirrors, and lifecycle state. `scripts/validate-plugin-packaging.sh`
+checks both Prism skills and the preserved Prism Callee plugin across supported hosts.

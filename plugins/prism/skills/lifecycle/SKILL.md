@@ -1,150 +1,135 @@
 ---
 name: lifecycle
 description: >
-  Run the Prism story lifecycle directly in the host. Beads stores story state,
-  and exactly one phase:* label is the current lifecycle phase. Use when the user runs
-  $prism:lifecycle, /prism:lifecycle, /prism-lifecycle, /prism, asks to run or
-  advance Prism, uses the prism label, or asks to continue a Prism story.
+  Run the full Prism story lifecycle directly in the host while preserving the
+  phase and role contracts of the canonical Prism Callee workflow. Beads stores
+  durable state. Use when the user runs $prism:lifecycle, /prism:lifecycle,
+  /prism-lifecycle, /prism, asks to run or advance Prism, or continues a Prism story.
 ---
 
 # Prism lifecycle
 
+Run the role-aligned Prism lifecycle in the current host. Do not invoke Callee.
+Use `$prism:light`, `/prism:light`, or `/prism-light` only when the user
+explicitly requests the simplified workflow.
+
 | Layer | Owns |
 | --- | --- |
 | **Beads** | Story description, acceptance, design, child tasks, status, assignee, labels, comments |
-| **This skill** | Label-driven phase machine, repository work, and `bd` writes |
-| **Prism Callee workflow** | Specialized `prism/*` subagents with phase-specific roles and settings; owns all `callee agent run prism/...` execution |
+| **This skill** | Host execution of the full phase/role contract plus all `bd` writes |
+| **Prism Callee pack** | Read-only behavioral source from which the bundled contracts are projected |
+| **Prism Callee skill** | Actual `callee agent run prism/...` execution |
 
 **Invoke:** Codex `$prism:lifecycle`, Claude Code `/prism:lifecycle`, or flat slash `/prism-lifecycle`.
 
-Lifecycle diagram: [references/lifecycle.md](references/lifecycle.md). Keep lifecycle diagrams vertical with Mermaid `flowchart TB`.
+Lifecycle graph: [references/lifecycle.md](references/lifecycle.md). Keep lifecycle
+diagrams vertical with Mermaid `flowchart TB`.
 
 ## Durable lifecycle state
 
-Exactly one story label is the only source of its active lifecycle phase:
+Exactly one story label is the active phase:
 
-| Phase | Story label |
-| --- | --- |
-| Specify | `phase:specify` |
-| Design | `phase:design` |
-| Breakdown | `phase:breakdown` |
-| Human gate | `phase:human` |
-| Apply | `phase:apply` |
-| Verify | `phase:verify` |
+| Phase | Story label | Host role sequence |
+| --- | --- | --- |
+| Specify | `phase:specify` | interviewer → readiness gate → Human clarification → extract |
+| Design | `phase:design` | explorer → architect |
+| Breakdown | `phase:breakdown` | implementation planner → Beads normalizer |
+| Human | `phase:human` | approval prompt → intent classifier → decision check |
+| Apply | `phase:apply` | implementer → independent reviewer, repeat as needed |
+| Verify | `phase:verify` | story reviewer → close or phase-specific bounce |
 
-`prism` marks lifecycle membership. `human:approved` is the only authorization
-for apply. Every open lifecycle story must have exactly one supported `phase:*`
-label. Story assignees do not encode lifecycle phase state.
+`prism` marks membership. `human:approved` is the only authorization for Apply.
+Story assignees never encode lifecycle phases. Within Apply, child-task assignees
+move from `prism/apply/implementer` to `prism/apply/reviewer`.
 
-Within the story-level apply phase, child-task assignees record the inner loop:
-`prism/apply/implementer` then `prism/apply/reviewer`.
+## Phase references
 
-Phase references:
+Load exactly one phase-local instruction:
 
 - Specify: [references/specify.md](references/specify.md)
 - Design: [references/design.md](references/design.md)
 - Breakdown: [references/breakdown.md](references/breakdown.md)
-- Human gate: [references/human.md](references/human.md)
+- Human: [references/human.md](references/human.md)
 - Apply: [references/apply.md](references/apply.md)
 - Verify: [references/verify.md](references/verify.md)
 
+Each reference contains a compact contract projection. Execute its logical roles
+in order even though one host session performs them. Do not weaken required
+outputs or skip a gate because Callee is not running.
+
 ## Prerequisites
 
-1. **[`bd` (Beads)](https://github.com/gastownhall/beads)** is available and the target project has a Beads workspace (`bd where` / `bd prime`).
-2. The repository is inspectable in the host session.
-3. To run the lifecycle through specialized `prism/*` subagents, use the Prism Callee workflow instead.
+1. `bd` is available and the repository has a Beads workspace.
+2. The repository and its native verification tools are inspectable.
+3. Callee is not required. To execute actual Callee agents, use
+   `$prism-callee:lifecycle`, `/prism-callee:lifecycle`, or `/prism-callee-lifecycle`.
 
 ## Entry
 
-1. Resolve Beads context with `bd where`; if missing or stale, follow the **beads** skill / `bd prime`.
+1. Resolve Beads with `bd where`; follow the Beads skill or `bd prime` when needed.
 2. Resolve the target story:
-   - if the user explicitly names a story ID, load that story;
-   - otherwise, list open Prism stories with `bd list -l prism --status=open` and resume it only when exactly one open Prism story exists;
-   - otherwise, derive a concise title from the user's request and create a new story:
+   - use an explicitly named story ID;
+   - otherwise resume exactly one open Prism story;
+   - otherwise create one from the raw user request:
 
      ```bash
      bd create "<derived title>" --type=story -l prism,phase:specify \
        --description="<raw user request>" --priority=2 --silent
      ```
 
-     Start the new story in Specify; that phase normalizes acceptance criteria.
 3. Load `bd show <story> --long` and `bd children <story>`.
-4. Derive the current phase from exactly one supported `phase:*` story label;
-   stop on a missing or conflicting phase label. Do not fall back to assignee
-   state: existing assignee-driven stories are intentionally unsupported.
-   Reconcile the phase with description, acceptance, design,
-   `human:approved`, and child task state.
-5. Enter the lifecycle advance loop: load exactly one matching phase reference
-   and run that phase directly in the host.
-6. Persist the result to Beads, then re-check the story and children. After
-   successful Specify or Design persistence, immediately load the newly
-   selected phase reference. After successful Breakdown persistence,
-   immediately load the Human reference and present its informed approval
-   request. Do not ask the human to confirm any phase transition.
-7. Stop the advance loop only when the Human reference is awaiting the
-   authorization or refinement decision, another reference requires missing or
-   blocking human input, or lifecycle state is invalid. Merely writing
-   `phase:human` is not a stop condition.
+4. Require exactly one supported `phase:*` label. Stop on missing or conflicting
+   phase state; never infer it from assignee.
+5. Load the matching phase reference and execute its full contract.
+6. Persist its result, re-read story and children, then continue immediately
+   after successful Specify or Design. After Breakdown, enter Human and present
+   the informed approval request in the same invocation.
+7. Stop only for Human authorization/refinement, genuinely missing input,
+   invalid state, exhausted role loop, or failed required verification.
 
 ## Hard rules
 
-1. Do **not** invoke `callee agent run prism/...`; that belongs only to the Prism Callee workflow.
-2. Beads is the only durable lifecycle store. Phase instructions are bundled guidance, not runtime artifacts.
-3. Do not implement without `human:approved`.
-4. The human owns approval intent. The host may persist `human:approved` only
-   after an unambiguous free-form authorization to start implementation.
-5. `--set-labels` replaces all labels: retain `prism`, write exactly one target
-   `phase:*` label, and after the gate retain `human:approved`.
-6. Do not commit or push without explicit user authority.
-7. Ask directly when requirements are incomplete; never invent missing requirements.
-   Do not ask for confirmation merely to advance between successful
-   pre-approval phases.
-8. After changed code, inspect project tooling and run the relevant repository-native checks. Do not close a task if required checks fail.
-9. Claim only a ready, unblocked child of the current story; never claim from global `bd ready` alone.
-10. A story enters verify only when it has `human:approved` and no open child tasks.
-11. Apply is story-level operational closure; verify is a close-or-bounce decision phase, never a repair loop.
+1. Never invoke `callee agent run prism/...`; this is host execution.
+2. Never edit, regenerate, format, rename, or relocate `pack/callee/**`.
+3. Preserve the ordered role passes and required outputs in each phase reference.
+4. Beads is the only durable lifecycle store.
+5. Do not implement without `human:approved`.
+6. Persist approval only after unambiguous human authorization.
+7. `--set-labels` replaces all labels: retain `prism`, exactly one phase label,
+   and `human:approved` after the gate.
+8. Ask only for genuinely missing product intent, never for routine phase confirmation.
+9. Apply exactly one ready child at a time. Review the actual diff and checks
+   independently of the implementation narrative.
+10. Do not close a task when checks or review fail.
+11. Verify is close-or-bounce and never repairs implementation.
+12. Do not commit or push without the authority provided by the repository and user.
 
-## Phase → action
+## Phase selection
 
-| Condition (priority order) | Do next |
+| Condition, in priority order | Action |
 | --- | --- |
-| Missing usable description or acceptance | Specify → persist requirements |
-| `phase:verify` or (`human:approved` and no open children) | Verify; close only on pass |
-| `phase:apply` + `human:approved` + open children | Continue the story-level apply loop |
-| Open children without `human:approved` or `phase:human` | Stop at the human gate |
-| `phase:breakdown` or (design set and no children) | Breakdown → create child graph |
-| `phase:design` or (requirements set and design empty) | Design → persist design markdown |
-| `phase:specify` | Specify → persist description and acceptance |
+| Missing usable requirements or acceptance | Specify |
+| `phase:verify`, or approved with no open children | Verify |
+| `phase:apply` with approval and open children | Apply |
+| Open children without approval, or `phase:human` | Human |
+| `phase:breakdown`, or design exists without children | Breakdown |
+| `phase:design`, or requirements exist without design | Design |
+| `phase:specify` | Specify |
 
-## Phase execution contract
+## Advance loop
 
-The phase references own phase-local procedure. Within one lifecycle
-invocation, repeat:
+Within one invocation:
 
-1. infer the phase from exactly one supported `phase:*` story label
-2. load exactly one matching reference
-3. follow its inputs, procedure, persistence, and stop conditions
-4. re-check Beads state
-5. continue immediately after successful Specify or Design persistence
-6. after successful Breakdown persistence, load the Human reference and present
-   the approval request without asking for phase-transition confirmation
-7. stop while the Human reference awaits a decision or at another explicit
-   stop condition
-
-| Phase | Load | Successful outcome |
-| --- | --- | --- |
-| Specify | [references/specify.md](references/specify.md) | story label is `phase:design` |
-| Design | [references/design.md](references/design.md) | concrete design exists; story label is `phase:breakdown` |
-| Breakdown | [references/breakdown.md](references/breakdown.md) | child graph covers the design; story label is `phase:human` |
-| Human | [references/human.md](references/human.md) | approval moves to `phase:apply`; explicit design refinement moves to `phase:design`; otherwise stop |
-| Apply | [references/apply.md](references/apply.md) | one ready child closes, story enters verify, or apply stops blocked |
-| Verify | [references/verify.md](references/verify.md) | story closes on pass; otherwise it bounces to an earlier phase label |
+1. derive the phase from the single label;
+2. load one matching reference;
+3. execute every logical role and gate in that reference;
+4. persist and re-read Beads;
+5. continue through successful pre-approval phases;
+6. stop at explicit reference stop conditions.
 
 ## Safety
 
-- Do not invent `human:approved` or close a story with open children.
-- Callee roles are internal executors; lifecycle state is encoded only by the
-  story's single `phase:*` label.
-- Do not close a story after verify unless verification passes with no follow-up work.
-- Prefer `bd --json` when parsing; never `bd edit`.
-- Generic tracker work belongs to the **beads** skill.
+- Never invent requirements, approval, repository evidence, review findings, or test results.
+- Treat the Callee pack as an immutable source, not an editable dependency.
+- Preserve existing child state during design/breakdown reconciliation.
+- Close a story only after every child is closed and Verify passes.

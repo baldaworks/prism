@@ -1,57 +1,86 @@
-# Prism design phase
+# Prism full design phase
 
-Run this reference only when the story label is `phase:design` or the
-story already has requirements but does not yet have durable design markdown.
+Run only for `phase:design` or when design is absent or invalid.
 
-## Goal
+## Contract projection
 
-Inspect the repository and produce host-authored design markdown that explains
-how the requested change should be implemented.
+```json
+{
+  "id": "design-v1",
+  "steps": ["explorer", "architect"],
+  "required_outputs": ["evidence-backed-behavior-model", "req-id-traceable-design", "interfaces-and-data-flow", "tradeoffs-security-and-verification"],
+  "max_iterations": 1,
+  "on_exhausted": "fail"
+}
+```
 
-## Required inputs
+## Inputs
 
 - `bd show <story> --long`
-- the relevant repository files and current behavior
-- any constraints discovered during specify
+- the live repository, tests, configuration, and relevant history
+- the structured REQ IDs and acceptance criteria from Specify
 
-## Host procedure
+## Role 1: explorer
 
-1. Load the story with `bd show <story> --long`.
-2. Inspect the relevant repository areas, current behavior, dependencies, and constraints.
-3. Write concise design markdown directly in the host. Prefer sections such as:
-   - Summary
-   - Current state
-   - Proposed changes
-   - Risks / open questions
-   - Verification
-   Capture relevant risks, constraints, tradeoffs, and verification in ordinary
-   prose. Do not require a fixed assessment matrix or rating system.
-4. Ensure the design answers three questions clearly:
-   - what changes
-   - where those changes land in the repository
-   - how verification should prove the change worked
+Reconstruct current behavior before proposing changes:
 
-## Persist and advance
+1. Locate relevant paths, symbols, entrypoints, dependencies, tests, and configuration.
+2. Trace control and data flow through indirection to observable behavior.
+3. Extract entities, states/transitions, preconditions, postconditions, error
+   behavior, constraints, and invariants.
+4. Cite concrete repository locations for factual claims. Separate facts,
+   inferences, assumptions, and unknowns.
+5. Identify coverage gaps, undefined transitions, and risks if invariants are violated.
 
-When the design is concrete enough to decompose into small tasks:
+Produce an evidence-backed behavioral model for the architect. Do not propose
+the solution in this pass.
+
+## Role 2: architect
+
+Consume the requirements and explorer model, then author design markdown:
+
+1. Overview and requirements summary with explicit REQ-ID references.
+2. Current behavior and the evidence supporting it.
+3. Proposed architecture, component responsibilities, interfaces, dependencies,
+   and data flow; include text diagrams when relationships or state require them.
+4. API/error contracts, data model, state management, compatibility, and migration
+   behavior where relevant.
+5. For every significant choice: alternatives, decision, rationale, tradeoffs,
+   reversibility, and affected REQ IDs.
+6. Security/trust boundaries, operational behavior, failure recovery, verification,
+   risks, unknowns, and open questions.
+
+Every design element must trace to one or more REQ IDs or be marked
+`[DESIGN-ONLY]` with justification. Never fabricate missing facts.
+
+## Quality gate and persistence
+
+Before advancing, verify:
+
+- every REQ ID is addressed;
+- repository touch points are concrete;
+- interfaces include material error behavior;
+- non-trivial choices include tradeoffs;
+- security, invariants, risks, compatibility, and verification are covered;
+- open questions do not block safe decomposition.
+
+Persist only the architect document:
 
 ```bash
 bd update <story> --design-file - --set-labels prism,phase:breakdown
 ```
 
-Advance only to `phase:breakdown`.
-
 ## Stop when
 
-- repository inspection is still incomplete
-- the design has open questions that materially affect task breakdown
-- the proposed approach is too vague to decompose into reviewable tasks
-
-If you stop, keep the story in design and ask the human or revise the design.
+- explorer evidence is incomplete;
+- a product decision is missing;
+- REQ-to-design traceability has gaps;
+- the design cannot be decomposed safely.
 
 ## Never
 
-- base the design on generic architecture advice instead of the actual repository
-- do task decomposition here
-- hide important risks or open questions
-- move to plan with design text that does not identify concrete repository touch points
+- skip the explorer pass;
+- base factual claims on generic advice;
+- silently resolve unknowns;
+- decompose tasks or implement code;
+- modify `pack/callee/**`.

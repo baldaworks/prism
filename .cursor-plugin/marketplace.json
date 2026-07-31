@@ -11,7 +11,7 @@
     {
       "name": "prism",
       "source": "./plugins/prism",
-      "description": "Run the Prism beads-backed story lifecycle directly in the host by deriving the current phase from Beads state.",
+      "description": "Run the full role-aligned or concise Light Prism lifecycle directly in the host.",
       "version": "0.4.2+codex.20260731000000",
       "category": "developer-tools",
       "tags": ["prism", "beads", "callee", "story-lifecycle"]

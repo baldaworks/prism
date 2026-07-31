@@ -6,6 +6,11 @@ Beads-backed story state as the manual host lifecycle through public
 `prism/lifecycle` and `prism/phases/*` Callee workflows. The public graph can
 also be invoked directly through the `callee` binary.
 
+The checked-in files under `pack/callee/**` are the immutable behavioral source
+for both this runner and the full host `$prism:lifecycle` projection. This
+surface executes those agents; the full host reproduces their contract without
+invoking Callee. Prism Light intentionally uses a smaller contract.
+
 ## Direct binary invocation
 
 After importing the Prism agent pack, run the full public workflow directly:
@@ -114,6 +119,9 @@ Breakdown reconciliation. `WITHHOLD` remains at `phase:human`.
 | Flat-name automated skill | `plugins/prism-callee/prefixed-skills/prism-callee-lifecycle/` |
 | PromptKit mapping | `plugins/prism-callee/skills/lifecycle/references/promptkit.md` |
 | Public workflow graph | `pack/callee/prism/lifecycle.md` |
+
+Do not edit or regenerate any `pack/callee/**` file while adapting host skills.
+Update only the host projection and its validation metadata.
 
 ## Validation
 

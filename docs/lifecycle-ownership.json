@@ -1,11 +1,25 @@
 {
-  "version": 11,
+  "version": 12,
   "lifecycle_ref": "prism/lifecycle",
   "direct_callee_invocation": "callee agent run prism/lifecycle --message \"...\"",
-  "manual_host_entrypoints": {
+  "callee_pack": {
+    "path": "pack/callee",
+    "mutation_policy": "forbidden",
+    "baseline_git_tree": "2ff65b103fadf95eb47cad5248b832481261ad9a",
+    "root_source": {
+      "path": "pack/callee/prism/lifecycle.md",
+      "sha256": "645b0283fc3ceabb73ef7f487a454c1e939194523d287d60fbaa1349c4d05c43"
+    }
+  },
+  "full_host_entrypoints": {
     "codex": "$prism:lifecycle",
     "claude": "/prism:lifecycle",
     "flat": "/prism-lifecycle"
+  },
+  "light_host_entrypoints": {
+    "codex": "$prism:light",
+    "claude": "/prism:light",
+    "flat": "/prism-light"
   },
   "automated_host_entrypoints": {
     "codex": "$prism-callee:lifecycle",
@@ -88,7 +102,8 @@
       "label": "phase:specify",
       "executor": {
         "kind": "Sequential",
-        "manual_phase_reference": "plugins/prism/skills/lifecycle/references/specify.md",
+        "full_host_reference": "plugins/prism/skills/lifecycle/references/specify.md",
+        "light_host_reference": "plugins/prism/skills/light/references/specify.md",
         "public_ref": "prism/phases/specify",
         "internal_refs": [
           "prism/specify/loop",
@@ -97,6 +112,49 @@
           "prism/roles/interviewer",
           "prism/specify/gate"
         ],
+        "source_files": [
+          {
+            "path": "pack/callee/prism/phases/specify.md",
+            "sha256": "c4994de047ac706a4ce1709b15ea098745b0daaca76ea8a6da8c2e6864872047"
+          },
+          {
+            "path": "pack/callee/prism/specify/loop.md",
+            "sha256": "27e968a4d34d801338dd03b518b6aeae43488727d310f3d5f4e40edca7f0aa30"
+          },
+          {
+            "path": "pack/callee/prism/roles/interviewer.md",
+            "sha256": "d651cd4283f350abc9ee4f4a58c42f44a2bb9ffeefe47a2c8ce7ff4ccea64a66"
+          },
+          {
+            "path": "pack/callee/prism/specify/gate.md",
+            "sha256": "0f2ffb945b12b1f7ec03acad84545c427091332f5d46b02ebfe13b496f7ca09f"
+          },
+          {
+            "path": "pack/callee/prism/specify/questions.md",
+            "sha256": "3992b529138eb02eabf7bfd6b564beb309aa30bae235a5bbe83368c979d83713"
+          },
+          {
+            "path": "pack/callee/prism/specify/extract.md",
+            "sha256": "a46ea1e42b90a1c5d85a9203938ef7ab63a922dbf768e65b5cc06b44b783221a"
+          }
+        ],
+        "host_contract": {
+          "id": "specify-v1",
+          "steps": [
+            "interviewer",
+            "readiness-gate",
+            "human-clarification",
+            "requirements-extract"
+          ],
+          "required_outputs": [
+            "atomic-req-ids",
+            "rfc2119-requirements",
+            "per-requirement-acceptance",
+            "constraints-and-non-goals"
+          ],
+          "max_iterations": 5,
+          "on_exhausted": "fail"
+        },
         "clarification_loop": {
           "ref": "prism/specify/loop",
           "kind": "Loop",
@@ -117,13 +175,47 @@
       "label": "phase:design",
       "executor": {
         "kind": "Sequential",
-        "manual_phase_reference": "plugins/prism/skills/lifecycle/references/design.md",
+        "full_host_reference": "plugins/prism/skills/lifecycle/references/design.md",
+        "light_host_reference": "plugins/prism/skills/light/references/design.md",
         "public_ref": "prism/phases/design",
         "internal_refs": [
           "prism/design/flow",
           "prism/roles/explorer",
           "prism/roles/architect"
-        ]
+        ],
+        "source_files": [
+          {
+            "path": "pack/callee/prism/phases/design.md",
+            "sha256": "17917de3d3251b84e6dab8b117d280d6fbf675785776a9021d630165c78313ed"
+          },
+          {
+            "path": "pack/callee/prism/design/flow.md",
+            "sha256": "880bc5ff7b441541e838696c5099e0b7e95832d46ccb7167183876e190a15064"
+          },
+          {
+            "path": "pack/callee/prism/roles/explorer.md",
+            "sha256": "89ca05f400563a90f804728dd42aafa94441754c7b947593610ecafbe43b013b"
+          },
+          {
+            "path": "pack/callee/prism/roles/architect.md",
+            "sha256": "4dd442b2444bf25a3cc8c9c32d59325af9ea888bc74fb07b19e517a4a744641b"
+          }
+        ],
+        "host_contract": {
+          "id": "design-v1",
+          "steps": [
+            "explorer",
+            "architect"
+          ],
+          "required_outputs": [
+            "evidence-backed-behavior-model",
+            "req-id-traceable-design",
+            "interfaces-and-data-flow",
+            "tradeoffs-security-and-verification"
+          ],
+          "max_iterations": 1,
+          "on_exhausted": "fail"
+        }
       },
       "requires_human_approval": false,
       "success_transition": "breakdown"
@@ -133,11 +225,37 @@
       "label": "phase:breakdown",
       "executor": {
         "kind": "Sequential",
-        "manual_phase_reference": "plugins/prism/skills/lifecycle/references/breakdown.md",
+        "full_host_reference": "plugins/prism/skills/lifecycle/references/breakdown.md",
+        "light_host_reference": "plugins/prism/skills/light/references/breakdown.md",
         "public_ref": "prism/phases/breakdown",
         "internal_refs": [
           "prism/roles/breakdown"
-        ]
+        ],
+        "source_files": [
+          {
+            "path": "pack/callee/prism/phases/breakdown.md",
+            "sha256": "baec2b319753b3f509acca5af84ffbc7eb706af412467b56227c35a942bee31a"
+          },
+          {
+            "path": "pack/callee/prism/roles/breakdown.md",
+            "sha256": "7e46882c04d97a0094bfddfc7bb2b752603b172457c8242c595ba30293436c53"
+          }
+        ],
+        "host_contract": {
+          "id": "breakdown-v1",
+          "steps": [
+            "implementation-planner",
+            "beads-normalizer"
+          ],
+          "required_outputs": [
+            "task-ids-and-req-traceability",
+            "acceptance-complexity-risks-and-verification",
+            "dependencies-and-critical-path",
+            "three-to-twelve-beads-children"
+          ],
+          "max_iterations": 1,
+          "on_exhausted": "fail"
+        }
       },
       "requires_human_approval": false,
       "success_transition": "human"
@@ -147,13 +265,47 @@
       "label": "phase:human",
       "executor": {
         "kind": "Sequential",
-        "manual_phase_reference": "plugins/prism/skills/lifecycle/references/human.md",
+        "full_host_reference": "plugins/prism/skills/lifecycle/references/human.md",
+        "light_host_reference": "plugins/prism/skills/light/references/human.md",
         "public_ref": "prism/phases/human",
         "internal_refs": [
           "prism/human/prompt",
           "prism/human/intent",
           "prism/human/check"
-        ]
+        ],
+        "source_files": [
+          {
+            "path": "pack/callee/prism/phases/human.md",
+            "sha256": "d688e1078725cc59e5aa8b24dca90fe40578f4619a9c93d069b5f2cce4dbdc9c"
+          },
+          {
+            "path": "pack/callee/prism/human/prompt.md",
+            "sha256": "208196ade2cbbaad2985187d65a652e959a3dc273e57a38197868458b9030c25"
+          },
+          {
+            "path": "pack/callee/prism/human/intent.md",
+            "sha256": "273189a4851085563797e9ad8b386d9207639d3687fc25b4ee4725698e35985d"
+          },
+          {
+            "path": "pack/callee/prism/human/check.md",
+            "sha256": "241bf7bd7ad7622329213273ebfd714dc279deca5f4605b5d943462eeebb5b6f"
+          }
+        ],
+        "host_contract": {
+          "id": "human-v1",
+          "steps": [
+            "approval-prompt",
+            "intent-classifier",
+            "decision-check"
+          ],
+          "required_outputs": [
+            "design-task-approval-summary",
+            "approve-refine-withhold",
+            "fail-closed-authorization"
+          ],
+          "max_iterations": 1,
+          "on_exhausted": "withhold"
+        }
       },
       "requires_human_approval": false,
       "success_transition": "apply",
@@ -168,11 +320,47 @@
       "label": "phase:apply",
       "executor": {
         "kind": "Sequential",
-        "manual_phase_reference": "plugins/prism/skills/lifecycle/references/apply.md",
+        "full_host_reference": "plugins/prism/skills/lifecycle/references/apply.md",
+        "light_host_reference": "plugins/prism/skills/light/references/apply.md",
         "public_ref": "prism/phases/apply",
         "internal_refs": [
-          "prism/apply/loop"
-        ]
+          "prism/apply/loop",
+          "prism/roles/implementer",
+          "prism/roles/reviewer"
+        ],
+        "source_files": [
+          {
+            "path": "pack/callee/prism/phases/apply.md",
+            "sha256": "9398a08e29316f4988b902408533df153c7e0ebb1ee142d7921ac4607c0494b0"
+          },
+          {
+            "path": "pack/callee/prism/apply/loop.md",
+            "sha256": "af90943992a30331b2aab5fb4c2afa9d5f1a8ebaac62ae6002c6c314405dfdca"
+          },
+          {
+            "path": "pack/callee/prism/roles/implementer.md",
+            "sha256": "6173216c96d96faedaf1ae1675a9962486dcf15cae169e946cb1b249395bfdc9"
+          },
+          {
+            "path": "pack/callee/prism/roles/reviewer.md",
+            "sha256": "dcaddf4a4654ebeb00629ae3117bd5ee8760546985c8aac0966d61c56d1160c5"
+          }
+        ],
+        "host_contract": {
+          "id": "apply-v1",
+          "steps": [
+            "implementer",
+            "independent-reviewer"
+          ],
+          "required_outputs": [
+            "req-and-change-traceable-patch",
+            "invariant-impact",
+            "repository-native-checks",
+            "severity-ranked-review"
+          ],
+          "max_iterations": 5,
+          "on_exhausted": "fail"
+        }
       },
       "requires_human_approval": true,
       "success_transition": "verify"
@@ -182,12 +370,42 @@
       "label": "phase:verify",
       "executor": {
         "kind": "Sequential",
-        "manual_phase_reference": "plugins/prism/skills/lifecycle/references/verify.md",
+        "full_host_reference": "plugins/prism/skills/lifecycle/references/verify.md",
+        "light_host_reference": "plugins/prism/skills/light/references/verify.md",
         "public_ref": "prism/phases/verify",
         "internal_refs": [
           "prism/verify/review",
           "prism/roles/reviewer"
-        ]
+        ],
+        "source_files": [
+          {
+            "path": "pack/callee/prism/phases/verify.md",
+            "sha256": "9b6d7a94dca0ded6514eab2e8596be59d3c55dc69578cc2c968521b4dab86c77"
+          },
+          {
+            "path": "pack/callee/prism/verify/review.md",
+            "sha256": "cfa2d5f75ec9c9553799cb028a3bdf18a1fd69760a597c419c892f45d6590aaa"
+          },
+          {
+            "path": "pack/callee/prism/roles/reviewer.md",
+            "sha256": "dcaddf4a4654ebeb00629ae3117bd5ee8760546985c8aac0966d61c56d1160c5"
+          }
+        ],
+        "host_contract": {
+          "id": "verify-v1",
+          "steps": [
+            "story-reviewer",
+            "close-or-bounce"
+          ],
+          "required_outputs": [
+            "acceptance-and-design-review",
+            "severity-ranked-findings",
+            "tests-regressions-and-security",
+            "close-or-phase-specific-bounce"
+          ],
+          "max_iterations": 1,
+          "on_exhausted": "bounce"
+        }
       },
       "requires_human_approval": true,
       "success_transition": "close",

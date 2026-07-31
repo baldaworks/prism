@@ -48,30 +48,46 @@ flowchart TB
 - **Verified delivery.** Apply includes implementation and review; Verify
   closes only a complete story and sends gaps back to the right phase.
 
-## Two Ways to Run the Same Lifecycle
+## Three Prism Execution Modes
 
-Both execution choices use the same Beads-backed state, phases, approval gate,
-and verification contract. Choose how the work runs without changing what
-counts as a complete Prism story.
+All modes use the same Beads labels and durable story state. Full host Prism and
+Prism Callee share the role-level contract from the immutable Callee pack.
+Prism Light intentionally preserves the previous concise host workflow.
 
 ```mermaid
 flowchart TB
     I["Your change request"] --> C{"Choose execution"}
-    C --> H["Host-native Prism<br/>the coding host performs each phase"]
-    C --> W["Specialized workflow<br/>prism/* subagents"]
-    H --> L["One lifecycle contract<br/>Specify · Design · Breakdown<br/>Human · Apply · Verify"]
-    W --> L
-    L <--> B[("Beads<br/>story, design, tasks, progress")]
-    L --> O["Verified delivery"]
+    C --> H["Full host Prism<br/>role-aligned, no Callee runtime"]
+    C --> T["Prism Light<br/>concise host workflow"]
+    C --> W["Prism Callee<br/>prism/* agents"]
+    H --> F["Full lifecycle contract"]
+    W --> F
+    T --> L["Light lifecycle contract"]
+    F <--> B[("Beads<br/>story, design, tasks, progress")]
+    L <--> B
+    F --> O["Verified delivery"]
+    L --> O
 ```
 
-### Host-native Prism
+### Full Host Prism
 
-The Prism skill lets the coding host perform each phase directly in chat:
+The main Prism skill performs each Callee-aligned logical role directly in the
+host without invoking Callee:
 
 - Codex: `$prism:lifecycle`
 - Claude Code: `/prism:lifecycle`
 - Flat-slash hosts: `/prism-lifecycle`
+
+Design runs explorer → architect, Apply runs implementer → independent reviewer,
+and contract gates and iteration limits match the frozen Callee sources.
+
+### Prism Light
+
+Prism Light keeps the earlier concise host instructions:
+
+- Codex: `$prism:light`
+- Claude Code: `/prism:light`
+- Flat-slash hosts: `/prism-light`
 
 ### Prism [Callee](https://github.com/baldaworks/callee) Workflow
 
@@ -107,6 +123,9 @@ $prism:lifecycle Add CSV export to the report page.
 Use `/prism:lifecycle` in Claude Code or `/prism-lifecycle` in flat-slash
 hosts.
 
+Use `$prism:light`, `/prism:light`, or `/prism-light` when you explicitly want
+the previous concise host workflow.
+
 Prism uses an explicitly named story when supplied, otherwise resumes exactly
 one open Prism story. If neither applies, it creates a new Beads story from the
 request and starts it with `phase:specify`.
@@ -134,10 +153,11 @@ For the Prism Callee workflow, you also need:
 - `callee` `0.18.0+`
 - the Prism Callee agent pack installed so `prism/*` appears on `callee agent list`
 
-Prism therefore ships two host-facing execution paths:
+Prism therefore ships three host-facing execution paths:
 
-1. The **`prism` plugin**, which performs lifecycle work directly in the host.
-2. The **`prism-callee` plugin**, which runs the lifecycle through the
+1. **`prism:lifecycle`**, the full role-aligned host workflow.
+2. **`prism:light`**, the concise host workflow in the same plugin.
+3. The **`prism-callee` plugin**, which runs the lifecycle through the
    specialized `prism/*` workflow.
 
 ## Install the Host Plugin
@@ -154,6 +174,7 @@ codex plugin add prism-callee@prism
 Invoke with:
 
 - `$prism:lifecycle` for the main lifecycle
+- `$prism:light` for the concise host lifecycle
 - `$prism-callee:lifecycle` for the Prism Callee workflow
 
 ### Claude Code
@@ -168,6 +189,7 @@ claude plugin install prism-callee@prism --scope user
 Invoke with:
 
 - `/prism:lifecycle` for the main host-native lifecycle
+- `/prism:light` for the concise host lifecycle
 - `/prism-callee:lifecycle` for the Prism Callee workflow after installing the
   Callee pack described below
 
@@ -182,6 +204,7 @@ grok plugin install 'baldaworks/prism#plugins/prism-callee' --trust
 Invoke with:
 
 - `/prism-lifecycle` for the main lifecycle
+- `/prism-light` for the concise host lifecycle
 - `/prism-callee-lifecycle` for the Prism Callee workflow
 
 ### GitHub Copilot CLI
@@ -200,7 +223,7 @@ agent plugin marketplace add https://github.com/baldaworks/prism.git
 ```
 
 Then install **prism** and, if you want the Callee workflow, **prism-callee**
-from the marketplace UI. Invoke `prism-lifecycle` or
+from the marketplace UI. Invoke `prism-lifecycle`, `prism-light`, or
 `prism-callee-lifecycle`.
 
 ### OpenCode
@@ -212,12 +235,13 @@ skills:
 ```sh
 mkdir -p .opencode/skills
 cp -a plugins/prism/prefixed-skills/prism-lifecycle .opencode/skills/
+cp -a plugins/prism/prefixed-skills/prism-light .opencode/skills/
 # optional: only needed for the Prism Callee workflow
 cp -a plugins/prism-callee/prefixed-skills/prism-callee-lifecycle .opencode/skills/
 ```
 
-Invoke `prism-lifecycle` for host-native execution or
-`prism-callee-lifecycle` for the Callee workflow.
+Invoke `prism-lifecycle` for full host execution, `prism-light` for the concise
+host workflow, or `prism-callee-lifecycle` for the Callee workflow.
 
 ## Install the Callee Agents
 
@@ -258,9 +282,10 @@ presents its informed approval request:
 
 Rules that matter to users:
 
-- Design captures the solution, relevant risks, constraints, and verification
-  in ordinary prose. Breakdown turns actionable work into dependent child
-  tasks.
+- Full Design runs an evidence-backed explorer pass followed by a REQ-traceable
+  architect pass. Full Breakdown preserves task traceability, complexity,
+  dependencies, critical path, risks, verification, and rollback.
+- Prism Light uses the previous concise Design and Breakdown instructions.
 - A human must explicitly authorize apply. In the host lifecycle, ordinary
   free-form approval is enough for the host to persist `human:approved`; an
   explicit design-refinement request clears approval and returns the story to
@@ -275,24 +300,30 @@ Rules that matter to users:
 - Story assignees do not encode lifecycle phases. Existing assignee-driven
   stories are not migrated or supported.
 - Lifecycle creates a story when no explicit or uniquely resumable Prism story exists.
-- Host Prism derives the current phase from Beads story state; it does not expose separate host phase subskills.
+- Both host skills derive the current phase from Beads story state; neither
+  exposes separate phase subskills.
 - Apply closes remaining story work one ready child task at a time.
 - Verify is a close-or-bounce story decision.
-- `$prism:lifecycle`, `/prism:lifecycle`, and `/prism-lifecycle` perform the work directly in the host.
+- `$prism:lifecycle`, `/prism:lifecycle`, and `/prism-lifecycle` perform the
+  full role-aligned work directly in the host and never invoke Callee.
+- `$prism:light`, `/prism:light`, and `/prism-light` perform the concise work
+  directly in the host.
 - `$prism-callee:lifecycle`, `/prism-callee:lifecycle`, and `/prism-callee-lifecycle` run `prism/*` Callee assets through the host integration.
 - `callee agent run prism/lifecycle` runs the same public Callee graph directly.
 
-For the formal split between host-native and Callee workflow behavior,
+For the formal split between full host, Light, and Callee behavior,
 start with:
 
 - `docs/architecture-spec.md`
 - `docs/architecture-host-lifecycle.md`
+- `docs/architecture-light-lifecycle.md`
 - `docs/architecture-callee-lifecycle.md`
 
 ## When to Use Direct Callee Commands
 
 Most users should use the normal host entrypoints:
 `$prism:lifecycle`, `/prism:lifecycle`, `/prism-lifecycle`,
+`$prism:light`, `/prism:light`, `/prism-light`,
 `$prism-callee:lifecycle`, `/prism-callee:lifecycle`, or
 `/prism-callee-lifecycle`.
 
@@ -320,6 +351,7 @@ individual phase.
 If you want the full operational behavior, see:
 
 - `docs/architecture-host-lifecycle.md` for the host-native lifecycle
+- `docs/architecture-light-lifecycle.md` for Prism Light
 - `docs/architecture-callee-lifecycle.md` for the `prism-callee` workflow
 
 For repeatable PTY-backed smoke tests of the Callee Human path, use:
@@ -335,6 +367,7 @@ Use `--keep-temp` if you want the captured diagnostics and artifacts left under
 The corresponding lifecycle sources are:
 
 - `plugins/prism/skills/lifecycle/SKILL.md`
+- `plugins/prism/skills/light/SKILL.md`
 - `plugins/prism-callee/skills/lifecycle/SKILL.md`
 - `pack/callee/prism/lifecycle.md`
 
@@ -342,9 +375,10 @@ The corresponding lifecycle sources are:
 
 If you are using this repository itself as a source checkout, these paths matter:
 
-- `plugins/prism/` contains the shipped host plugin payload.
+- `plugins/prism/` contains the full and Light host skill payloads.
 - `plugins/prism-callee/` contains the Callee workflow lifecycle skill.
-- `pack/callee/prism/` is the source of truth for the Prism Callee pack.
+- `pack/callee/` is the immutable source of truth and must not be modified by
+  host-skill adaptation work.
 - `.callee/*` may exist as a local discovery mirror in this repo, but `pack/callee/*` remains authoritative.
 
 The repository also publishes marketplace metadata for multiple hosts from the repo root.
@@ -370,6 +404,7 @@ Start with the boundary docs:
 
 - `docs/architecture-spec.md` for the repository-level boundary map
 - `docs/architecture-host-lifecycle.md` for the host-native lifecycle
+- `docs/architecture-light-lifecycle.md` for Prism Light
 - `docs/architecture-callee-lifecycle.md` for the `prism-callee` workflow
 
 Then use the execution-path-specific sources of truth for the path you are
@@ -378,6 +413,9 @@ editing:
 - `plugins/prism/skills/lifecycle/SKILL.md`
 - `plugins/prism/prefixed-skills/prism-lifecycle/SKILL.md`
 - `plugins/prism/skills/lifecycle/references/lifecycle.md`
+- `plugins/prism/skills/light/SKILL.md`
+- `plugins/prism/prefixed-skills/prism-light/SKILL.md`
+- `plugins/prism/skills/light/references/lifecycle.md`
 - `plugins/prism-callee/skills/lifecycle/SKILL.md`
 - `plugins/prism-callee/prefixed-skills/prism-callee-lifecycle/SKILL.md`
 - `plugins/prism-callee/skills/lifecycle/references/promptkit.md`

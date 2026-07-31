@@ -1,50 +1,71 @@
-# Prism specify phase
+# Prism full specify phase
 
-Run this reference only when the story label is `phase:specify` or the
-story is still missing usable description or acceptance criteria.
+Run only for `phase:specify` or when description/acceptance is not design-ready.
 
-## Goal
+## Contract projection
 
-Turn the requested change into a durable Beads story with:
+```json
+{
+  "id": "specify-v1",
+  "steps": ["interviewer", "readiness-gate", "human-clarification", "requirements-extract"],
+  "required_outputs": ["atomic-req-ids", "rfc2119-requirements", "per-requirement-acceptance", "constraints-and-non-goals"],
+  "max_iterations": 5,
+  "on_exhausted": "fail"
+}
+```
 
-- a concrete problem / change description
-- explicit acceptance criteria
-- known constraints and non-goals
-- enough scope clarity to hand off to design without inventing requirements
-
-## Required inputs
+## Inputs
 
 - `bd show <story> --long`
-- the user's stated intent
-- any already-known constraints, examples, or non-goals
+- raw user intent and subsequent clarification answers
+- known system context, stakeholders, constraints, artifacts, and terminology
 
-## Host procedure
+## Role 1: interviewer
 
-1. Load current state with `bd show <story> --long`.
-2. Identify missing requirement dimensions:
-   - actor / user
-   - behavior change
-   - constraints / non-goals
-   - observable acceptance outcomes
-3. When any dimension is missing or ambiguous, ask only the minimum direct
-   clarifying questions needed from the human. Do not ask for confirmation to
-   remain in Specify or to start another Specify iteration.
-4. After the human answers, combine the answer with the current story, return
-   to step 2, and repeat the readiness check. Keep the story in
-   `phase:specify` throughout this clarification loop.
-5. Once no core requirement dimension remains unresolved, rewrite the story into:
-   - `description`: what changes and why
-   - `acceptance`: observable outcomes, not implementation guesses
-   Capture known constraints and non-goals in either field when they affect
-   observable behavior or design choices.
-6. Re-read the rewritten description and acceptance before persisting. If this
-   reveals another material ambiguity, return to step 3. Otherwise they must be
-   specific enough that a designer can inspect the repository without guessing
-   product intent.
+Normalize the request into a requirements document:
 
-## Persist and advance
+1. Identify objective, actors, scope, explicit constraints, implicit assumptions,
+   dependencies, conflicts, negative requirements, and non-goals.
+2. Split behavior into atomic requirements with stable
+   `REQ-<CATEGORY>-<NNN>` identifiers.
+3. Use RFC 2119 terms precisely: MUST, MUST NOT, SHOULD, SHOULD NOT, MAY.
+4. Give every requirement at least one objective acceptance criterion with
+   concrete inputs/actions and expected outcomes.
+5. Mark unknowns rather than silently resolving them. Do not introduce design.
 
-When description and acceptance are both usable:
+## Role 2: readiness gate
+
+Audit the candidate without rewriting it. It is ready only when:
+
+- objective, actor, scope boundaries, terminology, constraints, and non-goals are clear;
+- every requirement is atomic, unambiguous, testable, and uniquely identified;
+- acceptance criteria cover success, material failure, and boundary behavior;
+- conflicts, dependencies, assumptions, and unresolved product decisions are explicit;
+- Design can inspect the repository without guessing product intent.
+
+If ready, continue to extract. Otherwise produce only the minimum blocking
+questions and enter Human clarification.
+
+## Human clarification loop
+
+Ask the blocking questions directly, merge the answer into the current candidate,
+then repeat interviewer → readiness gate. Clarification never authorizes Apply
+and never asks for phase-transition confirmation.
+
+Allow at most five unsuccessful gate iterations in one lifecycle attempt. On
+exhaustion, leave `phase:specify`, report the unresolved dimensions, and fail
+closed instead of inventing intent.
+
+## Requirements extract and persistence
+
+Persist the final structured requirements across the Beads fields:
+
+- `description`: objective, actors, scope, assumptions, constraints, non-goals,
+  and the atomic RFC 2119 requirements with REQ IDs;
+- `acceptance`: acceptance criteria grouped by their REQ IDs.
+
+Then re-read both fields. If extraction lost traceability or material context,
+repair it before advancing.
 
 ```bash
 bd update <story> \
@@ -53,21 +74,17 @@ bd update <story> \
   --set-labels prism,phase:design
 ```
 
-Advance only to `phase:design`.
-
 ## Stop when
 
-- core requirements are still ambiguous after inspection
-- acceptance would be speculative
-- the human needs to answer a scope or intent question
-
-If you stop to await an answer, leave the story in Specify and ask the human
-directly in chat. The answer resumes the same clarification loop; it is not a
-phase-transition approval.
+- Human input is required;
+- five iterations are exhausted;
+- requirements remain contradictory or speculative;
+- persistence cannot retain the required traceability.
 
 ## Never
 
-- invent missing requirements just to move forward
-- write design or task decomposition here
-- encode implementation details as acceptance criteria
-- move to design with placeholder text or unresolved core ambiguity
+- invent requirements, values, stakeholders, or constraints;
+- omit REQ IDs or per-requirement acceptance;
+- write implementation design;
+- treat clarification as approval;
+- modify `pack/callee/**`.

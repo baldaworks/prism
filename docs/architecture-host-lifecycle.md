@@ -1,133 +1,109 @@
-# Prism Host Lifecycle Architecture
+# Prism Full Host Lifecycle Architecture
 
-This document defines only the manual host lifecycle: `$prism:lifecycle`,
-`/prism:lifecycle`, and `/prism-lifecycle`. It does not define Callee
-automation or allow `callee agent run prism/...`.
+This document defines `$prism:lifecycle`, `/prism:lifecycle`, and
+`/prism-lifecycle`. The host performs the work directly and never invokes
+`callee`, while preserving the behavioral contracts of the immutable Prism
+Callee pack.
 
 ## Purpose
 
-The host skill performs each phase directly and persists results in Beads:
+The full host lifecycle provides Callee-role semantics without a Callee runtime:
 
-- clarify requirements
-- inspect the repository and write concrete design markdown
-- break down design into Beads child tasks with dependencies and verification
-- implement and review child tasks
-- verify before close
+- Specify performs interviewer normalization, readiness audit, Human
+  clarification, and structured extraction.
+- Design performs an evidence-backed explorer pass followed by an architect pass.
+- Breakdown creates a traceable implementation plan and normalized Beads graph.
+- Human prepares informed approval, classifies intent, and fails closed.
+- Apply alternates implementer and independent reviewer passes for one task.
+- Verify performs story-level review and a close-or-bounce decision.
+
+Prism Light is the separate concise host workflow documented in
+[architecture-light-lifecycle.md](architecture-light-lifecycle.md).
+
+## Immutable behavioral source
+
+`pack/callee/**` is read-only. The full host references are self-contained
+projections because an installed Prism plugin cannot assume the pack is present.
+`docs/lifecycle-ownership.json` records, for every phase:
+
+- ordered Callee source files and frozen SHA-256 digests;
+- ordered logical role steps;
+- required outputs;
+- iteration limit and exhaustion behavior;
+- full and Light host reference paths.
+
+The ownership validator compares these projections and fails on any changed
+Callee source. This repository task must leave the committed `pack/callee` Git
+tree and working tree byte-for-byte unchanged.
 
 ## Durable state
 
-Beads is the only durable lifecycle store. Exactly one story label is the
-active phase:
+Beads remains the only durable lifecycle store. Exactly one story label is active:
 
 | Label | Phase |
 | --- | --- |
 | `phase:specify` | Specify |
 | `phase:design` | Design |
 | `phase:breakdown` | Breakdown |
-| `phase:human` | Human approval gate |
+| `phase:human` | Human approval |
 | `phase:apply` | Apply |
 | `phase:verify` | Verify |
 
-Use label `prism` to find lifecycle stories and `human:approved` to permit
-apply. Story assignees do not encode lifecycle phases. Existing assignee-driven
-stories are intentionally not migrated or supported.
+`prism` marks membership and `human:approved` authorizes Apply. Story assignees
+do not encode phases. Apply child tasks use `prism/apply/implementer` and
+`prism/apply/reviewer`.
 
-Child tasks remain inside the story-level apply phase: their assignee moves from
-`prism/apply/implementer` to `prism/apply/reviewer`.
+## Story resolution and progression
 
-## Story resolution
+Use an explicitly named story ID, otherwise resume exactly one open Prism story,
+otherwise create a new story from raw intent with `prism,phase:specify`.
+Successful Specify, Design, and Breakdown phases advance continuously into the
+informed Human request. Human clarification inside Specify is not approval.
 
-Lifecycle accepts user intent, not a pre-created story. It resolves work in this
-order: an explicitly named story ID; exactly one open Prism story; otherwise a
-new story labeled `prism,phase:specify`. New stories retain the raw user
-request in their description and let Specify normalize the acceptance
-criteria.
+## Logical role execution
 
-## Design and task coverage
+One host session executes the roles sequentially. Role separation is logical:
 
-Design records the proposed solution, relevant risks, constraints, tradeoffs,
-and verification in ordinary prose. Prism does not require a fixed assessment
-matrix or rating system.
+- every pass has its own inputs, required outputs, and gate;
+- Design architect consumes the explorer evidence;
+- Apply reviewer re-reads actual files, diff, tests, story, and design rather
+  than trusting the implementer narrative;
+- failed review feeds actionable findings into the next implementer pass;
+- Specify and Apply allow at most five unsuccessful iterations and fail closed.
 
-Breakdown creates tasks that cover the actionable design. When a story already
-has children, it preserves open and closed tasks plus dependencies, reuses
-sufficient work, and creates only missing implementation or verification tasks.
-It never automatically deletes, closes, or reopens existing children.
+This preserves behavior and evidence boundaries without claiming separate
+provider processes.
 
-## Specify clarification loop
+## Human authority
 
-Specify repeatedly checks whether actor, behavior, constraints, scope
-boundaries, and observable acceptance outcomes are clear enough for Design.
-When product intent is missing, the host asks the human only the minimum
-blocking questions, merges the answer into the same story context, and repeats
-the readiness check. The story remains in `phase:specify` until its description
-and acceptance criteria are usable.
-
-Clarification is not approval and does not authorize Apply. The host does not
-impose an iteration limit: it pauses for genuinely missing human input and
-resumes the same loop when the answer arrives.
-
-## Execution model
-
-The host skill derives the phase from exactly one supported `phase:*` label,
-then loads the matching bundled instruction:
-
-- `specify.md`
-- `design.md`
-- `breakdown.md`
-- `human.md`
-- `apply.md`
-- `verify.md`
-
-These files are agent instructions, not runtime artifacts. Requirements,
-design, task graph, status, labels, and assignees are written directly to Beads.
-After a successful Specify, Design, or Breakdown write, the host re-reads Beads
-and immediately runs the newly selected phase in the same invocation. It does
-not ask the human to confirm transitions between these pre-approval phases.
-After Breakdown, it enters the Human reference and presents the informed
-approval request. It stops while awaiting that decision, on invalid state, or
-for a genuinely missing or blocking input.
-
-## Authority boundaries
-
-| Actor | Allowed actions |
-| --- | --- |
-| Human | explicitly authorizes apply, changes requirements, grants commit/push authority |
-| Host lifecycle skill | repository inspection, host work, Beads writes, local checks, and persisting unambiguous free-form approval as `human:approved` |
-| Beads | durable story and child-task state |
-
-The decision and persistence boundaries are distinct: the human supplies the
-authorization or refinement intent, while the host records it in Beads.
-Unambiguous approval writes `phase:apply` with `human:approved`. An explicit
-request to refine the design clears approval, writes `phase:design`, preserves
-the existing child graph for reconciliation, and starts no implementation.
-Questions, conditional language, unclear change requests, and other ambiguous
-responses fail closed at `phase:human`.
-
-Before asking, the host presents Design summary → Task summary → Approval
-request. One unambiguous free-form approval covers the design and task graph.
+Before approval, present Design summary → Task summary → Approval request.
+Classify the response as APPROVE, REFINE_DESIGN, or WITHHOLD. Only unambiguous
+APPROVE persists `human:approved`. Refinement clears approval, returns to Design,
+and preserves children. Ambiguity remains at Human.
 
 ## Hard rules
 
-- Do not invoke `callee agent run prism/...` from the host lifecycle skill.
-- Do not use PromptKit references as host phase instructions.
-- Do not implement without `human:approved`.
-- Do not persist `human:approved` without unambiguous human authorization.
-- Do not close a story while child tasks remain open.
-- Claim only a ready/unblocked child of the current story.
-- Verify is close-or-bounce; it does not repair implementation.
+- Never invoke `callee agent run prism/...`.
+- Never modify `pack/callee/**`.
+- Never weaken or skip a mapped role output or gate.
+- Never implement without persisted and re-read approval.
+- Claim only one ready child of the current story.
+- Verify never repairs implementation.
+- Do not close tasks or stories with failing checks or unresolved findings.
 
 ## File boundaries
 
-| Concern | Files |
+| Concern | Location |
 | --- | --- |
-| Manual host lifecycle skill | `plugins/prism/skills/lifecycle/` |
-| Flat-name mirror | `plugins/prism/prefixed-skills/prism-lifecycle/` |
-| Shared lifecycle graph | `plugins/prism/skills/lifecycle/references/lifecycle.md` |
-| Phase instructions | `plugins/prism/skills/lifecycle/references/*.md` and prefixed mirror |
+| Namespaced full host skill | `plugins/prism/skills/lifecycle/` |
+| Flat full host skill | `plugins/prism/prefixed-skills/prism-lifecycle/` |
+| Light host skill | `plugins/prism/skills/light/` |
+| Machine-checkable projection | `docs/lifecycle-ownership.json` |
+| Immutable source | `pack/callee/` |
 
 ## Validation
 
 ```sh
 ./scripts/validate-lifecycle-ownership.sh
+./scripts/validate-plugin-packaging.sh
 ```

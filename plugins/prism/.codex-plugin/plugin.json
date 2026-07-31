@@ -1,7 +1,7 @@
 {
   "name": "prism",
   "version": "0.4.2+codex.20260731000000",
-  "description": "Run the Prism beads-backed story lifecycle directly in the host by deriving the current phase from Beads state.",
+  "description": "Run the full role-aligned or concise Light Prism lifecycle directly in the host.",
   "author": {
     "name": "Alexey Samoylov",
     "url": "https://github.com/baldaworks"
@@ -18,14 +18,14 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "Prism",
-    "shortDescription": "Beads-backed story lifecycle from current Beads phase state.",
-    "longDescription": "Guides coding agents through the Prism story lifecycle by reading the current Beads story state and advancing the next lifecycle phase in-host.",
+    "shortDescription": "Full and Light Beads-backed host lifecycles.",
+    "longDescription": "Provides a full host lifecycle aligned with the immutable Prism Callee role contracts plus Prism Light for the previous concise host workflow.",
     "developerName": "Alexey Samoylov",
     "category": "Developer Tools",
     "capabilities": [
       "Local filesystem",
       "CLI orchestration"
     ],
-    "defaultPrompt": "Use $prism:lifecycle to inspect the current Beads story state and advance the Prism lifecycle in this repository."
+    "defaultPrompt": "Use $prism:lifecycle for the full role-aligned host workflow or $prism:light for the concise host workflow."
   }
 }

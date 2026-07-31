@@ -6,6 +6,7 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 python3 - "$repo_root" <<'PY'
 import json
+import hashlib
 import os
 import pathlib
 import re
@@ -51,12 +52,72 @@ phase_labels = [
     "phase:apply",
     "phase:verify",
 ]
-record(mapping.get("version") == 11, "ownership schema version is 11")
+record(mapping.get("version") == 12, "ownership schema version is 12")
 record(
     mapping.get("direct_callee_invocation")
     == 'callee agent run prism/lifecycle --message "..."',
     "ownership schema declares direct Callee binary invocation",
 )
+record(
+    mapping.get("full_host_entrypoints")
+    == {
+        "codex": "$prism:lifecycle",
+        "claude": "/prism:lifecycle",
+        "flat": "/prism-lifecycle",
+    },
+    "ownership schema declares full host entrypoints",
+)
+record(
+    mapping.get("light_host_entrypoints")
+    == {
+        "codex": "$prism:light",
+        "claude": "/prism:light",
+        "flat": "/prism-light",
+    },
+    "ownership schema declares Light entrypoints",
+)
+record(
+    mapping.get("automated_host_entrypoints")
+    == {
+        "codex": "$prism-callee:lifecycle",
+        "claude": "/prism-callee:lifecycle",
+        "flat": "/prism-callee-lifecycle",
+    },
+    "ownership schema preserves Callee host entrypoints",
+)
+callee_pack = mapping.get("callee_pack", {})
+record(
+    callee_pack.get("path") == "pack/callee"
+    and callee_pack.get("mutation_policy") == "forbidden",
+    "ownership schema makes the Callee pack an immutable source",
+)
+baseline_tree = callee_pack.get("baseline_git_tree", "")
+tree_result = subprocess.run(
+    ["git", "rev-parse", "HEAD:pack/callee"],
+    cwd=root,
+    text=True,
+    capture_output=True,
+    check=False,
+)
+record(
+    tree_result.returncode == 0 and tree_result.stdout.strip() == baseline_tree,
+    "committed Callee pack matches the immutable baseline tree",
+)
+pack_diff = subprocess.run(
+    ["git", "diff", "--quiet", "HEAD", "--", "pack/callee"],
+    cwd=root,
+    check=False,
+)
+record(pack_diff.returncode == 0, "working tree does not modify the Callee pack")
+root_source = callee_pack.get("root_source", {})
+root_source_path = root / root_source.get("path", "")
+record(root_source_path.is_file(), "Callee lifecycle root source exists")
+if root_source_path.is_file():
+    record(
+        hashlib.sha256(root_source_path.read_bytes()).hexdigest()
+        == root_source.get("sha256"),
+        "Callee lifecycle root source matches its frozen digest",
+    )
 record(
     mapping.get("lifecycle_labels") == ["prism", "human:approved", *phase_labels],
     "lifecycle labels contain membership, approval, and every supported phase",
@@ -170,10 +231,18 @@ for phase in story_phases:
     record("assignee" not in phase, f"{name} has no story-phase assignee")
     record("aliases" not in phase, f"{name} has no assignee aliases")
     executor = phase.get("executor", {})
-    manual_ref = executor.get("manual_phase_reference")
+    full_ref = executor.get("full_host_reference")
+    light_ref = executor.get("light_host_reference")
     public_ref = executor.get("public_ref")
     record(bool(executor.get("kind")), f"{name} declares executor kind")
-    record(bool(manual_ref) and (root / manual_ref).is_file(), f"{name} manual phase reference exists")
+    record(
+        bool(full_ref) and (root / full_ref).is_file(),
+        f"{name} full host phase reference exists",
+    )
+    record(
+        bool(light_ref) and (root / light_ref).is_file(),
+        f"{name} Light phase reference exists",
+    )
     record(
         bool(public_ref) and (root / "pack/callee" / f"{public_ref}.md").is_file(),
         f"{name} public Callee phase exists",
@@ -183,6 +252,54 @@ for phase in story_phases:
             (root / "pack/callee" / f"{internal_ref}.md").is_file(),
             f"{name} internal Callee ref exists: {internal_ref}",
         )
+    source_files = executor.get("source_files", [])
+    record(bool(source_files), f"{name} declares ordered Callee contract sources")
+    for source in source_files:
+        source_path = root / source.get("path", "")
+        record(source_path.is_file(), f"{name} Callee source exists: {source.get('path')}")
+        if source_path.is_file():
+            record(
+                hashlib.sha256(source_path.read_bytes()).hexdigest()
+                == source.get("sha256"),
+                f"{name} Callee source matches frozen digest: {source.get('path')}",
+            )
+
+    host_contract = executor.get("host_contract", {})
+    record(
+        host_contract.get("id") == f"{name}-v1"
+        and bool(host_contract.get("steps"))
+        and bool(host_contract.get("required_outputs"))
+        and isinstance(host_contract.get("max_iterations"), int)
+        and bool(host_contract.get("on_exhausted")),
+        f"{name} declares a complete full-host contract projection",
+    )
+    for reference_path in [
+        root / full_ref if full_ref else root / "__missing__",
+        root
+        / "plugins/prism/prefixed-skills/prism-lifecycle/references"
+        / f"{name}.md",
+    ]:
+        text = reference_path.read_text() if reference_path.is_file() else ""
+        match = re.search(
+            r"## Contract projection\s+```json\s+(\{.*?\})\s+```",
+            text,
+            re.DOTALL,
+        )
+        parsed_contract = {}
+        if match:
+            try:
+                parsed_contract = json.loads(match.group(1))
+            except json.JSONDecodeError:
+                pass
+        record(
+            parsed_contract == host_contract,
+            f"{reference_path.relative_to(root)} matches the {name} Callee projection",
+        )
+    light_text = (root / light_ref).read_text() if light_ref and (root / light_ref).is_file() else ""
+    record(
+        "## Contract projection" not in light_text,
+        f"{name} Light reference remains outside full Callee parity",
+    )
 
 specify_loop_path = root / "pack/callee/prism/specify/loop.md"
 specify_questions_path = root / "pack/callee/prism/specify/questions.md"
@@ -215,14 +332,17 @@ record(
 for skill_path in [
     root / "plugins/prism/skills/lifecycle/SKILL.md",
     root / "plugins/prism/prefixed-skills/prism-lifecycle/SKILL.md",
+    root / "plugins/prism/skills/light/SKILL.md",
+    root / "plugins/prism/prefixed-skills/prism-light/SKILL.md",
     root / "plugins/prism-callee/skills/lifecycle/SKILL.md",
     root / "plugins/prism-callee/prefixed-skills/prism-callee-lifecycle/SKILL.md",
 ]:
     text = skill_path.read_text() if skill_path.is_file() else ""
+    lower_text = text.lower()
     record(skill_path.is_file(), f"{skill_path.relative_to(root)} exists")
     for phase_label in phase_labels:
         record(phase_label in text, f"{skill_path.relative_to(root)} mentions {phase_label}")
-    record("exactly one" in text and "phase:*" in text, f"{skill_path.relative_to(root)} requires exactly one phase label")
+    record("exactly one" in lower_text and "phase:*" in text, f"{skill_path.relative_to(root)} requires exactly one phase label")
     for snippet in [
         "story ID",
         "exactly one open Prism stor",
@@ -230,22 +350,21 @@ for skill_path in [
         "raw user request",
     ]:
         record(snippet in text, f"{skill_path.relative_to(root)} documents lifecycle-owned story creation: {snippet}")
-    for snippet in [
-        "lifecycle advance loop",
-        "successful Specify or Design",
-        "successful Breakdown",
-        "`phase:human` is not a stop condition",
-    ]:
-        record(
-            snippet in text,
-            f"{skill_path.relative_to(root)} documents automatic pre-approval progression: {snippet}",
-        )
+    record(
+        "pre-approval" in lower_text and "human" in lower_text,
+        f"{skill_path.relative_to(root)} documents continuous pre-approval progression into Human",
+    )
 
 skill_pairs = [
     (
         root / "plugins/prism/skills/lifecycle/SKILL.md",
         root / "plugins/prism/prefixed-skills/prism-lifecycle/SKILL.md",
-        "host lifecycle skills differ only by frontmatter name",
+        "full host lifecycle skills differ only by frontmatter name",
+    ),
+    (
+        root / "plugins/prism/skills/light/SKILL.md",
+        root / "plugins/prism/prefixed-skills/prism-light/SKILL.md",
+        "Light lifecycle skills differ only by frontmatter name",
     ),
     (
         root / "plugins/prism-callee/skills/lifecycle/SKILL.md",
@@ -266,7 +385,13 @@ reference_pairs = [
         root / "plugins/prism/skills/lifecycle/references",
         root / "plugins/prism/prefixed-skills/prism-lifecycle/references",
         ["specify.md", "design.md", "breakdown.md", "human.md", "apply.md", "verify.md", "lifecycle.md"],
-        "host lifecycle reference",
+        "full host lifecycle reference",
+    ),
+    (
+        root / "plugins/prism/skills/light/references",
+        root / "plugins/prism/prefixed-skills/prism-light/references",
+        ["specify.md", "design.md", "breakdown.md", "human.md", "apply.md", "verify.md", "lifecycle.md"],
+        "Light lifecycle reference",
     ),
     (
         root / "plugins/prism-callee/skills/lifecycle/references",
@@ -299,8 +424,12 @@ host_lifecycle_diagrams = [
 ]
 for diagram_path in host_lifecycle_diagrams:
     text = diagram_path.read_text() if diagram_path.is_file() else ""
+    lower_text = text.lower()
     relative = diagram_path.relative_to(root)
-    record("Specify gate" in text, f"{relative} shows the Specify readiness gate")
+    record(
+        "specify gate" in lower_text or "readiness gate" in lower_text,
+        f"{relative} shows the Specify readiness gate",
+    )
     record(
         "needs clarification" in text and "Human clarification" in text,
         f"{relative} shows the Specify Human clarification branch",
@@ -311,8 +440,8 @@ for diagram_path in host_lifecycle_diagrams:
     )
 
 host_specify_references = [
-    root / "plugins/prism/skills/lifecycle/references/specify.md",
-    root / "plugins/prism/prefixed-skills/prism-lifecycle/references/specify.md",
+    root / "plugins/prism/skills/light/references/specify.md",
+    root / "plugins/prism/prefixed-skills/prism-light/references/specify.md",
 ]
 for specify_path in host_specify_references:
     text = specify_path.read_text() if specify_path.is_file() else ""
@@ -362,6 +491,7 @@ for token in retired_contract_tokens:
 
 for architecture_path in [
     root / "docs/architecture-host-lifecycle.md",
+    root / "docs/architecture-light-lifecycle.md",
     root / "docs/architecture-callee-lifecycle.md",
 ]:
     architecture_text = architecture_path.read_text() if architecture_path.is_file() else ""
@@ -372,6 +502,8 @@ for reference in ["specify", "design", "breakdown", "human", "apply", "verify"]:
     for base in [
         root / "plugins/prism/skills/lifecycle/references",
         root / "plugins/prism/prefixed-skills/prism-lifecycle/references",
+        root / "plugins/prism/skills/light/references",
+        root / "plugins/prism/prefixed-skills/prism-light/references",
     ]:
         path = base / f"{reference}.md"
         text = path.read_text() if path.is_file() else ""
@@ -380,8 +512,8 @@ for reference in ["specify", "design", "breakdown", "human", "apply", "verify"]:
             record(heading in text, f"{path.relative_to(root)} includes {heading}")
 
 for human_path in [
-    root / "plugins/prism/skills/lifecycle/references/human.md",
-    root / "plugins/prism/prefixed-skills/prism-lifecycle/references/human.md",
+    root / "plugins/prism/skills/light/references/human.md",
+    root / "plugins/prism/prefixed-skills/prism-light/references/human.md",
 ]:
     text = human_path.read_text() if human_path.is_file() else ""
     relative = human_path.relative_to(root)
@@ -427,8 +559,8 @@ for human_path in [
         record(snippet in text, f"{relative} {contract}")
 
 for base in [
-    root / "plugins/prism/skills/lifecycle/references",
-    root / "plugins/prism/prefixed-skills/prism-lifecycle/references",
+    root / "plugins/prism/skills/light/references",
+    root / "plugins/prism/prefixed-skills/prism-light/references",
 ]:
     breakdown_text = (base / "breakdown.md").read_text()
     for snippet in [
@@ -454,8 +586,8 @@ for skill_path in [
         record(snippet in text, f"{skill_path.relative_to(root)} documents lifecycle contract: {snippet}")
 
 lifecycle_graph_paths = [
-    root / "plugins/prism/skills/lifecycle/references/lifecycle.md",
-    root / "plugins/prism/prefixed-skills/prism-lifecycle/references/lifecycle.md",
+    root / "plugins/prism/skills/light/references/lifecycle.md",
+    root / "plugins/prism/prefixed-skills/prism-light/references/lifecycle.md",
 ]
 for path in lifecycle_graph_paths:
     text = path.read_text() if path.is_file() else ""
@@ -466,6 +598,21 @@ for path in lifecycle_graph_paths:
     record(
         'H -->|"request design refinement; clear approval"| D' in text,
         f"{path.relative_to(root)} diagrams Human design refinement to Design",
+    )
+
+for path in [
+    root / "plugins/prism/skills/lifecycle/references/lifecycle.md",
+    root / "plugins/prism/prefixed-skills/prism-lifecycle/references/lifecycle.md",
+]:
+    text = path.read_text() if path.is_file() else ""
+    record('C -->|"approve"| W' in text, f"{path.relative_to(root)} diagrams approval to Apply")
+    record(
+        'C -->|"refine design"| E' in text,
+        f"{path.relative_to(root)} diagrams design refinement",
+    )
+    record(
+        'R -->|"repair, max 5"| W' in text,
+        f"{path.relative_to(root)} diagrams the bounded review repair loop",
     )
 
 direct_callee_command = "callee agent run prism/lifecycle"

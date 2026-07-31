@@ -1,67 +1,76 @@
-# Prism verify phase
+# Prism full verify phase
 
-Run this reference only when the story label is `phase:verify` or the story
-is `human:approved` and has no open child tasks.
+Run for `phase:verify` or an approved story with no open children.
 
-## Goal
+## Contract projection
 
-Make the close-or-bounce story decision against the story description,
-acceptance criteria, design, and implemented result.
+```json
+{
+  "id": "verify-v1",
+  "steps": ["story-reviewer", "close-or-bounce"],
+  "required_outputs": ["acceptance-and-design-review", "severity-ranked-findings", "tests-regressions-and-security", "close-or-phase-specific-bounce"],
+  "max_iterations": 1,
+  "on_exhausted": "bounce"
+}
+```
 
-## Required inputs
+## Inputs
 
 - `bd show <story> --long`
 - `bd children <story>`
-- the final repository state after apply
+- final working tree, diff/history, tests, and repository instructions
 
-## Host procedure
+## Role 1: story reviewer
 
-1. Load the full story context:
+Independently inspect the implementation against every REQ ID, acceptance
+criterion, design decision, invariant, risk, and closed child:
 
-```bash
-bd show <story> --long
-bd children <story>
-```
+- confirm actual behavior rather than trusting task closure or summaries;
+- inspect relevant tests and run repository-native checks;
+- check correctness, error paths, regressions, security, data integrity,
+  compatibility, maintainability, and missing verification;
+- report every finding with severity, location, evidence, impact, and repair;
+- identify the three most important repairs when findings exist.
 
-2. Review whether:
-   - the description was implemented
-   - the acceptance criteria are satisfied
-   - the design intent still matches the final result
-   - relevant risks, security concerns, regressions, and tests were addressed
-   - no follow-up work is required for correctness
-3. Decide whether the story should close or bounce back for more work.
+Clearly state whether the story is acceptable to close.
 
-## Persist and advance
+## Role 2: close-or-bounce
 
-If verification passes, close the story:
+Close only when all acceptance is satisfied and no follow-up is required:
 
 ```bash
 bd close <story> --reason="Acceptance met"
 ```
 
-If verification fails:
+Otherwise keep it open and route to the earliest defective phase:
 
-- keep the story open
-- reopen or create child tasks as needed
-- for implementation gaps, preserve approval with
-  `bd update <story> --set-labels prism,phase:apply,human:approved`
-- for defective task coverage, clear approval with
-  `bd update <story> --set-labels prism,phase:breakdown`
-- for an invalid or incomplete design, clear approval with
-  `bd update <story> --set-labels prism,phase:design`
-- for incomplete requirements, clear approval with
-  `bd update <story> --set-labels prism,phase:specify`
+```bash
+# implementation gap
+bd update <story> --set-labels prism,phase:apply,human:approved
+
+# task coverage gap
+bd update <story> --set-labels prism,phase:breakdown
+
+# design gap
+bd update <story> --set-labels prism,phase:design
+
+# requirements gap
+bd update <story> --set-labels prism,phase:specify
+```
+
+Create or reopen child work only after selecting the appropriate earlier phase.
+Clear approval for Breakdown, Design, or Specify. Verify never performs repairs.
 
 ## Stop when
 
-- follow-up work is required
-- acceptance gaps still exist
-- verification discovered that plan or design must be revisited
-
-Stopping here means bouncing the story, not repairing it inside verify.
+- any finding requires follow-up;
+- checks or acceptance evidence are incomplete;
+- the story has an open child;
+- the correct bounce phase has been persisted.
 
 ## Never
 
-- use verify as an implementation repair loop
-- close the story if follow-up work is required
-- leave the story closed while acceptance gaps still exist
+- implement or edit code during Verify;
+- close with unresolved findings;
+- preserve approval when bouncing before Apply;
+- modify `pack/callee/**`.

@@ -112,12 +112,23 @@ allowed_host_specific_fields = {
 
 expected_default_prompts = {
     "prism": {
-        "codex": "Use $prism:lifecycle to inspect the current Beads story state and advance the Prism lifecycle in this repository.",
-        "claude": "Use /prism:lifecycle to inspect the current Beads story state and advance the Prism lifecycle in this repository.",
+        "codex": "Use $prism:lifecycle for the full role-aligned host workflow or $prism:light for the concise host workflow.",
+        "claude": "Use /prism:lifecycle for the full role-aligned host workflow or /prism:light for the concise host workflow.",
     },
     "prism-callee": {
         "codex": "Use $prism-callee:lifecycle to run a Prism story through specialized prism/* subagents and the explicit Callee Human approval gate.",
         "claude": "Use /prism-callee:lifecycle to run a Prism story through specialized prism/* subagents and the explicit Callee Human approval gate.",
+    },
+}
+
+expected_skill_inventory = {
+    "prism": {
+        "namespaced": ["lifecycle", "light"],
+        "flat": ["prism-lifecycle", "prism-light"],
+    },
+    "prism-callee": {
+        "namespaced": ["lifecycle"],
+        "flat": ["prism-callee-lifecycle"],
     },
 }
 
@@ -143,6 +154,47 @@ def load_json(path: pathlib.Path):
 
 def expected_skills_dir(plugin_root: pathlib.Path, manifest_data: dict) -> pathlib.Path:
     return plugin_root / str(manifest_data.get("skills", "")).removeprefix("./")
+
+
+def frontmatter_name(path: pathlib.Path) -> str:
+    if not path.is_file():
+        return ""
+    for line in path.read_text().splitlines():
+        if line.startswith("name: "):
+            return line.removeprefix("name: ").strip()
+    return ""
+
+
+def validate_skill_inventory(plugin: str, plugin_root: pathlib.Path) -> None:
+    expected = expected_skill_inventory[plugin]
+    for kind, directory in [
+        ("namespaced", plugin_root / "skills"),
+        ("flat", plugin_root / "prefixed-skills"),
+    ]:
+        actual = sorted(
+            path.name
+            for path in directory.iterdir()
+            if path.is_dir() and (path / "SKILL.md").is_file()
+        )
+        record(
+            actual == sorted(expected[kind]),
+            f"{plugin} {kind} skill inventory is {sorted(expected[kind])}",
+        )
+        for skill_name in expected[kind]:
+            skill_path = directory / skill_name / "SKILL.md"
+            record(
+                frontmatter_name(skill_path) == skill_name,
+                f"{skill_path.relative_to(root)} frontmatter name matches its directory",
+            )
+
+    for skill_name in expected["namespaced"]:
+        metadata = plugin_root / "skills" / skill_name / "agents/openai.yaml"
+        record(metadata.is_file(), f"{metadata.relative_to(root)} exists")
+        metadata_text = metadata.read_text() if metadata.is_file() else ""
+        record(
+            f"${plugin}:{skill_name}" in metadata_text,
+            f"{metadata.relative_to(root)} default prompt uses the namespaced invocation",
+        )
 
 
 def validate_manifest_common(
@@ -283,6 +335,7 @@ def validate_flat_manifest(check: dict, baseline: dict) -> None:
 
 for check in namespaced_plugin_checks:
     validate_namespaced_pair(check)
+    validate_skill_inventory(check["plugin"], check["root"])
 
 prism_codex_manifest_path = root / "plugins/prism/.codex-plugin/plugin.json"
 codex_baselines = {}

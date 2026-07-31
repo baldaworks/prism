@@ -1,4 +1,4 @@
 interface:
   display_name: "Prism Lifecycle"
-  short_description: "Host-native Prism lifecycle with Beads-backed state"
-  default_prompt: "Use $prism:lifecycle to advance the Prism story lifecycle directly in this host session."
+  short_description: "Full role-aligned Prism lifecycle executed in the host"
+  default_prompt: "Use $prism:lifecycle to run the full role-aligned Prism lifecycle directly in this host session."
