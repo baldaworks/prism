@@ -1,0 +1,4 @@
+interface:
+  display_name: "Prism Story"
+  short_description: "Full host-native Prism story lifecycle"
+  default_prompt: "Use $prism:story to run or continue one full Prism story lifecycle."

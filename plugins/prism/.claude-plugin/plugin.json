@@ -1,7 +1,7 @@
 {
   "name": "prism",
   "version": "0.5.0+codex.20260731000000",
-  "description": "Run the full role-aligned or concise Light Prism lifecycle directly in the host.",
+  "description": "Route Prism work across full Story and Epic lifecycles or run concise Light directly in the host.",
   "author": {
     "name": "Alexey Samoylov",
     "url": "https://github.com/baldaworks"
@@ -13,19 +13,20 @@
     "prism",
     "beads",
     "callee",
-    "story-lifecycle"
+    "story-lifecycle",
+    "epic-lifecycle"
   ],
   "skills": "./skills/",
   "interface": {
     "displayName": "Prism",
-    "shortDescription": "Full and Light Beads-backed host lifecycles.",
-    "longDescription": "Provides a full host lifecycle aligned with the immutable Prism Callee role contracts plus Prism Light for the previous concise host workflow.",
+    "shortDescription": "Story, Epic, and Light Beads-backed lifecycles.",
+    "longDescription": "Routes work to full Story or Epic lifecycles, supports explicit batches of open Prism epics, and preserves Prism Light for concise Story execution.",
     "developerName": "Alexey Samoylov",
     "category": "Developer Tools",
     "capabilities": [
       "Local filesystem",
       "CLI orchestration"
     ],
-    "defaultPrompt": "Use /prism:lifecycle for the full role-aligned host workflow or /prism:light for the concise host workflow."
+    "defaultPrompt": "Use /prism:lifecycle to route Story or Epic work, including explicit batches of all open Prism epics; use /prism:story, /prism:epic, or /prism:light for direct workflows."
   }
 }

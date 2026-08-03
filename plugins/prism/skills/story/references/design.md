@@ -1,6 +1,6 @@
 # Prism full design phase
 
-Run only for `phase:design` or when design is absent or invalid.
+Run only for `phase:story:design` or when design is absent or invalid.
 
 ## Contract projection
 
@@ -67,7 +67,7 @@ Before advancing, verify:
 Persist only the architect document:
 
 ```bash
-bd update <story> --design-file - --set-labels prism,phase:breakdown
+bd update <story> --design-file - --set-labels prism,phase:story:breakdown
 ```
 
 ## Stop when

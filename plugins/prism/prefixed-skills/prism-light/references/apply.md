@@ -1,6 +1,6 @@
 # Prism Light apply phase
 
-Run this reference only when the story label is `phase:apply` and the
+Run this reference only when the story label is `phase:story:apply` and the
 story already has `human:approved`.
 
 ## Goal
@@ -53,7 +53,7 @@ Then re-check the story:
 When no open children remain:
 
 ```bash
-bd update <story> --set-labels prism,phase:verify,human:approved
+bd update <story> --set-labels prism,phase:story:verify,human:approved
 ```
 
 ## Stop when

@@ -1,6 +1,6 @@
 # Prism full verify phase
 
-Run for `phase:verify` or an approved story with no open children.
+Run for `phase:story:verify` or an approved story with no open children.
 
 ## Contract projection
 
@@ -46,16 +46,16 @@ Otherwise keep it open and route to the earliest defective phase:
 
 ```bash
 # implementation gap
-bd update <story> --set-labels prism,phase:apply,human:approved
+bd update <story> --set-labels prism,phase:story:apply,human:approved
 
 # task coverage gap
-bd update <story> --set-labels prism,phase:breakdown
+bd update <story> --set-labels prism,phase:story:breakdown
 
 # design gap
-bd update <story> --set-labels prism,phase:design
+bd update <story> --set-labels prism,phase:story:design
 
 # requirements gap
-bd update <story> --set-labels prism,phase:specify
+bd update <story> --set-labels prism,phase:story:specify
 ```
 
 Create or reopen child work only after selecting the appropriate earlier phase.

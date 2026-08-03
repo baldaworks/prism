@@ -1,0 +1,4 @@
+interface:
+  display_name: "Prism Epic"
+  short_description: "Host-native Prism epic lifecycle"
+  default_prompt: "Use $prism:epic to run or continue one Prism epic lifecycle."

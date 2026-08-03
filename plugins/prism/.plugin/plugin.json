@@ -1,7 +1,7 @@
 {
   "name": "prism",
   "version": "0.5.0+codex.20260731000000",
-  "description": "Run the full role-aligned or concise Light Prism lifecycle directly in the host.",
+  "description": "Route Prism work across full Story and Epic lifecycles or run concise Light directly in the host.",
   "author": {
     "name": "Alexey Samoylov",
     "url": "https://github.com/baldaworks"
@@ -9,6 +9,6 @@
   "homepage": "https://github.com/baldaworks/prism",
   "repository": "https://github.com/baldaworks/prism",
   "license": "MIT",
-  "keywords": ["prism", "beads", "callee", "story-lifecycle"],
+  "keywords": ["prism", "beads", "callee", "story-lifecycle", "epic-lifecycle"],
   "skills": "./prefixed-skills/"
 }

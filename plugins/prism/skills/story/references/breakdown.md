@@ -1,6 +1,6 @@
 # Prism full breakdown phase
 
-Run only for `phase:breakdown` or when a concrete design lacks adequate children.
+Run only for `phase:story:breakdown` or when a concrete design lacks adequate children.
 
 ## Contract projection
 
@@ -8,7 +8,7 @@ Run only for `phase:breakdown` or when a concrete design lacks adequate children
 {
   "id": "breakdown-v1",
   "steps": ["implementation-planner", "beads-normalizer"],
-  "required_outputs": ["task-ids-and-req-traceability", "acceptance-complexity-risks-and-verification", "dependencies-and-critical-path", "three-to-twelve-beads-children"],
+  "required_outputs": ["task-ids-and-req-traceability", "acceptance-complexity-risks-and-verification", "dependencies-and-critical-path", "complete-reviewable-child-graph"],
   "max_iterations": 1,
   "on_exhausted": "fail"
 }
@@ -33,9 +33,14 @@ Every task must contain:
 - risks and mitigations;
 - verification and rollback.
 
-Include a dependency graph, identify the critical path, cover at least the top
-three plan risks, and include integration/final verification. Use 3–12 small,
-reviewable tasks for a new graph. Do not invent work outside requirements/design.
+Include a dependency graph, identify the critical path, cover material plan
+risks, and include integration/final verification. There is no numeric minimum
+or maximum. Accept a graph only when it completely covers requirements and
+design, each task is cohesive and objectively verifiable, separable concerns
+are separate, and dependencies are necessary and acyclic. One task is valid
+when it fully and cohesively represents the work; more than twelve are valid
+when every task remains necessary and reviewable. Reject incomplete graphs and
+separable mega-tasks regardless of count. Do not invent work outside scope.
 
 ## Role 2: Beads normalizer
 
@@ -59,8 +64,12 @@ Create children with the detailed task description:
 ```bash
 bd create "<title>" --type=task --parent=<story> -l prism \
   -a prism/apply/implementer --description="<full task contract>" --silent
+bd update <new-task> --set-labels prism
 bd dep add <later-id> <earlier-id>
 ```
+
+The explicit task-label replacement removes any phase label inherited from the
+Story parent.
 
 For an existing graph, preserve every open/closed child and dependency, reuse
 sufficient coverage, and create only missing work. Stop on conflict with
@@ -78,7 +87,7 @@ Verify with `bd children <story>` and `bd blocked` that:
 Then enter Human:
 
 ```bash
-bd update <story> --set-labels prism,phase:human
+bd update <story> --set-labels prism,phase:story:human
 ```
 
 ## Stop when

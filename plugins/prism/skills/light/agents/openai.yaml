@@ -1,4 +1,4 @@
 interface:
   display_name: "Prism Light"
-  short_description: "Concise host-only Prism lifecycle with Beads state"
-  default_prompt: "Use $prism:light to advance the simplified Prism Light lifecycle directly in this host session."
+  short_description: "Concise host-native Prism story lifecycle"
+  default_prompt: "Use $prism:light to run the concise Prism story lifecycle."

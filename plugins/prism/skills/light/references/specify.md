@@ -1,6 +1,6 @@
 # Prism Light specify phase
 
-Run this reference only when the story label is `phase:specify` or the
+Run this reference only when the story label is `phase:story:specify` or the
 story is still missing usable description or acceptance criteria.
 
 ## Goal
@@ -31,7 +31,7 @@ Turn the requested change into a durable Beads story with:
    remain in Specify or to start another Specify iteration.
 4. After the human answers, combine the answer with the current story, return
    to step 2, and repeat the readiness check. Keep the story in
-   `phase:specify` throughout this clarification loop.
+   `phase:story:specify` throughout this clarification loop.
 5. Once no core requirement dimension remains unresolved, rewrite the story into:
    - `description`: what changes and why
    - `acceptance`: observable outcomes, not implementation guesses
@@ -50,10 +50,10 @@ When description and acceptance are both usable:
 bd update <story> \
   --description="..." \
   --acceptance="..." \
-  --set-labels prism,phase:design
+  --set-labels prism,phase:story:design
 ```
 
-Advance only to `phase:design`.
+Advance only to `phase:story:design`.
 
 ## Stop when
 

@@ -227,7 +227,7 @@ Inspect live keys with `callee agent view <id> --json` (authoritative if drift).
 | `prism/lifecycle` | Sequential | Root lifecycle graph for specify → design → breakdown → human → apply → verify |
 | `prism/phases/specify` | Sequential | Public specify phase entrypoint |
 | `prism/phases/design` | Sequential | Public design phase entrypoint |
-| `prism/phases/breakdown` | Sequential | Public breakdown phase entrypoint for stories labeled `phase:breakdown` |
+| `prism/phases/breakdown` | Sequential | Public breakdown phase entrypoint for stories labeled `phase:story:breakdown` |
 | `prism/phases/human` | Sequential | Public human approval gate that collects approval through a Human agent |
 | `prism/phases/apply` | Sequential | Public apply phase entrypoint delegating to the one-task loop |
 | `prism/phases/verify` | Sequential | Public verify phase entrypoint delegating to the close-or-bounce review |
@@ -266,7 +266,7 @@ Root message conventions:
 | --- | --- |
 | `prism/specify/loop` | `bd show <story>` dump plus any current intent / constraints |
 | `prism/design/flow` | `bd show <story>` dump (requirements + acceptance) |
-| `prism/phases/human` | prepared Design summary → Task summary → Approval request from `bd show`, `bd children`, and `bd blocked` |
+| `prism/phases/human` | prepared complete Acceptance criteria → Design summary → Task summary → Approval request from `bd show`, `bd children`, and `bd blocked` |
 | `prism/apply/loop` | story dump + claimed task dump |
 | `prism/verify/review` | story dump (acceptance + design context) |
 

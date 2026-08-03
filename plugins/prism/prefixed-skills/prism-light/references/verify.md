@@ -1,6 +1,6 @@
 # Prism Light verify phase
 
-Run this reference only when the story label is `phase:verify` or the story
+Run this reference only when the story label is `phase:story:verify` or the story
 is `human:approved` and has no open child tasks.
 
 ## Goal
@@ -44,13 +44,13 @@ If verification fails:
 - keep the story open
 - reopen or create child tasks as needed
 - for implementation gaps, preserve approval with
-  `bd update <story> --set-labels prism,phase:apply,human:approved`
+  `bd update <story> --set-labels prism,phase:story:apply,human:approved`
 - for defective task coverage, clear approval with
-  `bd update <story> --set-labels prism,phase:breakdown`
+  `bd update <story> --set-labels prism,phase:story:breakdown`
 - for an invalid or incomplete design, clear approval with
-  `bd update <story> --set-labels prism,phase:design`
+  `bd update <story> --set-labels prism,phase:story:design`
 - for incomplete requirements, clear approval with
-  `bd update <story> --set-labels prism,phase:specify`
+  `bd update <story> --set-labels prism,phase:story:specify`
 
 ## Stop when
 

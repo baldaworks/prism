@@ -1,135 +1,113 @@
 ---
 name: prism-lifecycle
 description: >
-  Run the full Prism story lifecycle directly in the host while preserving the
-  phase and role contracts of the canonical Prism Callee workflow. Beads stores
-  durable state. Use when the user runs $prism:lifecycle, /prism:lifecycle,
-  /prism-lifecycle, /prism, asks to run or advance Prism, or continues a Prism story.
+  Route Prism work to the host-native story or epic lifecycle and, when
+  explicitly requested, advance a deterministic snapshot of all open Prism
+  epics. Use when the user runs $prism:lifecycle, /prism:lifecycle,
+  /prism-lifecycle, /prism, asks to run or advance Prism, resumes an item, or
+  asks to process all open Prism epics.
 ---
 
-# Prism lifecycle
+# Prism lifecycle router
 
-Run the role-aligned Prism lifecycle in the current host. Do not invoke Callee.
-Use `$prism:light`, `/prism:light`, or `/prism-light` only when the user
-explicitly requests the simplified workflow.
+Resolve the user's target, then follow exactly one sibling lifecycle contract:
 
-| Layer | Owns |
-| --- | --- |
-| **Beads** | Story description, acceptance, design, child tasks, status, assignee, labels, comments |
-| **This skill** | Host execution of the full phase/role contract plus all `bd` writes |
-| **Prism Callee pack** | Read-only behavioral source from which the bundled contracts are projected |
-| **Prism Callee skill** | Actual `callee agent run prism/...` execution |
+- full story: [Story skill](../prism-story/SKILL.md)
+- epic: [Epic skill](../prism-epic/SKILL.md)
 
-**Invoke:** Codex `$prism:lifecycle`, Claude Code `/prism:lifecycle`, or flat slash `/prism-lifecycle`.
-
-Lifecycle graph: [references/lifecycle.md](references/lifecycle.md). Keep lifecycle
-diagrams vertical with Mermaid `flowchart TB`.
-
-## Durable lifecycle state
-
-Exactly one story label is the active phase:
-
-| Phase | Story label | Host role sequence |
-| --- | --- | --- |
-| Specify | `phase:specify` | interviewer → readiness gate → Human clarification → extract |
-| Design | `phase:design` | explorer → architect |
-| Breakdown | `phase:breakdown` | implementation planner → Beads normalizer |
-| Human | `phase:human` | approval prompt → intent classifier → decision check |
-| Apply | `phase:apply` | implementer → independent reviewer, repeat as needed |
-| Verify | `phase:verify` | story reviewer → close or phase-specific bounce |
-
-`prism` marks membership. `human:approved` is the only authorization for Apply.
-Story assignees never encode lifecycle phases. Within Apply, child-task assignees
-move from `prism/apply/implementer` to `prism/apply/reviewer`.
-
-## Phase references
-
-Load exactly one phase-local instruction:
-
-- Specify: [references/specify.md](references/specify.md)
-- Design: [references/design.md](references/design.md)
-- Breakdown: [references/breakdown.md](references/breakdown.md)
-- Human: [references/human.md](references/human.md)
-- Apply: [references/apply.md](references/apply.md)
-- Verify: [references/verify.md](references/verify.md)
-
-Each reference contains a compact contract projection. Execute its logical roles
-in order even though one host session performs them. Do not weaken required
-outputs or skip a gate because Callee is not running.
+This skill owns target resolution and explicit open-epic batch coordination.
+It does not duplicate phase procedure and never invokes Callee. Select Prism
+Light only when the user explicitly invokes `$prism:light`, `/prism:light`, or
+`/prism-light`.
 
 ## Prerequisites
 
-1. `bd` is available and the repository has a Beads workspace.
-2. The repository and its native verification tools are inspectable.
-3. Callee is not required. To execute actual Callee agents, use
-   `$prism-callee:lifecycle`, `/prism-callee:lifecycle`, or `/prism-callee-lifecycle`.
+1. Resolve the Beads workspace with `bd where`; follow the Beads skill or run
+   `bd prime` when needed.
+2. Require the repository and its native verification tools to be inspectable.
+3. Use Beads issue type and parentage as durable routing evidence. Never infer
+   item type or lifecycle phase from assignee.
 
-## Entry
+## Resolution priority
 
-1. Resolve Beads with `bd where`; follow the Beads skill or `bd prime` when needed.
-2. Resolve the target story:
-   - use an explicitly named story ID;
-   - otherwise resume exactly one open Prism story;
-   - otherwise create one from the raw user request:
+Apply the first matching route:
 
-     ```bash
-     bd create "<derived title>" --type=story -l prism,phase:specify \
-       --description="<raw user request>" --priority=2 --silent
-     ```
+1. An explicit request to process all open Prism epics enters **Epic batch**.
+2. An explicit story or epic ID requires that Beads type and dispatches it.
+3. An explicit task ID resolves its single parent and requires that parent to
+   be a story; then dispatches the parent story.
+4. An explicit resume request with no item ID resumes only when exactly one open
+   Prism story or epic exists; otherwise ask for the target.
+5. Clear initiative intent containing independently deliverable stories creates
+   an epic in `prism,phase:epic:frame`, then dispatches it.
+6. Ordinary change intent creates a story in `prism,phase:story:specify`, then
+   dispatches it.
 
-3. Load `bd show <story> --long` and `bd children <story>`.
-4. Require exactly one supported `phase:*` label. Stop on missing or conflicting
-   phase state; never infer it from assignee.
-5. Load the matching phase reference and execute its full contract.
-6. Persist its result, re-read story and children, then continue immediately
-   after successful Specify or Design. After Breakdown, enter Human and present
-   the informed approval request in the same invocation.
-7. Stop only for Human authorization/refinement, genuinely missing input,
-   invalid state, exhausted role loop, or failed required verification.
+Never select Light implicitly. Fail closed on a missing item, unsupported Beads
+type, missing or ambiguous task parent, nested epic, or direct task under epic.
+The selected Story or Epic skill owns phase-label validation. Phase-like labels
+outside the supported `phase:story:*` and `phase:epic:*` sets are treated as
+absent and are never migrated.
 
-## Hard rules
+## Single-item dispatch
 
-1. Never invoke `callee agent run prism/...`; this is host execution.
-2. Never edit, regenerate, format, rename, or relocate `pack/callee/**`.
-3. Preserve the ordered role passes and required outputs in each phase reference.
-4. Beads is the only durable lifecycle store.
-5. Do not implement without `human:approved`.
-6. Persist approval only after unambiguous human authorization.
-7. `--set-labels` replaces all labels: retain `prism`, exactly one phase label,
-   and `human:approved` after the gate.
-8. Ask only for genuinely missing product intent, never for routine phase confirmation.
-9. Apply exactly one ready child at a time. Review the actual diff and checks
-   independently of the implementation narrative.
-10. Do not close a task when checks or review fail.
-11. Verify is close-or-bounce and never repairs implementation.
-12. Do not commit or push without the authority provided by the repository and user.
+1. Read the selected item with `bd show <id> --json` and verify its type.
+2. For a story, load and follow [Story skill](../prism-story/SKILL.md) in the same host
+   invocation.
+3. For an epic, load and follow [Epic skill](../prism-epic/SKILL.md) in the same host
+   invocation.
+4. Preserve every stop condition, approval boundary, write rule, and required
+   output of the selected sibling skill.
 
-## Phase selection
+The router grants no authorization. `human:approved` is item-scoped and may be
+written only by the selected lifecycle after unambiguous human approval.
 
-| Condition, in priority order | Action |
-| --- | --- |
-| Missing usable requirements or acceptance | Specify |
-| `phase:verify`, or approved with no open children | Verify |
-| `phase:apply` with approval and open children | Apply |
-| Open children without approval, or `phase:human` | Human |
-| `phase:breakdown`, or design exists without children | Breakdown |
-| `phase:design`, or requirements exist without design | Design |
-| `phase:specify` | Specify |
+## Epic batch
 
-## Advance loop
+Enter batch mode only for explicit intent such as "process all open Prism
+epics". A generic resume request is not batch intent.
 
-Within one invocation:
+1. Query once at invocation start:
 
-1. derive the phase from the single label;
-2. load one matching reference;
-3. execute every logical role and gate in that reference;
-4. persist and re-read Beads;
-5. continue through successful pre-approval phases;
-6. stop at explicit reference stop conditions.
+   ```bash
+   bd list --label prism --status=open --type=epic --limit 0 --json
+   ```
+
+2. Freeze the returned IDs before advancing any item. Sort the snapshot by
+   numeric priority ascending, `created_at` ascending, then issue ID ascending.
+3. If the snapshot is empty, report that no open Prism epics exist. Create and
+   mutate nothing.
+4. For each snapshot ID exactly once and sequentially:
+   - re-read the epic and record a closed-or-missing race without substituting
+     another item;
+   - require `issue_type=epic` and label `prism`;
+   - load and follow [Epic skill](../prism-epic/SKILL.md) until its normal durable stop;
+   - record ending status, supported phase, progress made, gate or blocker, and
+     next action;
+   - continue to the next snapshot ID after an item-local Human gate, child-story
+     gate, blocker, invalid phase, or verification failure.
+5. Do not rescan, append newly opened epics, revisit an ID, run items concurrently,
+   or transfer `human:approved` between items.
+6. Abort the whole batch only when the initial query/snapshot cannot be produced
+   safely or Beads becomes unavailable globally.
+7. End with one outcome row for every snapshot ID in snapshot order.
+
+## Batch outcome
+
+Use a compact table with these columns:
+
+| Epic | Ending state | Progress | Gate or blocker | Next action |
+| --- | --- | --- | --- | --- |
+
+Report item-local failures without claiming the batch succeeded for that item.
+The ledger is invocation output, not a second durable lifecycle store.
 
 ## Safety
 
-- Never invent requirements, approval, repository evidence, review findings, or test results.
-- Treat the Callee pack as an immutable source, not an editable dependency.
-- Preserve existing child state during design/breakdown reconciliation.
-- Close a story only after every child is closed and Verify passes.
+- Beads remains the only durable lifecycle state store.
+- Never invent item type, parentage, phase, approval, progress, or outcomes.
+- Never invoke `callee agent run prism/...`.
+- Never edit `pack/callee/**` while executing a lifecycle.
+- Do not implement a story without that story's persisted approval.
+- Epic approval never approves its child stories.
+- Do not commit or push without repository and user authority.

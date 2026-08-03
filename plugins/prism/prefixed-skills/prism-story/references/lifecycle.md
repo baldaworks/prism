@@ -1,6 +1,6 @@
-# Prism full host lifecycle graph
+# Prism full story lifecycle graph
 
-The host executes the same logical phase and role order as the immutable Prism
+The host executes the same logical phase and role order as the digest-locked Prism
 Callee workflow without invoking `callee`. Beads is the durable state store.
 
 ```mermaid
@@ -48,7 +48,9 @@ flowchart TB
 
 ## State invariants
 
-- Exactly one `phase:*` label exists on every open story.
+- Exactly one supported `phase:story:*` label exists on every active story.
+- Unsupported phase labels are treated as absent and never migrated.
+- A story with no supported phase starts at `phase:story:specify` without approval.
 - Specify and Apply loops fail closed after five unsuccessful iterations.
 - Human approval is distinct from Specify clarification.
 - Design is explorer evidence followed by architect decisions.

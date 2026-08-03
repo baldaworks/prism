@@ -1,13 +1,13 @@
 {
   "name": "prism",
-  "description": "Prism story lifecycle plugins for Grok Build.",
+  "description": "Prism Story, Epic, and Light lifecycle plugins for Grok Build.",
   "owner": {
     "name": "Alexey Samoylov"
   },
   "plugins": [
     {
       "name": "prism",
-      "description": "Run the full role-aligned or concise Light Prism lifecycle directly in the host.",
+      "description": "Route Prism work across full Story and Epic lifecycles or run concise Light directly in the host.",
       "version": "0.5.0+codex.20260731000000",
       "category": "development",
       "author": {
@@ -15,7 +15,7 @@
         "url": "https://github.com/baldaworks"
       },
       "homepage": "https://github.com/baldaworks/prism",
-      "keywords": ["prism", "beads", "callee", "story-lifecycle"],
+      "keywords": ["prism", "beads", "callee", "story-lifecycle", "epic-lifecycle"],
       "source": {
         "type": "local",
         "path": "./plugins/prism"

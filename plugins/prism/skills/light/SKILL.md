@@ -2,7 +2,7 @@
 name: light
 description: >
   Run the simplified Prism Light story lifecycle directly in the host. Beads stores story state,
-  and exactly one phase:* label is the current lifecycle phase. Use when the user runs
+  and exactly one supported phase:story:* label is the current lifecycle phase. Use when the user runs
   $prism:light, /prism:light, /prism-light, asks for Prism Light, or explicitly
   requests the concise host-only lifecycle instead of the full role-aligned workflow.
 ---
@@ -21,20 +21,22 @@ Lifecycle diagram: [references/lifecycle.md](references/lifecycle.md). Keep life
 
 ## Durable lifecycle state
 
-Exactly one story label is the only source of its active lifecycle phase:
+Exactly one supported story label is the only source of its active lifecycle phase:
 
 | Phase | Story label |
 | --- | --- |
-| Specify | `phase:specify` |
-| Design | `phase:design` |
-| Breakdown | `phase:breakdown` |
-| Human gate | `phase:human` |
-| Apply | `phase:apply` |
-| Verify | `phase:verify` |
+| Specify | `phase:story:specify` |
+| Design | `phase:story:design` |
+| Breakdown | `phase:story:breakdown` |
+| Human gate | `phase:story:human` |
+| Apply | `phase:story:apply` |
+| Verify | `phase:story:verify` |
 
 `prism` marks lifecycle membership. `human:approved` is the only authorization
-for apply. Every open lifecycle story must have exactly one supported `phase:*`
-label. Story assignees do not encode lifecycle phase state.
+for apply. Story assignees do not encode lifecycle phase state. Ignore phase-like
+labels outside the supported Story and Epic namespaces as absent and never
+migrate them. An Epic phase on a story is type-invalid. When no supported global
+phase exists, initialize `phase:story:specify` without approval.
 
 Within the story-level apply phase, child-task assignees record the inner loop:
 `prism/apply/implementer` then `prism/apply/reviewer`.
@@ -58,22 +60,23 @@ Phase references:
 
 1. Resolve Beads context with `bd where`; if missing or stale, follow the **beads** skill / `bd prime`.
 2. Resolve the target story:
-   - if the user explicitly names a story ID, load that story;
-   - otherwise, list open Prism stories with `bd list -l prism --status=open` and resume it only when exactly one open Prism story exists;
+   - if the user explicitly names a story ID, load it and require `issue_type=story`;
+   - otherwise, list open Prism stories with `bd list -l prism --status=open --type=story --limit 0` and resume only when exactly one exists;
    - otherwise, derive a concise title from the user's request and create a new story:
 
      ```bash
-     bd create "<derived title>" --type=story -l prism,phase:specify \
+     bd create "<derived title>" --type=story -l prism,phase:story:specify \
        --description="<raw user request>" --priority=2 --silent
      ```
 
      Start the new story in Specify; that phase normalizes acceptance criteria.
 3. Load `bd show <story> --long` and `bd children <story>`.
-4. Derive the current phase from exactly one supported `phase:*` story label;
-   stop on a missing or conflicting phase label. Do not fall back to assignee
-   state: existing assignee-driven stories are intentionally unsupported.
-   Reconcile the phase with description, acceptance, design,
-   `human:approved`, and child task state.
+4. Classify phase-like labels against both supported namespaces. Ignore labels
+   outside both namespaces. Fail closed on an Epic phase or multiple Story
+   phases. When no supported phase remains, replace labels with
+   `prism,phase:story:specify`, which also clears stale authorization. Otherwise
+   use the single Story phase. Do not fall back to assignee state. Reconcile the
+   phase with description, acceptance, design, `human:approved`, and child state.
 5. Enter the lifecycle advance loop: load exactly one matching phase reference
    and run that phase directly in the host.
 6. Persist the result to Beads, then re-check the story and children. After
@@ -84,7 +87,7 @@ Phase references:
 7. Stop the advance loop only when the Human reference is awaiting the
    authorization or refinement decision, another reference requires missing or
    blocking human input, or lifecycle state is invalid. Merely writing
-   `phase:human` is not a stop condition.
+   `phase:story:human` is not a stop condition.
 
 ## Hard rules
 
@@ -94,7 +97,7 @@ Phase references:
 4. The human owns approval intent. The host may persist `human:approved` only
    after an unambiguous free-form authorization to start implementation.
 5. `--set-labels` replaces all labels: retain `prism`, write exactly one target
-   `phase:*` label, and after the gate retain `human:approved`.
+   `phase:story:*` label, and after the gate retain `human:approved`.
 6. Do not commit or push without explicit user authority.
 7. Ask directly when requirements are incomplete; never invent missing requirements.
    Do not ask for confirmation merely to advance between successful
@@ -109,19 +112,19 @@ Phase references:
 | Condition (priority order) | Do next |
 | --- | --- |
 | Missing usable description or acceptance | Specify → persist requirements |
-| `phase:verify` or (`human:approved` and no open children) | Verify; close only on pass |
-| `phase:apply` + `human:approved` + open children | Continue the story-level apply loop |
-| Open children without `human:approved` or `phase:human` | Stop at the human gate |
-| `phase:breakdown` or (design set and no children) | Breakdown → create child graph |
-| `phase:design` or (requirements set and design empty) | Design → persist design markdown |
-| `phase:specify` | Specify → persist description and acceptance |
+| `phase:story:verify` or (`human:approved` and no open children) | Verify; close only on pass |
+| `phase:story:apply` + `human:approved` + open children | Continue the story-level apply loop |
+| Open children without `human:approved` or `phase:story:human` | Stop at the human gate |
+| `phase:story:breakdown` or (design set and no children) | Breakdown → create child graph |
+| `phase:story:design` or (requirements set and design empty) | Design → persist design markdown |
+| `phase:story:specify` | Specify → persist description and acceptance |
 
 ## Phase execution contract
 
 The phase references own phase-local procedure. Within one lifecycle
 invocation, repeat:
 
-1. infer the phase from exactly one supported `phase:*` story label
+1. infer the phase from exactly one supported `phase:story:*` label
 2. load exactly one matching reference
 3. follow its inputs, procedure, persistence, and stop conditions
 4. re-check Beads state
@@ -133,10 +136,10 @@ invocation, repeat:
 
 | Phase | Load | Successful outcome |
 | --- | --- | --- |
-| Specify | [references/specify.md](references/specify.md) | story label is `phase:design` |
-| Design | [references/design.md](references/design.md) | concrete design exists; story label is `phase:breakdown` |
-| Breakdown | [references/breakdown.md](references/breakdown.md) | child graph covers the design; story label is `phase:human` |
-| Human | [references/human.md](references/human.md) | approval moves to `phase:apply`; explicit design refinement moves to `phase:design`; otherwise stop |
+| Specify | [references/specify.md](references/specify.md) | story label is `phase:story:design` |
+| Design | [references/design.md](references/design.md) | concrete design exists; story label is `phase:story:breakdown` |
+| Breakdown | [references/breakdown.md](references/breakdown.md) | child graph covers the design; story label is `phase:story:human` |
+| Human | [references/human.md](references/human.md) | approval moves to `phase:story:apply`; explicit design refinement moves to `phase:story:design`; otherwise stop |
 | Apply | [references/apply.md](references/apply.md) | one ready child closes, story enters verify, or apply stops blocked |
 | Verify | [references/verify.md](references/verify.md) | story closes on pass; otherwise it bounces to an earlier phase label |
 
@@ -144,7 +147,7 @@ invocation, repeat:
 
 - Do not invent `human:approved` or close a story with open children.
 - Callee roles are internal executors; lifecycle state is encoded only by the
-  story's single `phase:*` label.
+  story's single supported `phase:story:*` label.
 - Do not close a story after verify unless verification passes with no follow-up work.
 - Prefer `bd --json` when parsing; never `bd edit`.
 - Generic tracker work belongs to the **beads** skill.

@@ -16,8 +16,12 @@ spec:
       params:
         constraints: |
           Story phase label: phase:breakdown.
-          Require a concrete design. For a new graph, produce 3-12 small
-          reviewable Beads tasks with explicit dependencies. If existing
+          Require a concrete design and produce a complete, reviewable Beads
+          task graph with explicit dependencies. There is no numeric minimum or
+          maximum: one task is valid when it fully and cohesively represents the
+          work, and more than twelve are valid when every task remains necessary
+          and reviewable. Reject incomplete graphs and separable mega-tasks
+          regardless of count. If existing
           children are supplied, reconcile them: preserve open and closed tasks
           and dependencies, reuse coverage, create only missing work, and never
           auto-delete, close, or reopen. Cover actionable risks, constraints,

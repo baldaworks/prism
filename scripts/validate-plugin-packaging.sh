@@ -10,6 +10,7 @@ import pathlib
 import sys
 
 root = pathlib.Path(sys.argv[1])
+expected_version = "0.5.0+codex.20260731000000"
 
 namespaced_plugin_checks = [
     {
@@ -112,8 +113,8 @@ allowed_host_specific_fields = {
 
 expected_default_prompts = {
     "prism": {
-        "codex": "Use $prism:lifecycle for the full role-aligned host workflow or $prism:light for the concise host workflow.",
-        "claude": "Use /prism:lifecycle for the full role-aligned host workflow or /prism:light for the concise host workflow.",
+        "codex": "Use $prism:lifecycle to route Story or Epic work, including explicit batches of all open Prism epics; use $prism:story, $prism:epic, or $prism:light for direct workflows.",
+        "claude": "Use /prism:lifecycle to route Story or Epic work, including explicit batches of all open Prism epics; use /prism:story, /prism:epic, or /prism:light for direct workflows.",
     },
     "prism-callee": {
         "codex": "Use $prism-callee:lifecycle to run a Prism story through specialized prism/* subagents and the explicit Callee Human approval gate.",
@@ -123,8 +124,8 @@ expected_default_prompts = {
 
 expected_skill_inventory = {
     "prism": {
-        "namespaced": ["lifecycle", "light"],
-        "flat": ["prism-lifecycle", "prism-light"],
+        "namespaced": ["epic", "lifecycle", "light", "story"],
+        "flat": ["prism-epic", "prism-lifecycle", "prism-light", "prism-story"],
     },
     "prism-callee": {
         "namespaced": ["lifecycle"],
@@ -217,8 +218,8 @@ def validate_manifest_common(
         f"{manifest_path.relative_to(root)} has a non-empty description",
     )
     record(
-        bool(str(manifest_data.get("version", "")).strip()),
-        f"{manifest_path.relative_to(root)} has a non-empty version",
+        manifest_data.get("version") == expected_version,
+        f"{manifest_path.relative_to(root)} keeps version {expected_version}",
     )
 
     skills_dir = expected_skills_dir(plugin_root, manifest_data)

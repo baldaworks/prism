@@ -1,4 +1,4 @@
 interface:
   display_name: "Prism Lifecycle"
-  short_description: "Full role-aligned Prism lifecycle executed in the host"
-  default_prompt: "Use $prism:lifecycle to run the full role-aligned Prism lifecycle directly in this host session."
+  short_description: "Route Story, Epic, and open-Epic batches"
+  default_prompt: "Use $prism:lifecycle to route one Prism item or process all open Prism epics."

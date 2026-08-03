@@ -1,6 +1,6 @@
 # Prism full human gate
 
-Run for `phase:human` or open children without `human:approved`.
+Run for `phase:story:human` or open children without `human:approved`.
 
 ## Contract projection
 
@@ -8,7 +8,7 @@ Run for `phase:human` or open children without `human:approved`.
 {
   "id": "human-v1",
   "steps": ["approval-prompt", "intent-classifier", "decision-check"],
-  "required_outputs": ["design-task-approval-summary", "approve-refine-withhold", "fail-closed-authorization"],
+  "required_outputs": ["acceptance-design-task-approval-summary", "approve-refine-withhold", "fail-closed-authorization"],
   "max_iterations": 1,
   "on_exhausted": "withhold"
 }
@@ -22,13 +22,19 @@ Run for `phase:human` or open children without `human:approved`.
 
 ## Role 1: approval prompt
 
-Confirm design and task coverage are valid, then present exactly:
+Require complete, usable current-Story acceptance plus valid design and task
+coverage. If acceptance is missing or unusable, clear approval, write
+`prism,phase:story:specify`, and stop without presenting an approval request.
 
-1. `### Design summary` — objective, approach, affected areas, material risks,
+Otherwise present exactly:
+
+1. `### Acceptance criteria` — the complete, untruncated acceptance field of
+   the current Story only.
+2. `### Design summary` — objective, approach, affected areas, material risks,
    tradeoffs, and open questions.
-2. `### Task summary` — every child ID/title/state plus dependencies, blockers,
+3. `### Task summary` — every child ID/title/state plus dependencies, blockers,
    critical path, and execution order.
-3. `### Approval request` — explain that one decision covers the design and
+4. `### Approval request` — explain that one decision covers the design and
    task graph and that ordinary free-form language is accepted.
 
 Derive every statement from current Beads state.
@@ -49,15 +55,15 @@ Persist only after the classifier decision:
 
 ```bash
 # APPROVE
-bd update <story> --set-labels prism,phase:apply,human:approved
+bd update <story> --set-labels prism,phase:story:apply,human:approved
 
 # REFINE_DESIGN
-bd update <story> --set-labels prism,phase:design
+bd update <story> --set-labels prism,phase:story:design
 ```
 
 For `APPROVE`, re-read and confirm both labels, then continue Apply.
 For `REFINE_DESIGN`, clear approval, preserve all children/dependencies, and
-stop without implementation. For `WITHHOLD`, keep `phase:human` and stop.
+stop without implementation. For `WITHHOLD`, keep `phase:story:human` and stop.
 
 ## Stop when
 
@@ -68,6 +74,7 @@ stop without implementation. For `WITHHOLD`, keep `phase:human` and stop.
 ## Never
 
 - infer approval from discussion, silence, or a question;
+- truncate, summarize away, or substitute child acceptance for current-Story acceptance;
 - omit a child from the summary;
 - alter child scope at the gate;
 - implement before persisted and re-read approval;

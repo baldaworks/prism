@@ -4,17 +4,17 @@
     "name": "Alexey Samoylov"
   },
   "metadata": {
-    "description": "Prism story lifecycle plugins for Cursor.",
+    "description": "Prism Story, Epic, and Light lifecycle plugins for Cursor.",
     "version": "0.5.0+codex.20260731000000"
   },
   "plugins": [
     {
       "name": "prism",
       "source": "./plugins/prism",
-      "description": "Run the full role-aligned or concise Light Prism lifecycle directly in the host.",
+      "description": "Route Prism work across full Story and Epic lifecycles or run concise Light directly in the host.",
       "version": "0.5.0+codex.20260731000000",
       "category": "developer-tools",
-      "tags": ["prism", "beads", "callee", "story-lifecycle"]
+      "tags": ["prism", "beads", "callee", "story-lifecycle", "epic-lifecycle"]
     },
     {
       "name": "prism-callee",

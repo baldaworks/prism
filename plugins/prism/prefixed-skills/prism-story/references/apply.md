@@ -1,6 +1,6 @@
 # Prism full apply phase
 
-Run only for `phase:apply` with `human:approved`.
+Run only for `phase:story:apply` with `human:approved`.
 
 ## Contract projection
 
@@ -72,7 +72,7 @@ Then re-read story children. Continue with another ready child, stop if blocked,
 or transition when none remain:
 
 ```bash
-bd update <story> --set-labels prism,phase:verify,human:approved
+bd update <story> --set-labels prism,phase:story:verify,human:approved
 ```
 
 ## Stop when

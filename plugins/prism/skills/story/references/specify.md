@@ -1,6 +1,6 @@
 # Prism full specify phase
 
-Run only for `phase:specify` or when description/acceptance is not design-ready.
+Run only for `phase:story:specify` or when description/acceptance is not design-ready.
 
 ## Contract projection
 
@@ -111,7 +111,7 @@ candidate, then repeat interviewer → readiness gate. Clarification never
 authorizes Apply and never asks for phase-transition confirmation.
 
 Allow at most five unsuccessful gate iterations in one lifecycle attempt. On
-exhaustion, leave `phase:specify`, report the unresolved dimensions, and fail
+exhaustion, leave `phase:story:specify`, report the unresolved dimensions, and fail
 closed instead of inventing intent.
 
 ## Requirements extract and persistence
@@ -134,7 +134,7 @@ repair it before advancing.
 bd update <story> \
   --description="..." \
   --acceptance="..." \
-  --set-labels prism,phase:design
+  --set-labels prism,phase:story:design
 ```
 
 ## Stop when
