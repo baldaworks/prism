@@ -1,5 +1,5 @@
 {
-  "version": 14,
+  "version": 15,
   "interfaces": {
     "router": {
       "codex": "$prism:lifecycle",
@@ -21,12 +21,12 @@
       "claude": "/prism:light",
       "flat": "/prism-light"
     },
-    "callee_story": {
+    "callee_lifecycle": {
       "codex": "$prism-callee:lifecycle",
       "claude": "/prism-callee:lifecycle",
       "flat": "/prism-callee-lifecycle"
     },
-    "direct_callee_story": "callee agent run prism/lifecycle --message \"...\""
+    "direct_callee": "callee agent run prism/lifecycle --agent-root pack/callee --message \"$envelope\""
   },
   "beads": {
     "membership_label": "prism",
@@ -160,18 +160,21 @@
         "concise-story-lifecycle"
       ]
     },
-    "callee_story": {
+    "callee_lifecycle": {
       "canonical": "plugins/prism-callee/skills/lifecycle",
       "flat": "plugins/prism-callee/prefixed-skills/prism-callee-lifecycle",
       "owns": [
-        "host-wrapper-for-story-only-callee-workflow"
+        "host-wrapper-for-story-and-epic-callee-workflow"
       ]
     },
     "direct_callee": {
       "root": "pack/callee/prism",
-      "story_only": true,
-      "epic_router": false,
-      "authorized_behavior_change": "prism/phases/breakdown.md qualitative child graph"
+      "graphs": [
+        "story",
+        "epic"
+      ],
+      "router": true,
+      "authorized_behavior_change": "hierarchical Story/Epic routing, approval boundaries, and explicit open-Epic batches"
     }
   },
   "task_states": [
@@ -188,11 +191,11 @@
     "aggregate_algorithm": "sha256 over sorted source path UTF-8, NUL, file bytes, NUL",
     "host_sources": {
       "mutation_policy": "digest-locked",
-      "aggregate_sha256": "aad66e98a5b6de977ab8a12315032a1fac07fd04c5f56330899ab519aab89d67",
+      "aggregate_sha256": "59688eb5a020057f210c0f0cc1d0e98820126980dfa24a8e437fb34a3c868074",
       "sources": [
-        {"path": "plugins/prism-callee/skills/lifecycle/SKILL.md", "sha256": "86ef3874d320ae8921207f45e74b920d581a93c632bd3399d37b225923a1bf24"},
+        {"path": "plugins/prism-callee/skills/lifecycle/SKILL.md", "sha256": "e61ee021d0de020f2edcdcdb34fa5d89493c473fff8334f2b7ee679188fcdafe"},
         {"path": "plugins/prism-callee/skills/lifecycle/references/breakdown.md", "sha256": "df8793684674dace84edaaeab8d7759b5e66dcb6bc9b1264f6bc60838dec7d49"},
-        {"path": "plugins/prism-callee/skills/lifecycle/references/promptkit.md", "sha256": "b62a7056a78cc8afbebe82cb50d60bd86b499c0169453a3be02ecdcfa58b7cbf"},
+        {"path": "plugins/prism-callee/skills/lifecycle/references/promptkit.md", "sha256": "a317718a20c06010596f1966477d648eb4d90b08f7fa7d26e5165a4677504cba"},
         {"path": "plugins/prism/skills/epic/SKILL.md", "sha256": "af91130e3e11b9dacbd7b9a5b0f3aa0d1d4b7bf2089ce00a2366459bcc0465d9"},
         {"path": "plugins/prism/skills/epic/references/approval.md", "sha256": "3bdab11afd462177a713b5d05b90d61fe3a21faedb9c40ed3ee51edf8805411e"},
         {"path": "plugins/prism/skills/epic/references/architecture.md", "sha256": "2b4ea5fc8f5081d24d65d560813c82ec6286def80a7f63f56286e5e8a18abdce"},
@@ -223,14 +226,30 @@
     "callee_pack": {
       "root": "pack/callee",
       "mutation_policy": "digest-locked",
-      "aggregate_sha256": "822b12b07129d8b74c40463899b08909bea7977f6ea5500c6391171b8e482d3d",
+      "aggregate_sha256": "1934d8742a4fed9fdc7ac4e25b659e38cdb735b3cb882985b355a08767f12003",
       "sources": [
         {"path": "prism/apply/loop.md", "sha256": "af90943992a30331b2aab5fb4c2afa9d5f1a8ebaac62ae6002c6c314405dfdca"},
         {"path": "prism/design/flow.md", "sha256": "880bc5ff7b441541e838696c5099e0b7e95832d46ccb7167183876e190a15064"},
+        {"path": "prism/epic.md", "sha256": "646bbe45ce6b40608a506f498dc84726d34579b1a54ffaa46e9ad7aaa065eadf"},
+        {"path": "prism/epic/human.md", "sha256": "3e25bd06b86898908afb15f4d0db0ab128e44ba658bb3aba95ccac071e7ec238"},
+        {"path": "prism/epic/human/check.md", "sha256": "43ee2b26c92fc7dfe51312b734fbc9a7c827a5805e7bbc173ad56e64843954ca"},
+        {"path": "prism/epic/human/intent.md", "sha256": "dbe8bf22bd87d6200070cc4c1b71a797b9402b3ceab1aee29eb177688b2ea8d2"},
+        {"path": "prism/epic/human/prompt.md", "sha256": "3f66a2225b3ae98d17b277f8d2cc2986e7c196717a76b64c859d2071b680ea4d"},
+        {"path": "prism/epic/phases/approval.md", "sha256": "de2b026902986b4c07409e5d03c0c990d1f9ce4082a5644496609ad56edf96c7"},
+        {"path": "prism/epic/phases/architecture.md", "sha256": "fd7881f30f07019b38ebf85aa3163c9718d696494112ff50ec0afddb766c0906"},
+        {"path": "prism/epic/phases/delivery.md", "sha256": "4e2f87f851ec8e25d3630ea4bfb40d830235926ffc0608f432ef2fd1b2dc823d"},
+        {"path": "prism/epic/phases/frame.md", "sha256": "163055f8e0ac737f6a8e9a5aa25398d7bb32e30e6c4cf2f4fca62f15624c26b7"},
+        {"path": "prism/epic/phases/roadmap.md", "sha256": "d93f7180bd1be3ffcd6ddf69ef160f22f07d0cec9c686344dfd2808c70cc5864"},
+        {"path": "prism/epic/phases/validation.md", "sha256": "cd983cd9b92923749854cd894bf6e63cb22c8add6493acad8411f029e2e6d581"},
+        {"path": "prism/epic/roles/architecture.md", "sha256": "9d5ff41ebca758c175bdb5bad0136005109346498197d4aa05fb06cb2855d00d"},
+        {"path": "prism/epic/roles/delivery.md", "sha256": "e36fe2734d704a2eab0b11deef0422a5590f57c888dc5ada786f39531da00453"},
+        {"path": "prism/epic/roles/frame.md", "sha256": "498ab902f05aefcf98b4f0805c9892db006fbd899ba370979d6c9627ab041d4c"},
+        {"path": "prism/epic/roles/roadmap.md", "sha256": "163eaa03b325537f699ae2047e2fdbfc2bcfca508c7a3e5469b2075f1aaad22e"},
+        {"path": "prism/epic/roles/validation.md", "sha256": "42f63b6ce0a921c08766c9f32e90d80b3509cc0f6bcd04cd3c8b93230d5e9ea5"},
         {"path": "prism/human/check.md", "sha256": "241bf7bd7ad7622329213273ebfd714dc279deca5f4605b5d943462eeebb5b6f"},
         {"path": "prism/human/intent.md", "sha256": "273189a4851085563797e9ad8b386d9207639d3687fc25b4ee4725698e35985d"},
         {"path": "prism/human/prompt.md", "sha256": "208196ade2cbbaad2985187d65a652e959a3dc273e57a38197868458b9030c25"},
-        {"path": "prism/lifecycle.md", "sha256": "645b0283fc3ceabb73ef7f487a454c1e939194523d287d60fbaa1349c4d05c43"},
+        {"path": "prism/lifecycle.md", "sha256": "ead0dcfea1a18d96046724d393beac4f2fb7685b699161fe1bad491bf964cc6b"},
         {"path": "prism/phases/apply.md", "sha256": "9398a08e29316f4988b902408533df153c7e0ebb1ee142d7921ac4607c0494b0"},
         {"path": "prism/phases/breakdown.md", "sha256": "13306ac0f264baba9766364dddc4e39a255371caf0983d0752bee8eb60eb8ba6"},
         {"path": "prism/phases/design.md", "sha256": "17917de3d3251b84e6dab8b117d280d6fbf675785776a9021d630165c78313ed"},
@@ -247,6 +266,7 @@
         {"path": "prism/specify/gate.md", "sha256": "0f2ffb945b12b1f7ec03acad84545c427091332f5d46b02ebfe13b496f7ca09f"},
         {"path": "prism/specify/loop.md", "sha256": "27e968a4d34d801338dd03b518b6aeae43488727d310f3d5f4e40edca7f0aa30"},
         {"path": "prism/specify/questions.md", "sha256": "3992b529138eb02eabf7bfd6b564beb309aa30bae235a5bbe83368c979d83713"},
+        {"path": "prism/story.md", "sha256": "b3a63b17ab919445d25268af40144e30a48127804863a94a97aee7db8f8bbd9d"},
         {"path": "prism/verify/review.md", "sha256": "cfa2d5f75ec9c9553799cb028a3bdf18a1fd69760a597c419c892f45d6590aaa"}
       ]
     }

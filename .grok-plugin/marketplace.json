@@ -23,7 +23,7 @@
     },
     {
       "name": "prism-callee",
-      "description": "Run the Prism lifecycle as a workflow of specialized Callee subagents.",
+      "description": "Run the Prism Story and Epic lifecycles as workflows of specialized Callee subagents.",
       "version": "0.5.0+codex.20260731000000",
       "category": "development",
       "author": {
@@ -31,7 +31,7 @@
         "url": "https://github.com/baldaworks"
       },
       "homepage": "https://github.com/baldaworks/prism",
-      "keywords": ["prism", "beads", "callee", "story-lifecycle", "subagents"],
+      "keywords": ["prism", "beads", "callee", "story-lifecycle", "epic-lifecycle", "subagents"],
       "source": {
         "type": "local",
         "path": "./plugins/prism-callee"

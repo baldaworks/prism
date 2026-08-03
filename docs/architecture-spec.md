@@ -8,8 +8,8 @@ Prism exposes distinct interfaces over shared durable work:
 | `prism:story` | Full single-Story lifecycle | Host + Beads |
 | `prism:epic` | Multi-Story Epic lifecycle | Host + Beads |
 | `prism:light` | Concise single-Story lifecycle | Host + Beads |
-| `prism-callee:lifecycle` | Callee-backed single-Story lifecycle | Host + Beads + Callee |
-| `prism/lifecycle` | Direct Story workflow graph | Callee |
+| `prism-callee:lifecycle` | Callee-backed Story/Epic lifecycle and explicit open-Epic batches | Host + Beads + Callee |
+| `prism/lifecycle` | Direct Callee Router to Story and Epic workflow graphs | Callee |
 
 ## Durable model
 
@@ -33,8 +33,8 @@ presentations begin with the item's complete, untruncated acceptance criteria.
 - `plugins/prism/skills/story/` owns the full host Story contract.
 - `plugins/prism/skills/epic/` owns the host Epic contract.
 - `plugins/prism/skills/light/` owns the concise Story contract.
-- `plugins/prism-callee/skills/lifecycle/` owns host-to-Callee Story mapping.
-- `pack/callee/prism/` owns direct Callee agent behavior.
+- `plugins/prism-callee/skills/lifecycle/` owns host-to-Callee Story/Epic mapping, approval authority, and explicit batches.
+- `pack/callee/prism/` owns the Router and direct Story/Epic agent behavior.
 
 Namespaced and flat skill trees are behavioral mirrors. The ownership manifest
 records each managed host source and every Callee pack Markdown source with
@@ -50,6 +50,7 @@ Run:
 ./scripts/validate-lifecycle-ownership.sh
 ./scripts/test-lifecycle-drift-detection.sh
 ./scripts/test-lifecycle-forward-contracts.sh
+./scripts/test-callee-lifecycle-forward-contracts.sh
 ```
 
 Also validate canonical skills with the skill-creator validator and Callee pack

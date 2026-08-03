@@ -9,10 +9,18 @@ changing Prism entrypoints or lifecycle semantics.
 Use this page when you need a repeatable local check for the automated Human
 path in the Prism Callee lifecycle.
 
-The public workflow entrypoints remain:
+The public Callee workflow entrypoints are:
 
 - `prism/lifecycle`
-- `prism/phases/*`
+- `prism/story`
+- `prism/epic`
+- `prism/phases/*` for Story phases
+- `prism/epic/phases/*` for Epic phases
+
+`prism/lifecycle` requires a host-built envelope whose first line is
+exactly `ROUTE=story` or `ROUTE=epic`. Direct graph runs are useful
+for maintainer inspection; host-managed Beads advancement and explicit batch
+coordination always go through the Router.
 
 Internal IDs such as `prism/specify/questions` and `prism/specify/loop` appear
 here only as maintainer-facing implementation detail for the smoke tests.

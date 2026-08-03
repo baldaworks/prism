@@ -81,19 +81,19 @@ def normalized_markdown(text: str, canonical_name: str, flat_name: str, surface:
 mapping_path = root / "docs/lifecycle-ownership.json"
 record(mapping_path.is_file(), "lifecycle ownership mapping exists")
 mapping = load_json(mapping_path)
-record(mapping.get("version") == 14, "ownership schema version is 14")
+record(mapping.get("version") == 15, "ownership schema version is 15")
 
 expected_interfaces = {
     "router": {"codex": "$prism:lifecycle", "claude": "/prism:lifecycle", "flat": "/prism-lifecycle"},
     "story": {"codex": "$prism:story", "claude": "/prism:story", "flat": "/prism-story"},
     "epic": {"codex": "$prism:epic", "claude": "/prism:epic", "flat": "/prism-epic"},
     "light": {"codex": "$prism:light", "claude": "/prism:light", "flat": "/prism-light"},
-    "callee_story": {
+    "callee_lifecycle": {
         "codex": "$prism-callee:lifecycle",
         "claude": "/prism-callee:lifecycle",
         "flat": "/prism-callee-lifecycle",
     },
-    "direct_callee_story": 'callee agent run prism/lifecycle --message "..."',
+    "direct_callee": 'callee agent run prism/lifecycle --agent-root pack/callee --message "$envelope"',
 }
 record(mapping.get("interfaces") == expected_interfaces, "ownership schema declares every public interface")
 
@@ -191,7 +191,7 @@ surface_specs = {
     "story": ("story", "prism-story", "story", "prism-story"),
     "epic": ("epic", "prism-epic", "epic", "prism-epic"),
     "light": ("light", "prism-light", "light", "prism-light"),
-    "callee_story": ("lifecycle", "prism-callee-lifecycle", "lifecycle", "prism-callee-lifecycle"),
+    "callee_lifecycle": ("lifecycle", "prism-callee-lifecycle", "lifecycle", "prism-callee-lifecycle"),
 }
 
 host_sources: list[pathlib.Path] = []
@@ -212,12 +212,12 @@ for surface, (canonical_name, flat_name, frontmatter_name, flat_frontmatter_name
         record(expected == flat_path.read_text(), f"{surface} mirror matches: {relative}")
 
 direct_callee = ownership.get("direct_callee", {})
-record(direct_callee.get("story_only") is True, "direct Callee remains Story-only")
-record(direct_callee.get("epic_router") is False, "direct Callee has no Epic router")
+record(direct_callee.get("graphs") == ["story", "epic"], "direct Callee exposes Story and Epic graphs")
+record(direct_callee.get("router") is True, "direct Callee exposes an Epic Router")
 record(
     direct_callee.get("authorized_behavior_change")
-    == "prism/phases/breakdown.md qualitative child graph",
-    "canonical Callee change scope is limited to qualitative Breakdown",
+    == "hierarchical Story/Epic routing, approval boundaries, and explicit open-Epic batches",
+    "canonical Callee change scope covers hierarchical routing and batches",
 )
 
 integrity = mapping.get("integrity", {})
@@ -313,8 +313,45 @@ epic_text = (root / "plugins/prism/skills/epic/SKILL.md").read_text()
 for marker in ["Direct Epic children are Stories", "direct Tasks", "nested Epics", "never cascades", "one ready Story at a time"]:
     record(marker in epic_text, f"Epic hierarchy/approval marker: {marker}")
 
-pack_lifecycle_text = (root / "pack/callee/prism/lifecycle.md").read_text().lower()
-record("epic" not in pack_lifecycle_text, "canonical Callee lifecycle has no Epic router")
+pack_lifecycle_text = (root / "pack/callee/prism/lifecycle.md").read_text()
+record(
+    "kind: Router" in pack_lifecycle_text
+    and "prism/story" in pack_lifecycle_text
+    and "prism/epic" in pack_lifecycle_text,
+    "canonical Callee lifecycle is a Story/Epic Router",
+)
+
+for path, markers in {
+    root / "pack/callee/prism/story.md": [
+        "kind: Sequential",
+        "prism/phases/specify",
+        "prism/phases/verify",
+        "### Acceptance criteria",
+        "Do not emit this section outside",
+    ],
+    root / "pack/callee/prism/epic.md": [
+        "kind: Sequential",
+        "prism/epic/phases/frame",
+        "prism/epic/phases/validation",
+        "### Acceptance criteria",
+        "Do not emit this section outside",
+    ],
+}.items():
+    text = path.read_text() if path.is_file() else ""
+    record(path.is_file(), f"{path.relative_to(root)} exists")
+    for marker in markers:
+        record(marker in text, f"{path.relative_to(root)} contains Callee contract: {marker}")
+
+callee_host_text = (root / "plugins/prism-callee/skills/lifecycle/SKILL.md").read_text()
+for marker in [
+    "Normal host output",
+    "MUST NOT emit a standalone ### Acceptance criteria heading",
+    "Story Human request, in exact order",
+    "Epic Approval request, in exact order",
+    "one invocation-start snapshot",
+    "exactly-once ledger",
+]:
+    record(marker in callee_host_text, f"prism-callee host contract contains: {marker}")
 
 expected_task_states = [
     {"state": "implementing", "assignee": "prism/apply/implementer"},

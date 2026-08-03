@@ -3,11 +3,13 @@
 Authoritative map of PromptKit templates, personas, binds, and runtime parameters
 for Prism Callee agents under `pack/callee/prism/`.
 
-Regenerate Roles with `callee promptkit role create` (do not hand-rewrite PromptKit
-bodies). Public lifecycle entrypoints now live at `pack/callee/prism/lifecycle.md`
-and `pack/callee/prism/phases/*`. Internal phase-local agents under
-`pack/callee/prism/<phase>/` remain authored Sequential/Loop/Human/Script graphs
-that reference these Roles. After regeneration, preserve the checked-in
+Regenerate PromptKit-backed Roles with `callee promptkit role create` (do not
+hand-rewrite generated bodies). The public Callee surface is a Router at
+`pack/callee/prism/lifecycle.md`, a direct Story graph at
+`pack/callee/prism/story.md`, a direct Epic graph at
+`pack/callee/prism/epic.md`, and their Story/Epic phase graphs. Internal
+phase-local agents remain authored Sequential/Loop/Human/Script graphs that
+reference these Roles. After regeneration, preserve the checked-in
 `spec.provider.model` / `spec.provider.reasoning` values. Repository-documentation agents now live in the
 separate `pack/callee/documentation/` pack and are intentionally excluded from this
 Prism lifecycle reference.
@@ -21,9 +23,10 @@ Validator-style roles use **`gpt-5.3-codex-spark`**:
 - `prism/specify/gate`
 - `prism/roles/reviewer`
 Permissions: default / **`ask`**.
-The directly authored `prism/human/intent` classifier is the sole exception:
-it uses `spec.permissions.mode: deny` because approval/refinement
-classification requires no tools and must fail closed.
+The directly authored `prism/human/intent` and
+`prism/epic/human/intent` classifiers are the only exceptions: they use
+`spec.permissions.mode: deny` because approval/refinement classification
+requires no tools and must fail closed.
 
 ## Contents
 
@@ -44,6 +47,12 @@ classification requires no tools and must fail closed.
 | `prism/roles/breakdown` | Role | `plan-implementation` | `software-architect` | `description` | — | false |
 | `prism/roles/implementer` | Role | `generate-implementation-changes` | `implementation-engineer` | `spec_patch` | — | false |
 | `prism/roles/reviewer` | Role | `review-code` | `systems-engineer` | `code` | — | false |
+| `prism/epic/roles/frame` | Role | — (directly authored) | — | — | — | false |
+| `prism/epic/roles/architecture` | Role | — (directly authored) | — | — | — | false |
+| `prism/epic/roles/roadmap` | Role | — (directly authored) | — | — | — | false |
+| `prism/epic/roles/delivery` | Role | — (directly authored) | — | — | — | false |
+| `prism/epic/roles/validation` | Role | — (directly authored) | — | — | — | false |
+| `prism/epic/human/intent` | Role | — (directly authored) | — | — | — | false |
 
 Paths on disk:
 
@@ -55,6 +64,12 @@ pack/callee/prism/roles/architect.md
 pack/callee/prism/roles/breakdown.md
 pack/callee/prism/roles/implementer.md
 pack/callee/prism/roles/reviewer.md
+pack/callee/prism/epic/roles/frame.md
+pack/callee/prism/epic/roles/architecture.md
+pack/callee/prism/epic/roles/roadmap.md
+pack/callee/prism/epic/roles/delivery.md
+pack/callee/prism/epic/roles/validation.md
+pack/callee/prism/epic/human/intent.md
 ```
 
 ### Regenerate one Role
@@ -218,19 +233,34 @@ Inspect live keys with `callee agent view <id> --json` (authoritative if drift).
 | `prism/roles/reviewer.language` | Programming language |
 | `prism/roles/reviewer.review_focus` | Focus areas (e.g. correctness, security) |
 
+### Directly authored Epic Roles
+
+The Epic phase Roles and `prism/epic/human/intent` are deliberately
+authored contracts, not PromptKit-generated templates. They accept the complete
+phase context through `{{ .Input }}` and define no additional runtime
+parameters.
+
 ## Workflow map
 
 ### Public Callee surface
 
 | Agent ID | Kind | Semantic role |
 | --- | --- | --- |
-| `prism/lifecycle` | Sequential | Root lifecycle graph for specify → design → breakdown → human → apply → verify |
-| `prism/phases/specify` | Sequential | Public specify phase entrypoint |
-| `prism/phases/design` | Sequential | Public design phase entrypoint |
-| `prism/phases/breakdown` | Sequential | Public breakdown phase entrypoint for stories labeled `phase:story:breakdown` |
-| `prism/phases/human` | Sequential | Public human approval gate that collects approval through a Human agent |
-| `prism/phases/apply` | Sequential | Public apply phase entrypoint delegating to the one-task loop |
-| `prism/phases/verify` | Sequential | Public verify phase entrypoint delegating to the close-or-bounce review |
+| `prism/lifecycle` | Router | Root type-aware route to exactly one Story or Epic graph |
+| `prism/story` | Sequential | Direct six-phase Story lifecycle |
+| `prism/epic` | Sequential | Direct six-phase Epic lifecycle |
+| `prism/phases/specify` | Sequential | Public Story Specify phase entrypoint |
+| `prism/phases/design` | Sequential | Public Story Design phase entrypoint |
+| `prism/phases/breakdown` | Sequential | Public Story Breakdown phase entrypoint |
+| `prism/phases/human` | Sequential | Public Story approval gate that collects approval through a Human agent |
+| `prism/phases/apply` | Sequential | Public Story Apply phase entrypoint delegating to the one-task loop |
+| `prism/phases/verify` | Sequential | Public Story Verify phase entrypoint delegating to close-or-bounce review |
+| `prism/epic/phases/frame` | Sequential | Public Epic Frame phase entrypoint |
+| `prism/epic/phases/architecture` | Sequential | Public Epic Architecture phase entrypoint |
+| `prism/epic/phases/roadmap` | Sequential | Public Epic Roadmap phase entrypoint |
+| `prism/epic/phases/approval` | Sequential | Public Epic approval gate |
+| `prism/epic/phases/delivery` | Sequential | Public Epic Delivery phase entrypoint |
+| `prism/epic/phases/validation` | Sequential | Public Epic Validation phase entrypoint |
 
 ### Internal execution layer
 
@@ -245,6 +275,13 @@ Inspect live keys with `callee agent view <id> --json` (authoritative if drift).
 | `prism/human/check` | Script | approval pass / refinement stop validator | **none** |
 | `prism/apply/loop` | Loop | `worker`=`implementer` ↔ `validator`=`reviewer` (`canEscalate`) | **none** |
 | `prism/verify/review` | Sequential | `reviewer` | **none** |
+| `prism/epic/phases/frame` | Sequential | `frame` | **none** |
+| `prism/epic/phases/architecture` | Sequential | `architecture` | **none** |
+| `prism/epic/phases/roadmap` | Sequential | `roadmap` | **none** |
+| `prism/epic/phases/approval` | Sequential | `epic_approval` | **none** |
+| `prism/epic/phases/delivery` | Sequential | `delivery` | **none** |
+| `prism/epic/phases/validation` | Sequential | `validation` | **none** |
+| `prism/epic/human` | Sequential | `epic_approval_prompt` → `epic_approval_intent` → `epic_approval_gate` | **none** |
 
 Paths:
 
@@ -258,15 +295,29 @@ pack/callee/prism/human/intent.md
 pack/callee/prism/human/check.md
 pack/callee/prism/apply/loop.md
 pack/callee/prism/verify/review.md
+pack/callee/prism/epic/phases/frame.md
+pack/callee/prism/epic/phases/architecture.md
+pack/callee/prism/epic/phases/roadmap.md
+pack/callee/prism/epic/phases/approval.md
+pack/callee/prism/epic/phases/delivery.md
+pack/callee/prism/epic/phases/validation.md
+pack/callee/prism/epic/human.md
+pack/callee/prism/epic/human/prompt.md
+pack/callee/prism/epic/human/intent.md
+pack/callee/prism/epic/human/check.md
 ```
 
 Root message conventions:
 
 | Workflow | `--message` content |
 | --- | --- |
+| `prism/lifecycle` | Host-built envelope beginning with exactly `ROUTE=story` or `ROUTE=epic`, followed by item identity, original request, and Beads context |
+| `prism/story` | Complete Story route envelope and current phase context |
+| `prism/epic` | Complete Epic route envelope and current phase context |
 | `prism/specify/loop` | `bd show <story>` dump plus any current intent / constraints |
 | `prism/design/flow` | `bd show <story>` dump (requirements + acceptance) |
 | `prism/phases/human` | prepared complete Acceptance criteria → Design summary → Task summary → Approval request from `bd show`, `bd children`, and `bd blocked` |
+| `prism/epic/phases/approval` | prepared complete Epic Acceptance criteria → Architecture summary → Story roadmap → Approval request |
 | `prism/apply/loop` | story dump + claimed task dump |
 | `prism/verify/review` | story dump (acceptance + design context) |
 
@@ -302,6 +353,11 @@ callee agent view prism/human/check --json
 callee agent view prism/design/flow --json
 callee agent view prism/apply/loop --json
 callee agent view prism/verify/review --json
+callee agent view prism/story --json
+callee agent view prism/epic --json
+for f in pack/callee/prism/epic/phases/*.md; do callee agent validate "$f"; done
+for f in pack/callee/prism/epic/roles/*.md; do callee agent validate "$f"; done
+for f in pack/callee/prism/epic/human.md pack/callee/prism/epic/human/*.md; do callee agent validate "$f"; done
 ```
 
 ---

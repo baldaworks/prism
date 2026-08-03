@@ -117,8 +117,8 @@ expected_default_prompts = {
         "claude": "Use /prism:lifecycle to route Story or Epic work, including explicit batches of all open Prism epics; use /prism:story, /prism:epic, or /prism:light for direct workflows.",
     },
     "prism-callee": {
-        "codex": "Use $prism-callee:lifecycle to run a Prism story through specialized prism/* subagents and the explicit Callee Human approval gate.",
-        "claude": "Use /prism-callee:lifecycle to run a Prism story through specialized prism/* subagents and the explicit Callee Human approval gate.",
+        "codex": "Use $prism-callee:lifecycle to run a Prism Story or Epic through specialized prism/* subagents and the explicit Callee approval gate.",
+        "claude": "Use /prism-callee:lifecycle to run a Prism Story or Epic through specialized prism/* subagents and the explicit Callee approval gate.",
     },
 }
 

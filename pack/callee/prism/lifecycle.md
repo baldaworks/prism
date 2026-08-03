@@ -1,82 +1,20 @@
 ---
 apiVersion: callee.metalagman.dev/v1alpha1
-kind: Sequential
+kind: Router
 spec:
   description: |
-    Prism lifecycle phase chain — specify, design, breakdown, informed human
-    approval, apply, and verify in order. The human
-    gate accepts free-form intent through a fail-closed classifier before apply
-    begins, while apply owns story-level operational closure through the inner
-    one-task loop.
+    Public Prism lifecycle Router. Selects exactly one declared Story or Epic
+    graph from the first line of a host-generated route envelope. The envelope
+    preserves the complete caller prompt for the selected graph. Explicit
+    unknown, blank, or malformed routes fail closed because no default branch
+    is declared; the Router never retries another child.
+  route: '{{ regexFind "^ROUTE=(story|epic)(\\r?\\n|$)" .Input | trimPrefix "ROUTE=" }}'
   children:
-    - ref: prism/phases/specify
-      alias: specify
-    - ref: prism/phases/design
-      alias: design
-      input: |
-        Original lifecycle context:
-        {{ .Input }}
-
-        Specify result:
-        {{ index .State.outputs "specify" }}
-    - ref: prism/phases/breakdown
-      alias: breakdown
-      input: |
-        Original lifecycle context:
-        {{ .Input }}
-
-        Specify result:
-        {{ index .State.outputs "specify" }}
-
-        Design result:
-        {{ index .State.outputs "design" }}
-    - ref: prism/phases/human
-      alias: human
-      input: |
-        ### Design summary
-        {{ index .State.outputs "design" }}
-
-        ### Task summary
-        {{ index .State.outputs "breakdown" }}
-
-        ### Approval request
-        Approve automated implementation of this design and task graph? One
-        informed approval covers the design and tasks.
-    - ref: prism/phases/apply
-      alias: apply
-      input: |
-        Original lifecycle context:
-        {{ .Input }}
-
-        Specify result:
-        {{ index .State.outputs "specify" }}
-
-        Design result:
-        {{ index .State.outputs "design" }}
-
-        Breakdown result:
-        {{ index .State.outputs "breakdown" }}
-
-        Human approval result:
-        {{ index .State.outputs "human" }}
-    - ref: prism/phases/verify
-      alias: verify
-      input: |
-        Original lifecycle context:
-        {{ .Input }}
-
-        Specify result:
-        {{ index .State.outputs "specify" }}
-
-        Design result:
-        {{ index .State.outputs "design" }}
-
-        Breakdown result:
-        {{ index .State.outputs "breakdown" }}
-
-        Apply result:
-        {{ index .State.outputs "apply" }}
-  output: |
-    {{ index .State.outputs "verify" }}
+    - ref: prism/story
+      alias: story
+      route: story
+    - ref: prism/epic
+      alias: epic
+      route: epic
 ---
-{{ .Input }}
+{{ .Prompt }}

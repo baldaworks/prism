@@ -1,4 +1,4 @@
 interface:
   display_name: "Prism Callee Lifecycle"
   short_description: "Run Prism as a specialized Callee workflow"
-  default_prompt: "Use $prism-callee:lifecycle to run a Prism story through specialized prism/* subagents and the explicit Callee Human approval gate."
+  default_prompt: "Use $prism-callee:lifecycle to run a Prism Story or Epic through specialized prism/* subagents and the explicit Callee approval gate."
