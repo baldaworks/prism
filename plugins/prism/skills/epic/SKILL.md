@@ -49,6 +49,20 @@ Load exactly one phase-local instruction:
 - Delivery: [references/delivery.md](references/delivery.md)
 - Validation: [references/validation.md](references/validation.md)
 
+## Output boundary
+
+Normal host Epic output — target resolution, phase progress, status, errors,
+blockers, and normal phase results — MUST NOT emit a standalone ### Acceptance criteria heading,
+including a bullet-wrapped form such as `- ### Acceptance criteria`, or an unsolicited user-facing
+approval-format acceptance block.
+
+This boundary applies only to user-facing Markdown output. It does not prohibit
+internal or machine-readable acceptance artifacts such as requirements
+documents, the Beads acceptance field, or `ACCEPTANCE_CRITERIA:` sections in a
+normal phase result. This prohibition includes the Epic Approval pre-approve
+request. Only an explicit operator request for acceptance criteria allows the
+complete, untruncated acceptance of the current Epic to be shown.
+
 ## Entry
 
 1. Resolve Beads with `bd where`; follow the Beads skill or `bd prime` when needed.

@@ -122,6 +122,18 @@ def normalized_contract(text: str) -> str:
 
 for contract_path in [
     repo_root / "plugins/prism/skills/story/SKILL.md",
+    repo_root / "plugins/prism/skills/epic/SKILL.md",
+]:
+    contract_text = normalized_contract(contract_path.read_text())
+    assert "MUST NOT emit a standalone ### Acceptance criteria heading" in contract_text
+    assert "unsolicited user-facing approval-format acceptance block" in contract_text
+    assert "machine-readable acceptance artifacts" in contract_text
+    assert "explicit operator request for acceptance criteria" in contract_text
+    assert "pre-approve request" in contract_text
+    assert "remains the exception" not in contract_text
+    assert "complete acceptance block" not in contract_text
+
+for contract_path in [
     repo_root / "plugins/prism-callee/skills/lifecycle/SKILL.md",
 ]:
     contract_text = normalized_contract(contract_path.read_text())
@@ -130,7 +142,7 @@ for contract_path in [
     assert "machine-readable acceptance artifacts" in contract_text
     assert "explicit operator request for acceptance criteria" in contract_text
     assert "complete acceptance block" not in contract_text
-print("PASS: host and Callee skill boundaries preserve internal acceptance artifacts")
+print("PASS: full host request-only and Callee output boundaries preserve internal acceptance artifacts")
 
 
 promptkit_text = (repo_root / "plugins/prism-callee/skills/lifecycle/references/promptkit.md").read_text()

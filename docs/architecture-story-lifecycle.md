@@ -28,10 +28,12 @@ minimum or maximum; one Task or more than twelve Tasks can be valid.
 
 Before requesting approval, the host shows this exact order:
 
-1. complete, untruncated Acceptance criteria;
-2. Design summary;
-3. Task summary;
-4. Approval request.
+1. Design summary;
+2. Task summary;
+3. Approval request.
+
+Acceptance remains a required internal gate input, but the host shows it only
+when the operator explicitly requests the current Story criteria.
 
 Only unambiguous human approval writes `human:approved` and advances to Apply.
 Design refinement clears approval and returns to Design. Ambiguity keeps the

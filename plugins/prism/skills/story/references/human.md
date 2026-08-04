@@ -8,7 +8,7 @@ Run for `phase:story:human` or open children without `human:approved`.
 {
   "id": "human-v1",
   "steps": ["approval-prompt", "intent-classifier", "decision-check"],
-  "required_outputs": ["acceptance-design-task-approval-summary", "approve-refine-withhold", "fail-closed-authorization"],
+  "required_outputs": ["design-task-approval-summary", "approve-refine-withhold", "fail-closed-authorization"],
   "max_iterations": 1,
   "on_exhausted": "withhold"
 }
@@ -28,13 +28,11 @@ coverage. If acceptance is missing or unusable, clear approval, write
 
 Otherwise present exactly:
 
-1. `### Acceptance criteria` — the complete, untruncated acceptance field of
-   the current Story only.
-2. `### Design summary` — objective, approach, affected areas, material risks,
+1. `### Design summary` — objective, approach, affected areas, material risks,
    tradeoffs, and open questions.
-3. `### Task summary` — every child ID/title/state plus dependencies, blockers,
+2. `### Task summary` — every child ID/title/state plus dependencies, blockers,
    critical path, and execution order.
-4. `### Approval request` — explain that one decision covers the design and
+3. `### Approval request` — explain that one decision covers the design and
    task graph and that ordinary free-form language is accepted.
 
 Derive every statement from current Beads state.
@@ -74,7 +72,9 @@ stop without implementation. For `WITHHOLD`, keep `phase:story:human` and stop.
 ## Never
 
 - infer approval from discussion, silence, or a question;
-- truncate, summarize away, or substitute child acceptance for current-Story acceptance;
+- emit current-Story acceptance as part of the approval prompt without an
+  explicit operator request;
+- skip or weaken the internal acceptance-readiness check;
 - omit a child from the summary;
 - alter child scope at the gate;
 - implement before persisted and re-read approval;

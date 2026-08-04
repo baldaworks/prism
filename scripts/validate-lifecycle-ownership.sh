@@ -85,7 +85,7 @@ def normalized_contract(text: str) -> str:
 mapping_path = root / "docs/lifecycle-ownership.json"
 record(mapping_path.is_file(), "lifecycle ownership mapping exists")
 mapping = load_json(mapping_path)
-record(mapping.get("version") == 15, "ownership schema version is 15")
+record(mapping.get("version") == 16, "ownership schema version is 16")
 
 expected_interfaces = {
     "router": {"codex": "$prism:lifecycle", "claude": "/prism:lifecycle", "flat": "/prism-lifecycle"},
@@ -168,18 +168,19 @@ record(
 
 approval = mapping.get("approval", {})
 record(
-    approval.get("story_order")
-    == ["Acceptance criteria", "Design summary", "Task summary", "Approval request"],
-    "Story approval order starts with acceptance",
+    approval.get("host_story_order")
+    == ["Design summary", "Task summary", "Approval request"],
+    "full host Story approval order omits unsolicited acceptance",
 )
 record(
-    approval.get("epic_order")
-    == ["Acceptance criteria", "Architecture summary", "Story roadmap", "Approval request"],
-    "Epic approval order starts with acceptance",
+    approval.get("host_epic_order")
+    == ["Architecture summary", "Story roadmap", "Approval request"],
+    "full host Epic approval order omits unsolicited acceptance",
 )
 record(
-    approval.get("acceptance_scope") == "complete-untruncated-current-item-only",
-    "approval uses complete current-item acceptance only",
+    approval.get("host_acceptance_output")
+    == "explicit-request-only-complete-untruncated-current-item-only",
+    "full host acceptance output requires an explicit request for the current item",
 )
 record(approval.get("epic_approval_cascades_to_stories") is False, "Epic approval never cascades")
 
@@ -267,21 +268,30 @@ for path in [
     text = path.read_text()
     record("absent" in text and "migrat" in text, f"{path.relative_to(root)} documents unsupported-label behavior")
 
-approval_contracts = {
+host_approval_contracts = {
     root / "plugins/prism/skills/story/references/human.md": [
-        "### Acceptance criteria", "### Design summary", "### Task summary", "### Approval request"
-    ],
-    root / "plugins/prism/skills/light/references/human.md": [
-        "### Acceptance criteria", "### Design summary", "### Task summary", "### Approval request"
+        "### Design summary", "### Task summary", "### Approval request"
     ],
     root / "plugins/prism/skills/epic/references/approval.md": [
-        "### Acceptance criteria", "### Architecture summary", "### Story roadmap", "### Approval request"
+        "### Architecture summary", "### Story roadmap", "### Approval request"
+    ],
+}
+for path, markers in host_approval_contracts.items():
+    text = path.read_text()
+    positions = [text.find(marker) for marker in markers]
+    record(all(position >= 0 for position in positions) and positions == sorted(positions), f"{path.relative_to(root)} host approval order is correct")
+    record("### Acceptance criteria" not in text, f"{path.relative_to(root)} omits unsolicited acceptance")
+    record("acceptance" in text.lower() and "readiness" in text.lower(), f"{path.relative_to(root)} retains internal acceptance readiness")
+
+acceptance_first_approval_contracts = {
+    root / "plugins/prism/skills/light/references/human.md": [
+        "### Acceptance criteria", "### Design summary", "### Task summary", "### Approval request"
     ],
     root / "plugins/prism-callee/skills/lifecycle/SKILL.md": [
         "### Acceptance criteria", "### Design summary", "### Task summary", "### Approval request"
     ],
 }
-for path, markers in approval_contracts.items():
+for path, markers in acceptance_first_approval_contracts.items():
     text = path.read_text()
     positions = [text.find(marker) for marker in markers]
     record(all(position >= 0 for position in positions) and positions == sorted(positions), f"{path.relative_to(root)} approval order is correct")
@@ -353,6 +363,15 @@ output_contracts = {
         "unsolicited user-facing approval-format acceptance block",
         "machine-readable acceptance artifacts",
         "explicit operator request for acceptance criteria",
+        "Story Human pre-approve request",
+    ],
+    root / "plugins/prism/skills/epic/SKILL.md": [
+        "## Output boundary",
+        "MUST NOT emit a standalone ### Acceptance criteria heading",
+        "unsolicited user-facing approval-format acceptance block",
+        "machine-readable acceptance artifacts",
+        "explicit operator request for acceptance criteria",
+        "Epic Approval pre-approve request",
     ],
     root / "plugins/prism-callee/skills/lifecycle/SKILL.md": [
         "Normal host output",

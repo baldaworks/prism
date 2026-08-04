@@ -1,5 +1,5 @@
 {
-  "version": 15,
+  "version": 16,
   "interfaces": {
     "router": {
       "codex": "$prism:lifecycle",
@@ -86,19 +86,17 @@
     }
   },
   "approval": {
-    "story_order": [
-      "Acceptance criteria",
+    "host_story_order": [
       "Design summary",
       "Task summary",
       "Approval request"
     ],
-    "epic_order": [
-      "Acceptance criteria",
+    "host_epic_order": [
       "Architecture summary",
       "Story roadmap",
       "Approval request"
     ],
-    "acceptance_scope": "complete-untruncated-current-item-only",
+    "host_acceptance_output": "explicit-request-only-complete-untruncated-current-item-only",
     "missing_acceptance": {
       "story": "phase:story:specify",
       "epic": "phase:epic:frame"
@@ -191,13 +189,13 @@
     "aggregate_algorithm": "sha256 over sorted source path UTF-8, NUL, file bytes, NUL",
     "host_sources": {
       "mutation_policy": "digest-locked",
-      "aggregate_sha256": "9c2f995c5512c05af2704a80dfe61c0b4d694e9e8b94e7e3be92022a5fd39541",
+      "aggregate_sha256": "411c47ecbffe136b80b38420fb7246495cdc55bb53ccbae78bfef8c9d003b466",
       "sources": [
         {"path": "plugins/prism-callee/skills/lifecycle/SKILL.md", "sha256": "b3569c8a6368bf361b93bbc9dcaafce45f691888e80387c9206fb969a4c9d5b8"},
         {"path": "plugins/prism-callee/skills/lifecycle/references/breakdown.md", "sha256": "002023fa3df1ae6ac1f6e2ab43e53b464e2703923ff86708f4429eed48683c27"},
         {"path": "plugins/prism-callee/skills/lifecycle/references/promptkit.md", "sha256": "6612b7cfb2db0ed7ff1dee2f296b179be056ec57ebafaff4ea2c188461dd6ba4"},
-        {"path": "plugins/prism/skills/epic/SKILL.md", "sha256": "af91130e3e11b9dacbd7b9a5b0f3aa0d1d4b7bf2089ce00a2366459bcc0465d9"},
-        {"path": "plugins/prism/skills/epic/references/approval.md", "sha256": "3bdab11afd462177a713b5d05b90d61fe3a21faedb9c40ed3ee51edf8805411e"},
+        {"path": "plugins/prism/skills/epic/SKILL.md", "sha256": "d3fce9a5a269ef6202b987a9c69dbe3b8fb9efd1e03f57fffc932f23050426f3"},
+        {"path": "plugins/prism/skills/epic/references/approval.md", "sha256": "262448d4570f3e79e3590eaaf53066e504f74b699405d026d87ff764bb8f9891"},
         {"path": "plugins/prism/skills/epic/references/architecture.md", "sha256": "2b4ea5fc8f5081d24d65d560813c82ec6286def80a7f63f56286e5e8a18abdce"},
         {"path": "plugins/prism/skills/epic/references/delivery.md", "sha256": "a89b331ce023c75f9a099ffc9b36699fb767aa6ae0f21ad158456567621f4172"},
         {"path": "plugins/prism/skills/epic/references/frame.md", "sha256": "a8264c81681e9bc3599a4294924b1582cb52c1bdd179299a026bffcf895fd668"},
@@ -213,11 +211,11 @@
         {"path": "plugins/prism/skills/light/references/lifecycle.md", "sha256": "4e63d660e5259d17a67a4eccb41977e133b206ba36fdb0854bc74ddadf37fd3f"},
         {"path": "plugins/prism/skills/light/references/specify.md", "sha256": "20fb25e2e318a74fea404283546e2b6ce395b4f8856a5480e5a45a1046eed3ff"},
         {"path": "plugins/prism/skills/light/references/verify.md", "sha256": "4d24d6d7662fe207b0eab7232582b439bb4793d3d9069038ce2b019280b4fb40"},
-        {"path": "plugins/prism/skills/story/SKILL.md", "sha256": "f0ec11bfb53cb83b48880064ed60a5e0747eea4ad1973ce779fe60de20ce94b8"},
+        {"path": "plugins/prism/skills/story/SKILL.md", "sha256": "dbd45be3bace0c16480001733d3bde71e314d11f9ec745f277c9f2ef9124c058"},
         {"path": "plugins/prism/skills/story/references/apply.md", "sha256": "fde992e35947c7fa7eaee3563b58018d8f778be6387cfafd55d03dae5a11185d"},
         {"path": "plugins/prism/skills/story/references/breakdown.md", "sha256": "cbf2239a3c9dad4f0e66cce0d2ed67237cdc0349b1a0b4dafc274d22ed7245a8"},
         {"path": "plugins/prism/skills/story/references/design.md", "sha256": "b97275fbe55efdd3359c0aa210d7246b19c1a90e08ffb888ec89af5a5bbac283"},
-        {"path": "plugins/prism/skills/story/references/human.md", "sha256": "e13ce86bada8c89acf2ea7221f0e8ed360137cfa4719f93612e3605da59baa6f"},
+        {"path": "plugins/prism/skills/story/references/human.md", "sha256": "65004be669e98f365b8a990eef31255f8b1d4b8712a7e7ff267f2d7b2863a537"},
         {"path": "plugins/prism/skills/story/references/lifecycle.md", "sha256": "b5066115e88da4d74de40a662947fb25eafaadec0e5d3f4bf2c9fdb6ac997851"},
         {"path": "plugins/prism/skills/story/references/specify.md", "sha256": "33288a1c317c6cc5acb075d62d3fe064f744710b9426e42196d4eb74dc15624a"},
         {"path": "plugins/prism/skills/story/references/verify.md", "sha256": "cb5e4995641f1cd124ef66eb52db72cf33546f408d5e2916702a08ec8a1c76b5"}

@@ -28,10 +28,12 @@ and dependency correctness. There is no child-count limit.
 
 Before requesting Epic approval, the host shows this exact order:
 
-1. complete, untruncated Acceptance criteria;
-2. Architecture summary;
-3. Story roadmap;
-4. Approval request.
+1. Architecture summary;
+2. Story roadmap;
+3. Approval request.
+
+Acceptance remains a required internal gate input, but the host shows it only
+when the operator explicitly requests the current Epic criteria.
 
 Epic approval authorizes only the architecture and roadmap. It never approves
 implementation of a child Story. Delivery advances eligible Stories

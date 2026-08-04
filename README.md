@@ -322,9 +322,10 @@ Rules that matter to users:
   free-form approval is enough for the host to persist `human:approved`; an
   explicit design-refinement request clears approval and returns the story to
   `phase:story:design`; an ambiguous response leaves the gate closed.
-- Before Story approval, Prism shows complete Acceptance criteria → Design
-  summary → Task summary → Approval request. Epic approval shows complete
-  Acceptance criteria → Architecture summary → Story roadmap → Approval request.
+- Before full host Story approval, Prism shows Design summary → Task summary →
+  Approval request. Full host Epic approval shows Architecture summary → Story
+  roadmap → Approval request. Acceptance remains an internal gate input and is
+  shown only when the operator explicitly requests the current item's criteria.
 - Epic approval covers only the Epic architecture and roadmap. Every Story
   retains its own implementation approval.
 - In the `prism-callee` workflow, a no-tools classifier interprets the

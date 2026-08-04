@@ -73,9 +73,9 @@ approval-format acceptance block.
 This boundary applies only to user-facing Markdown output. It does not prohibit
 internal or machine-readable acceptance artifacts such as requirements
 documents, the Beads acceptance field, or `ACCEPTANCE_CRITERIA:` sections in a
-normal phase result. The informed Human approval request remains the exception
-and MUST present the complete current-Story acceptance first. An explicit
-operator request for acceptance criteria is also allowed.
+normal phase result. This prohibition includes the Story Human pre-approve
+request. Only an explicit operator request for acceptance criteria allows the
+complete, untruncated acceptance of the current Story to be shown.
 
 ## Prerequisites
 

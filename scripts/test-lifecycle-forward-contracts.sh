@@ -172,11 +172,11 @@ assert graph["separable_mega_item_fails"] is True
 print("PASS: qualitative graph fixtures accept 1 and 13 complete children and reject incomplete or mega children")
 
 approval = ownership["approval"]
-assert approval["story_order"][0] == "Acceptance criteria"
-assert approval["epic_order"][0] == "Acceptance criteria"
-assert approval["acceptance_scope"] == "complete-untruncated-current-item-only"
+assert approval["host_story_order"] == ["Design summary", "Task summary", "Approval request"]
+assert approval["host_epic_order"] == ["Architecture summary", "Story roadmap", "Approval request"]
+assert approval["host_acceptance_output"] == "explicit-request-only-complete-untruncated-current-item-only"
 assert approval["epic_approval_cascades_to_stories"] is False
-print("PASS: approval fixtures are acceptance-first, complete, current-item-only, and non-cascading")
+print("PASS: host approval fixtures are request-only, current-item-scoped, and non-cascading")
 
 router = (root / "plugins/prism/skills/lifecycle/SKILL.md").read_text()
 for marker in [

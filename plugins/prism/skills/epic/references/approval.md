@@ -13,14 +13,16 @@ approval on every return.
 
 Present exactly, in this order:
 
-1. `### Acceptance criteria` — the complete, untruncated acceptance criteria of
-   this Epic only.
-2. `### Architecture summary` — objective, approach, affected systems,
+1. `### Architecture summary` — objective, approach, affected systems,
    interfaces, risks, tradeoffs, and open questions.
-3. `### Story roadmap` — every Story ID/title/state, dependencies, blockers,
+2. `### Story roadmap` — every Story ID/title/state, dependencies, blockers,
    critical path, and delivery order.
-4. `### Approval request` — explain that approval covers this Epic architecture
+3. `### Approval request` — explain that approval covers this Epic architecture
    and roadmap only; every Story still requires its own implementation approval.
+
+Do not include the Epic acceptance in this approval prompt without an explicit
+operator request. The acceptance remains an internal readiness input and MUST
+NOT be skipped or weakened.
 
 Classify the latest human response as `APPROVE`, `REFINE_ARCHITECTURE`, or
 `WITHHOLD`. Approval requires unambiguous authorization.
