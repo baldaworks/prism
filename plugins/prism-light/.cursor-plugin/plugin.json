@@ -1,7 +1,7 @@
 {
   "name": "prism-light",
   "displayName": "Prism Light",
-  "version": "0.5.0+codex.20260731000000",
+  "version": "0.6.0+codex.20260804000000",
   "description": "Run the concise Prism Light story lifecycle directly in the host.",
   "author": {"name": "Alexey Samoylov", "url": "https://github.com/baldaworks"},
   "homepage": "https://github.com/baldaworks/prism",

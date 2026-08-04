@@ -1,6 +1,6 @@
 {
   "name": "prism",
-  "version": "0.5.0+codex.20260731000000",
+  "version": "0.6.0+codex.20260804000000",
   "description": "Route Prism work across full Story and Epic lifecycles directly in the host.",
   "author": {
     "name": "Alexey Samoylov",

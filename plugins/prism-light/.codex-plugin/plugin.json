@@ -1,6 +1,6 @@
 {
   "name": "prism-light",
-  "version": "0.5.0+codex.20260804061729",
+  "version": "0.6.0+codex.20260804000000",
   "description": "Run the concise Prism Light story lifecycle directly in the host.",
   "author": {
     "name": "Alexey Samoylov",

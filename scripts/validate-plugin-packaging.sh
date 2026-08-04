@@ -10,11 +10,11 @@ import pathlib
 import sys
 
 root = pathlib.Path(sys.argv[1])
-expected_release_version = "0.5.0+codex.20260731000000"
+expected_release_version = "0.6.0+codex.20260804000000"
 expected_codex_versions = {
-    "prism": "0.5.0+codex.20260804061729",
-    "prism-callee": "0.5.0+codex.20260804095926",
-    "prism-light": "0.5.0+codex.20260804061729",
+    "prism": "0.6.0+codex.20260804000000",
+    "prism-callee": "0.6.0+codex.20260804000000",
+    "prism-light": "0.6.0+codex.20260804000000",
 }
 
 namespaced_plugin_checks = [

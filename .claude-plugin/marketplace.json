@@ -5,13 +5,13 @@
   },
   "metadata": {
     "description": "Prism host, Prism Callee, and Prism Light lifecycle plugins for Claude Code.",
-    "version": "0.5.0+codex.20260731000000"
+    "version": "0.6.0+codex.20260804000000"
   },
   "plugins": [
     {
       "name": "prism",
       "description": "Route Prism work across full Story and Epic lifecycles directly in the host.",
-      "version": "0.5.0+codex.20260731000000",
+      "version": "0.6.0+codex.20260804000000",
       "author": {
         "name": "Alexey Samoylov"
       },
@@ -20,7 +20,7 @@
     {
       "name": "prism-callee",
       "description": "Run the Prism Story and Epic lifecycles as workflows of specialized Callee subagents.",
-      "version": "0.5.0+codex.20260731000000",
+      "version": "0.6.0+codex.20260804000000",
       "author": {
         "name": "Alexey Samoylov"
       },
@@ -29,7 +29,7 @@
     {
       "name": "prism-light",
       "description": "Run the concise Prism Light story lifecycle directly in the host.",
-      "version": "0.5.0+codex.20260731000000",
+      "version": "0.6.0+codex.20260804000000",
       "author": {
         "name": "Alexey Samoylov"
       },

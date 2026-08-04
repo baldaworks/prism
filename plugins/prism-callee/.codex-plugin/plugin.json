@@ -1,6 +1,6 @@
 {
   "name": "prism-callee",
-  "version": "0.5.0+codex.20260804095926",
+  "version": "0.6.0+codex.20260804000000",
   "description": "Run the Prism Story and Epic lifecycles as workflows of specialized Callee subagents.",
   "author": {
     "name": "Alexey Samoylov",
