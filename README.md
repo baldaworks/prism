@@ -43,12 +43,21 @@ Human, Sequential, Loop, and Router agents own phase-specific work.
 | --- | --- | --- |
 | `$prism-callee:lifecycle` | `/prism-callee:lifecycle` | `/prism-callee-lifecycle` |
 
-The same workflow can be called directly through the binary:
+The same workflow can be called directly through the binary when the caller
+builds the required route envelope:
 
 ```sh
-callee agent run prism/lifecycle \
-  --message "Add CSV export to the report page."
+envelope='ROUTE=story
+ITEM_ID=prism-...
+ITEM_TYPE=story
+ORIGINAL_REQUEST:
+Add CSV export to the report page.
+BEADS_CONTEXT:
+...'
+callee agent run prism/lifecycle --message "$envelope"
 ```
+
+Normal plugin execution builds this envelope before calling Callee.
 
 ### 3. Prism Light
 
@@ -136,7 +145,7 @@ All three plugins require:
 
 Prism Callee additionally requires:
 
-- `callee` `0.18.0+`
+- `callee` `0.19.0` or a compatible Router-capable release
 - the `prism/*` agent pack
 
 ## Installation
@@ -254,7 +263,7 @@ For repeatable PTY-backed Callee Human smoke tests:
 
 ## Maintainer docs
 
-- [`docs/architecture-spec.md`](docs/architecture-spec.md) — three-plugin boundary
+- [`docs/architecture-spec.md`](docs/architecture-spec.md) — repository architecture specification
 - [`docs/architecture-host-lifecycle.md`](docs/architecture-host-lifecycle.md) — primary host router
 - [`docs/architecture-story-lifecycle.md`](docs/architecture-story-lifecycle.md) — full Story behavior
 - [`docs/architecture-epic-lifecycle.md`](docs/architecture-epic-lifecycle.md) — Epic behavior
