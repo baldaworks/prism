@@ -23,7 +23,7 @@ The host owns Beads resolution, durable labels, approval authority, Epic batch
 coordination, and persistence after every Callee return. The Callee Router owns
 only deterministic selection between the declared Story and Epic graphs.
 
-## Public Callee surface
+## Imported Callee runtime surface
 
 | Agent ID | Role |
 | --- | --- |
@@ -41,7 +41,7 @@ default agent catalog:
     callee agent view prism/story --json
     callee agent view prism/epic --json
 
-Require all three public roots. Require the lifecycle view to report kind
+Require all three imported roots. Require the lifecycle view to report kind
 `Router` with declared `story` and `epic` branches. A missing root or a
 Story-only `Sequential` lifecycle is a stale catalog. Stop before execution and
 tell the operator to refresh it:
@@ -126,6 +126,11 @@ prism,phase:epic:frame. Replace labels rather than inheriting a parent phase.
 Never use an assignee as phase state.
 
 ## Route envelope
+
+Accept the operator's invocation as ordinary free-form text. Resolve the target
+and Beads state from that request, then construct the envelope internally. Do
+not ask the operator to provide `ROUTE`, `ITEM_ID`, `ITEM_TYPE`, or
+`BEADS_CONTEXT`, and do not present the runner command as the normal user UX.
 
 The host constructs one complete envelope before invoking the Router:
 

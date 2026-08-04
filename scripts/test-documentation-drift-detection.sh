@@ -28,6 +28,26 @@ fi
 rg -Fq 'FAIL: README documents the Callee 0.19.0 baseline' "$temp_root/stale-version.log"
 printf 'PASS: validator rejects a stale Callee baseline\n'
 
+missing_freeform="$temp_root/missing-freeform"
+cp -a "$baseline" "$missing_freeform"
+sed -i 's/$prism-callee:lifecycle Add CSV export to the report page\./$prism-callee:lifecycle/' "$missing_freeform/README.md"
+if "$missing_freeform/scripts/validate-documentation.sh" "$missing_freeform" >"$temp_root/missing-freeform.log" 2>&1; then
+  printf 'missing free-form Callee example unexpectedly passed documentation validation\n' >&2
+  exit 1
+fi
+rg -Fq 'FAIL: README shows a free-form request for $prism-callee:lifecycle' "$temp_root/missing-freeform.log"
+printf 'PASS: validator rejects a missing free-form Callee example\n'
+
+leaked_protocol="$temp_root/leaked-protocol"
+cp -a "$baseline" "$leaked_protocol"
+sed -i '/$prism-callee:lifecycle Add CSV export to the report page\./a ROUTE=story' "$leaked_protocol/README.md"
+if "$leaked_protocol/scripts/validate-documentation.sh" "$leaked_protocol" >"$temp_root/leaked-protocol.log" 2>&1; then
+  printf 'leaked internal Callee protocol unexpectedly passed documentation validation\n' >&2
+  exit 1
+fi
+rg -Fq 'FAIL: README hides internal Callee protocol: ROUTE=story' "$temp_root/leaked-protocol.log"
+printf 'PASS: validator rejects internal Callee protocol in README\n'
+
 horizontal_diagram="$temp_root/horizontal-diagram"
 cp -a "$baseline" "$horizontal_diagram"
 sed -i '0,/flowchart TB/s//flowchart LR/' "$horizontal_diagram/docs/architecture-light-lifecycle.md"
@@ -47,6 +67,16 @@ if "$stale_catalog/scripts/validate-documentation.sh" "$stale_catalog" >"$temp_r
 fi
 rg -Fq 'FAIL: docs/architecture-callee-lifecycle.md contains the executable Callee force-import command' "$temp_root/stale-catalog.log"
 printf 'PASS: validator rejects a missing Callee refresh path\n'
+
+public_runner="$temp_root/public-runner"
+cp -a "$baseline" "$public_runner"
+sed -i 's/## Internal runner ABI/## Direct execution/' "$public_runner/docs/architecture-callee-lifecycle.md"
+if "$public_runner/scripts/validate-documentation.sh" "$public_runner" >"$temp_root/public-runner.log" 2>&1; then
+  printf 'publicly labelled internal runner unexpectedly passed documentation validation\n' >&2
+  exit 1
+fi
+rg -Fq 'FAIL: Callee architecture marks the runner boundary: ## Internal runner ABI' "$temp_root/public-runner.log"
+printf 'PASS: validator rejects a public label for the internal runner\n'
 
 broken_link="$temp_root/broken-link"
 cp -a "$baseline" "$broken_link"

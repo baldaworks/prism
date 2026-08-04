@@ -85,7 +85,7 @@ def normalized_contract(text: str) -> str:
 mapping_path = root / "docs/lifecycle-ownership.json"
 record(mapping_path.is_file(), "lifecycle ownership mapping exists")
 mapping = load_json(mapping_path)
-record(mapping.get("version") == 19, "ownership schema version is 19")
+record(mapping.get("version") == 20, "ownership schema version is 20")
 
 expected_interfaces = {
     "router": {"codex": "$prism:lifecycle", "claude": "/prism:lifecycle", "flat": "/prism-lifecycle"},
@@ -101,7 +101,6 @@ expected_interfaces = {
         "claude": "/prism-callee:lifecycle",
         "flat": "/prism-callee-lifecycle",
     },
-    "direct_callee": 'callee agent run prism/lifecycle --message "$envelope"',
 }
 record(mapping.get("interfaces") == expected_interfaces, "ownership schema declares every public interface")
 
@@ -221,6 +220,14 @@ for surface, (canonical_name, flat_name, frontmatter_name, flat_frontmatter_name
         record(expected == flat_path.read_text(), f"{surface} mirror matches: {relative}")
 
 direct_callee = ownership.get("direct_callee", {})
+record(
+    direct_callee.get("runner") == 'callee agent run prism/lifecycle --message "$envelope"',
+    "direct Callee runner is an internal ownership contract",
+)
+record(
+    direct_callee.get("input_contract") == "internal-host-built-route-envelope",
+    "direct Callee input is classified as an internal host-built envelope",
+)
 record(direct_callee.get("graphs") == ["story", "epic"], "direct Callee exposes Story and Epic graphs")
 record(direct_callee.get("router") is True, "direct Callee exposes an Epic Router")
 record(
@@ -429,10 +436,13 @@ for marker in [
     "[Breakdown normalization contract](references/breakdown.md)",
     "Do not load it for normal lifecycle execution",
     "Read when a Story reaches Breakdown or when reconciling its task graph",
-    "Require all three public roots",
+    "Require all three imported roots",
     "Story-only `Sequential` lifecycle is a stale catalog",
     "callee agent import baldaworks/prism --path pack/callee/prism --prefix prism --force",
     "Do not bypass a stale catalog by invoking a direct graph",
+    "Accept the operator's invocation as ordinary free-form text",
+    "Do not ask the operator to provide `ROUTE`, `ITEM_ID`, `ITEM_TYPE`, or `BEADS_CONTEXT`",
+    "do not present the runner command as the normal user UX",
 ]:
     record(marker in callee_skill_text, f"{callee_skill.relative_to(root)} reference contract contains: {marker}")
 record(

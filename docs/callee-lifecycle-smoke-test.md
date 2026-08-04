@@ -9,7 +9,7 @@ changing Prism entrypoints or lifecycle semantics.
 Use this page when you need a repeatable local check for the automated Human
 path in the Prism Callee lifecycle.
 
-The public Callee workflow entrypoints are:
+The pack-level test entrypoints are:
 
 - `prism/lifecycle`
 - `prism/story`
@@ -38,8 +38,9 @@ callee agent import baldaworks/prism \
 
 `prism/lifecycle` requires a host-built envelope whose first line is
 exactly `ROUTE=story` or `ROUTE=epic`. Direct graph runs are useful
-for maintainer inspection; host-managed Beads advancement and explicit batch
-coordination always go through the Router.
+only for maintainer inspection. They are not the public free-form plugin UX and
+do not replace host-managed Beads resolution, persistence, or batch
+coordination.
 
 Internal IDs such as `prism/specify/questions` and `prism/specify/loop` appear
 here only as maintainer-facing implementation detail for the smoke tests.

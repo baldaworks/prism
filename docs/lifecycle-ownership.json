@@ -1,5 +1,5 @@
 {
-  "version": 19,
+  "version": 20,
   "interfaces": {
     "router": {
       "codex": "$prism:lifecycle",
@@ -25,8 +25,7 @@
       "codex": "$prism-callee:lifecycle",
       "claude": "/prism-callee:lifecycle",
       "flat": "/prism-callee-lifecycle"
-    },
-    "direct_callee": "callee agent run prism/lifecycle --message \"$envelope\""
+    }
   },
   "beads": {
     "membership_label": "prism",
@@ -167,6 +166,8 @@
     },
     "direct_callee": {
       "root": "pack/callee/prism",
+      "runner": "callee agent run prism/lifecycle --message \"$envelope\"",
+      "input_contract": "internal-host-built-route-envelope",
       "graphs": [
         "story",
         "epic"
@@ -189,11 +190,11 @@
     "aggregate_algorithm": "sha256 over sorted source path UTF-8, NUL, file bytes, NUL",
     "host_sources": {
       "mutation_policy": "digest-locked",
-      "aggregate_sha256": "9e47226dcdefef4c5f7b91f8e50ea6abea0acbd1720c87ad675f1c7c2c581652",
+      "aggregate_sha256": "d705203cfbc1d18db33b87b3c4d1c991124b4ecc3844c0abb18466a9f37e0452",
       "sources": [
-        {"path": "plugins/prism-callee/skills/lifecycle/SKILL.md", "sha256": "c5b28258a63056251a71bc121770e231dccb75386a839aedf241ceafe1d62892"},
+        {"path": "plugins/prism-callee/skills/lifecycle/SKILL.md", "sha256": "c4306b8fe3cd01b46bc24ac0b5e187ea8970822a71ca0bf94e73b465332a90d0"},
         {"path": "plugins/prism-callee/skills/lifecycle/references/breakdown.md", "sha256": "002023fa3df1ae6ac1f6e2ab43e53b464e2703923ff86708f4429eed48683c27"},
-        {"path": "plugins/prism-callee/skills/lifecycle/references/promptkit.md", "sha256": "6612b7cfb2db0ed7ff1dee2f296b179be056ec57ebafaff4ea2c188461dd6ba4"},
+        {"path": "plugins/prism-callee/skills/lifecycle/references/promptkit.md", "sha256": "b5b38a305c9c762de8d4416600acf48bbf7d55cf7f48129c3a66710fea626cd2"},
         {"path": "plugins/prism-light/skills/lifecycle/SKILL.md", "sha256": "fe6b8c5c5885498073f1fb82150d277004748a1240805487bda3d63325750844"},
         {"path": "plugins/prism-light/skills/lifecycle/references/apply.md", "sha256": "d4f6d99dfcdda07c10525d9279883b1e391a19108423e677b0b4968645799927"},
         {"path": "plugins/prism-light/skills/lifecycle/references/breakdown.md", "sha256": "f03428ae94ef7e49be8fdece3aaa98056614282204b3579dea66a627cd470b34"},

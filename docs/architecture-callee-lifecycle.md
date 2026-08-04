@@ -4,7 +4,19 @@
 `prism/*` Callee pack. The host owns durable state and authorization; Callee
 owns deterministic execution of the selected Story or Epic graph.
 
-## Public surface
+## Public UX and internal runtime
+
+The public user entrypoint accepts an ordinary request:
+
+```text
+$prism-callee:lifecycle Add CSV export to the report page.
+```
+
+The host resolves or creates the Beads item, loads its durable context, and
+constructs the internal Callee message. The operator never supplies a route
+envelope.
+
+The imported pack exposes these internal runtime roots:
 
 | Agent | Required kind | Responsibility |
 | --- | --- | --- |
@@ -88,7 +100,11 @@ running a direct graph or adding `--agent-root pack/callee` to normal runtime.
 `--agent-root pack/callee` is reserved for validating the checked-in pack while
 maintaining this repository.
 
-## Direct execution
+## Internal runner ABI
+
+The command below is a maintainer/debug surface for an already resolved item.
+It is not the public Prism Callee UX: it does not create or resolve the item,
+own lifecycle persistence, or replace the host wrapper.
 
 ```sh
 envelope='ROUTE=story

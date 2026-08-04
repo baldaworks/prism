@@ -138,7 +138,9 @@ See [Epic Lifecycle](architecture-epic-lifecycle.md).
 
 The host wrapper owns target resolution, Beads reads and writes, approval
 authority, batch coordination, and persistence. The imported Callee Router
-selects one declared graph from a host-built envelope:
+selects one declared graph from a host-built internal envelope. The public
+plugin entrypoint accepts an ordinary request; operators do not construct the
+envelope:
 
 ```mermaid
 flowchart TB

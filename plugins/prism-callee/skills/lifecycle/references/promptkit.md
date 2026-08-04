@@ -243,7 +243,7 @@ parameters.
 
 ## Workflow map
 
-### Public Callee surface
+### Imported Callee runtime surface
 
 | Agent ID | Kind | Semantic role |
 | --- | --- | --- |

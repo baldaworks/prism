@@ -74,6 +74,22 @@ for retired in ["@baldaworks/callee@0.18.0", "plugins/prism/skills/light", "$pri
     record(retired not in combined_docs, f"documentation excludes retired marker {retired}")
 record("`callee` `0.19.0`" in readme, "README documents the Callee 0.19.0 baseline")
 
+freeform_request = "Add CSV export to the report page."
+for entrypoint in ["$prism:lifecycle", "$prism-callee:lifecycle", "$prism-light:lifecycle"]:
+    record(
+        f"{entrypoint} {freeform_request}" in readme,
+        f"README shows a free-form request for {entrypoint}",
+    )
+
+for internal_marker in [
+    "ROUTE=story",
+    "ITEM_ID=",
+    "ITEM_TYPE=",
+    "BEADS_CONTEXT:",
+    "callee agent run prism/lifecycle",
+]:
+    record(internal_marker not in readme, f"README hides internal Callee protocol: {internal_marker}")
+
 for relative in ["README.md", "docs/architecture-callee-lifecycle.md", "docs/callee-lifecycle-smoke-test.md"]:
     text = documents[relative]
     for marker in [
@@ -92,6 +108,16 @@ for relative in ["README.md", "docs/architecture-callee-lifecycle.md", "docs/cal
 
 for marker in ["kind `Router`", "stale", "Sequential"]:
     record(marker in callee_doc, f"Callee architecture documents catalog invariant: {marker}")
+for marker in [
+    "## Public UX and internal runtime",
+    "## Internal runner ABI",
+    "not the public Prism Callee UX",
+]:
+    record(marker in callee_doc, f"Callee architecture marks the runner boundary: {marker}")
+
+smoke_doc = documents["docs/callee-lifecycle-smoke-test.md"]
+for marker in ["pack-level test entrypoints", "not the public free-form plugin UX"]:
+    record(marker in smoke_doc, f"Callee smoke test keeps pack internals maintainer-only: {marker}")
 
 pack_lifecycle = read("pack/callee/prism/lifecycle.md")
 record("kind: Router" in pack_lifecycle, "checked-in prism/lifecycle is a Router")

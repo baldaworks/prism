@@ -43,23 +43,16 @@ Human, Sequential, Loop, and Router agents own phase-specific work.
 | --- | --- | --- |
 | `$prism-callee:lifecycle` | `/prism-callee:lifecycle` | `/prism-callee-lifecycle` |
 
-The same workflow can be called directly through the binary when the caller
-builds the required route envelope:
+Invoke the plugin with an ordinary request:
 
-```sh
-envelope='ROUTE=story
-ITEM_ID=prism-...
-ITEM_TYPE=story
-ORIGINAL_REQUEST:
-Add CSV export to the report page.
-BEADS_CONTEXT:
-...'
-callee agent run prism/lifecycle --message "$envelope"
+```text
+$prism-callee:lifecycle Add CSV export to the report page.
 ```
 
-Normal plugin execution builds this envelope before calling Callee.
+The host resolves Beads state and builds the internal route envelope before
+calling Callee; users do not construct that protocol manually.
 Before execution, the default Callee catalog must contain `prism/lifecycle` as
-a Router plus the `prism/story` and `prism/epic` public roots.
+a Router plus the `prism/story` and `prism/epic` imported roots.
 
 ### 3. Prism Light
 
@@ -153,15 +146,15 @@ Every Apply transition still requires explicit human authorization.
 
 ## Quick start
 
-Install the primary host plugin, then run:
+Each public plugin accepts an ordinary request:
 
 ```text
 $prism:lifecycle Add CSV export to the report page.
+$prism-callee:lifecycle Add CSV export to the report page.
+$prism-light:lifecycle Add CSV export to the report page.
 ```
 
-Use `$prism-light:lifecycle` for the concise workflow or
-`$prism-callee:lifecycle` for specialized Callee execution after installing the
-corresponding plugin.
+Run only the entrypoint for the workflow you installed and want to use.
 
 ## Requirements
 
