@@ -11,7 +11,11 @@ import sys
 
 root = pathlib.Path(sys.argv[1])
 expected_release_version = "0.5.0+codex.20260731000000"
-expected_codex_version = "0.5.0+codex.20260804040811"
+expected_codex_versions = {
+    "prism": "0.5.0+codex.20260804053615",
+    "prism-callee": "0.5.0+codex.20260804040811",
+    "prism-light": "0.5.0+codex.20260804053615",
+}
 
 namespaced_plugin_checks = [
     {
@@ -23,6 +27,11 @@ namespaced_plugin_checks = [
         "plugin": "prism-callee",
         "root": root / "plugins/prism-callee",
         "expected_name": "prism-callee",
+    },
+    {
+        "plugin": "prism-light",
+        "root": root / "plugins/prism-light",
+        "expected_name": "prism-light",
     },
 ]
 
@@ -44,6 +53,14 @@ flat_plugin_checks = [
         "allowed_extra_fields": {"displayName"},
     },
     {
+        "plugin": "prism-light",
+        "host": "cursor",
+        "manifest": root / "plugins/prism-light/.cursor-plugin/plugin.json",
+        "expected_name": "prism-light",
+        "expected_skills": "./prefixed-skills/",
+        "allowed_extra_fields": {"displayName"},
+    },
+    {
         "plugin": "prism",
         "host": "grok",
         "manifest": root / "plugins/prism/.grok-plugin/plugin.json",
@@ -60,6 +77,14 @@ flat_plugin_checks = [
         "allowed_extra_fields": set(),
     },
     {
+        "plugin": "prism-light",
+        "host": "grok",
+        "manifest": root / "plugins/prism-light/.grok-plugin/plugin.json",
+        "expected_name": "prism-light",
+        "expected_skills": "./prefixed-skills/",
+        "allowed_extra_fields": set(),
+    },
+    {
         "plugin": "prism",
         "host": "generic",
         "manifest": root / "plugins/prism/.plugin/plugin.json",
@@ -72,6 +97,14 @@ flat_plugin_checks = [
         "host": "generic",
         "manifest": root / "plugins/prism-callee/.plugin/plugin.json",
         "expected_name": "prism-callee",
+        "expected_skills": "./prefixed-skills/",
+        "allowed_extra_fields": set(),
+    },
+    {
+        "plugin": "prism-light",
+        "host": "generic",
+        "manifest": root / "plugins/prism-light/.plugin/plugin.json",
+        "expected_name": "prism-light",
         "expected_skills": "./prefixed-skills/",
         "allowed_extra_fields": set(),
     },
@@ -114,23 +147,31 @@ allowed_host_specific_fields = {
 
 expected_default_prompts = {
     "prism": {
-        "codex": "Use $prism:lifecycle to route Story or Epic work, including explicit batches of all open Prism epics; use $prism:story, $prism:epic, or $prism:light for direct workflows.",
-        "claude": "Use /prism:lifecycle to route Story or Epic work, including explicit batches of all open Prism epics; use /prism:story, /prism:epic, or /prism:light for direct workflows.",
+        "codex": "Use $prism:lifecycle to route Story or Epic work, including explicit batches of all open Prism epics; use $prism:story or $prism:epic for direct workflows.",
+        "claude": "Use /prism:lifecycle to route Story or Epic work, including explicit batches of all open Prism epics; use /prism:story or /prism:epic for direct workflows.",
     },
     "prism-callee": {
         "codex": "Use $prism-callee:lifecycle to run a Prism Story or Epic through specialized prism/* subagents and the explicit Callee approval gate.",
         "claude": "Use /prism-callee:lifecycle to run a Prism Story or Epic through specialized prism/* subagents and the explicit Callee approval gate.",
     },
+    "prism-light": {
+        "codex": "Use $prism-light:lifecycle to run the concise Prism story lifecycle.",
+        "claude": "Use /prism-light:lifecycle to run the concise Prism story lifecycle.",
+    },
 }
 
 expected_skill_inventory = {
     "prism": {
-        "namespaced": ["epic", "lifecycle", "light", "story"],
-        "flat": ["prism-epic", "prism-lifecycle", "prism-light", "prism-story"],
+        "namespaced": ["epic", "lifecycle", "story"],
+        "flat": ["prism-epic", "prism-lifecycle", "prism-story"],
     },
     "prism-callee": {
         "namespaced": ["lifecycle"],
         "flat": ["prism-callee-lifecycle"],
+    },
+    "prism-light": {
+        "namespaced": ["lifecycle"],
+        "flat": ["prism-light"],
     },
 }
 
@@ -207,7 +248,7 @@ def validate_manifest_common(
     plugin_root: pathlib.Path,
 ) -> None:
     expected_version = (
-        expected_codex_version
+        expected_codex_versions[expected_name]
         if ".codex-plugin" in manifest_path.parts
         else expected_release_version
     )
@@ -363,6 +404,10 @@ if claude_marketplace_path.is_file():
     claude_marketplace = load_json(claude_marketplace_path)
     if claude_marketplace is not None:
         plugins = claude_marketplace.get("plugins", [])
+        record(
+            [item.get("name") for item in plugins] == ["prism", "prism-callee", "prism-light"],
+            ".claude-plugin/marketplace.json preserves Prism plugin priority order",
+        )
         for check in namespaced_plugin_checks:
             expected_name = check["expected_name"]
             expected_source = f"./{check['root'].relative_to(root)}"
@@ -405,7 +450,12 @@ if agents_marketplace_path.is_file():
         expected_sources = {
             "prism": "./plugins/prism",
             "prism-callee": "./plugins/prism-callee",
+            "prism-light": "./plugins/prism-light",
         }
+        record(
+            [item.get("name") for item in plugins] == list(expected_sources),
+            ".agents/plugins/marketplace.json preserves Prism plugin priority order",
+        )
         for expected_name, expected_source in expected_sources.items():
             match = next((item for item in plugins if item.get("name") == expected_name), None)
             record(
@@ -423,6 +473,14 @@ if agents_marketplace_path.is_file():
                 match.get("category") == "Developer Tools",
                 f".agents/plugins/marketplace.json gives {expected_name} category Developer Tools",
             )
+            record(
+                match.get("source", {}).get("source") == "local",
+                f".agents/plugins/marketplace.json keeps {expected_name} as a local source",
+            )
+            record(
+                match.get("policy") == {"installation": "AVAILABLE", "authentication": "ON_INSTALL"},
+                f".agents/plugins/marketplace.json gives {expected_name} the expected policy",
+            )
 
 cursor_marketplace_path = root / ".cursor-plugin/marketplace.json"
 record(cursor_marketplace_path.is_file(), ".cursor-plugin/marketplace.json exists")
@@ -432,12 +490,18 @@ if cursor_marketplace_path.is_file():
     prism_cursor_manifest = load_json(root / "plugins/prism/.cursor-plugin/plugin.json")
     if cursor_marketplace is not None and prism_cursor_manifest is not None:
         record(
+            [item.get("name") for item in cursor_marketplace.get("plugins", [])]
+            == ["prism", "prism-callee", "prism-light"],
+            ".cursor-plugin/marketplace.json preserves Prism plugin priority order",
+        )
+        record(
             cursor_marketplace.get("metadata", {}).get("version") == prism_cursor_manifest.get("version"),
             ".cursor-plugin/marketplace.json metadata version matches the Cursor manifest",
         )
         for expected_name, plugin_root in [
             ("prism", root / "plugins/prism"),
             ("prism-callee", root / "plugins/prism-callee"),
+            ("prism-light", root / "plugins/prism-light"),
         ]:
             cursor_manifest = load_json(plugin_root / ".cursor-plugin/plugin.json")
             if cursor_manifest is None:
@@ -469,9 +533,15 @@ record(grok_marketplace_path.is_file(), ".grok-plugin/marketplace.json exists")
 if grok_marketplace_path.is_file():
     grok_marketplace = load_json(grok_marketplace_path)
     if grok_marketplace is not None:
+        record(
+            [item.get("name") for item in grok_marketplace.get("plugins", [])]
+            == ["prism", "prism-callee", "prism-light"],
+            ".grok-plugin/marketplace.json preserves Prism plugin priority order",
+        )
         for expected_name, plugin_root in [
             ("prism", root / "plugins/prism"),
             ("prism-callee", root / "plugins/prism-callee"),
+            ("prism-light", root / "plugins/prism-light"),
         ]:
             grok_manifest = load_json(plugin_root / ".grok-plugin/plugin.json")
             if grok_manifest is None:
@@ -515,9 +585,15 @@ record(github_marketplace_path.is_file(), ".github/plugin/marketplace.json exist
 if github_marketplace_path.is_file():
     github_marketplace = load_json(github_marketplace_path)
     if github_marketplace is not None:
+        record(
+            [item.get("name") for item in github_marketplace.get("plugins", [])]
+            == ["prism", "prism-callee", "prism-light"],
+            ".github/plugin/marketplace.json preserves Prism plugin priority order",
+        )
         for expected_name, plugin_root in [
             ("prism", root / "plugins/prism"),
             ("prism-callee", root / "plugins/prism-callee"),
+            ("prism-light", root / "plugins/prism-light"),
         ]:
             generic_manifest = load_json(plugin_root / ".plugin/plugin.json")
             if generic_manifest is None:
@@ -543,6 +619,51 @@ if github_marketplace_path.is_file():
                         match.get(field) == generic_manifest.get(field),
                         f".github/plugin/marketplace.json {field} for {expected_name} matches the generic manifest",
                     )
+
+claude_settings_path = root / ".claude/settings.local.json"
+record(claude_settings_path.is_file(), ".claude/settings.local.json exists")
+if claude_settings_path.is_file():
+    claude_settings = load_json(claude_settings_path)
+    if claude_settings is not None:
+        record(
+            claude_settings.get("enabledPlugins")
+            == {
+                "prism@prism": True,
+                "prism-callee@prism": True,
+                "prism-light@prism": True,
+            },
+            ".claude/settings.local.json enables all three Prism plugins",
+        )
+
+record(not (root / "plugins/prism/skills/light").exists(), "prism no longer owns the canonical Light skill")
+record(
+    not (root / "plugins/prism/prefixed-skills/prism-light").exists(),
+    "prism no longer owns the flat Light skill",
+)
+active_roots = [
+    root / "plugins",
+    root / ".agents/plugins/marketplace.json",
+    root / ".claude-plugin/marketplace.json",
+    root / ".cursor-plugin/marketplace.json",
+    root / ".grok-plugin/marketplace.json",
+    root / ".github/plugin/marketplace.json",
+]
+obsolete_markers = ["$prism:light", "/prism:light", "$prism-light:light", "/prism-light:light"]
+obsolete_offenders = []
+for scan_root in active_roots:
+    paths = scan_root.rglob("*") if scan_root.is_dir() else [scan_root]
+    for path in paths:
+        if path.is_file() and path.suffix in {".md", ".yaml", ".yml", ".json"}:
+            text = path.read_text()
+            for marker in obsolete_markers:
+                if marker in text:
+                    obsolete_offenders.append(f"{path.relative_to(root)}:{marker}")
+record(
+    not obsolete_offenders,
+    "active plugin surfaces contain no obsolete Light namespace" + (
+        f": {obsolete_offenders}" if obsolete_offenders else ""
+    ),
+)
 
 if errors:
     print(f"\nValidation failed with {len(errors)} error(s).")

@@ -1,7 +1,7 @@
 {
   "name": "prism",
   "version": "0.5.0+codex.20260731000000",
-  "description": "Route Prism work across full Story and Epic lifecycles or run concise Light directly in the host.",
+  "description": "Route Prism work across full Story and Epic lifecycles directly in the host.",
   "author": {
     "name": "Alexey Samoylov",
     "url": "https://github.com/baldaworks"
@@ -19,14 +19,14 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "Prism",
-    "shortDescription": "Story, Epic, and Light Beads-backed lifecycles.",
-    "longDescription": "Routes work to full Story or Epic lifecycles, supports explicit batches of open Prism epics, and preserves Prism Light for concise Story execution.",
+    "shortDescription": "Full host-native Story and Epic lifecycles.",
+    "longDescription": "Routes work to full Story or Epic lifecycles and supports explicit batches of open Prism epics.",
     "developerName": "Alexey Samoylov",
     "category": "Developer Tools",
     "capabilities": [
       "Local filesystem",
       "CLI orchestration"
     ],
-    "defaultPrompt": "Use /prism:lifecycle to route Story or Epic work, including explicit batches of all open Prism epics; use /prism:story, /prism:epic, or /prism:light for direct workflows."
+    "defaultPrompt": "Use /prism:lifecycle to route Story or Epic work, including explicit batches of all open Prism epics; use /prism:story or /prism:epic for direct workflows."
   }
 }

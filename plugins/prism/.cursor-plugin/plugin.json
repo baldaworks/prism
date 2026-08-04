@@ -2,7 +2,7 @@
   "name": "prism",
   "displayName": "Prism",
   "version": "0.5.0+codex.20260731000000",
-  "description": "Route Prism work across full Story and Epic lifecycles or run concise Light directly in the host.",
+  "description": "Route Prism work across full Story and Epic lifecycles directly in the host.",
   "author": {
     "name": "Alexey Samoylov",
     "url": "https://github.com/baldaworks"

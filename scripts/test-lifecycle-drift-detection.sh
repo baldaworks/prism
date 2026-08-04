@@ -22,6 +22,8 @@ directories = [
     "plugins/prism/prefixed-skills",
     "plugins/prism-callee/skills",
     "plugins/prism-callee/prefixed-skills",
+    "plugins/prism-light/skills",
+    "plugins/prism-light/prefixed-skills",
     "pack/callee/prism",
 ]
 files = [
@@ -31,7 +33,7 @@ files = [
 ]
 for relative in directories:
     destination = target / relative
-    shutil.rmtree(destination)
+    shutil.rmtree(destination, ignore_errors=True)
     shutil.copytree(source / relative, destination)
 for relative in files:
     shutil.copy2(source / relative, target / relative)

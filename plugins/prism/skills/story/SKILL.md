@@ -10,8 +10,8 @@ description: >
 # Prism story lifecycle
 
 Run one full role-aligned Prism story lifecycle in the current host. Do not
-invoke Callee. Use `$prism:light`, `/prism:light`, or `/prism-light` only when
-the user explicitly requests the concise workflow.
+invoke Callee. Use `$prism-light:lifecycle`, `/prism-light:lifecycle`, or
+`/prism-light` only when the user explicitly requests the concise workflow.
 
 | Layer | Owns |
 | --- | --- |

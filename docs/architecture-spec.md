@@ -1,49 +1,64 @@
-# Prism Architecture Boundary
+# Prism Three-Plugin Architecture
 
-Prism exposes distinct interfaces over shared durable work:
+Prism exposes three independent plugins over shared durable Beads state. Their
+catalog and documentation order is part of the product boundary:
 
-| Interface | Scope | Runtime |
-| --- | --- | --- |
-| `prism:lifecycle` | Story/Epic routing and explicit open-Epic batches | Host + Beads |
-| `prism:story` | Full single-Story lifecycle | Host + Beads |
-| `prism:epic` | Multi-Story Epic lifecycle | Host + Beads |
-| `prism:light` | Concise single-Story lifecycle | Host + Beads |
-| `prism-callee:lifecycle` | Callee-backed Story/Epic lifecycle and explicit open-Epic batches | Host + Beads + Callee |
-| `prism/lifecycle` | Direct Callee Router to Story and Epic workflow graphs | Callee |
+| Priority | Plugin | Canonical skills | Runtime |
+| --- | --- | --- | --- |
+| 1 | `prism` | `lifecycle`, `story`, `epic` | Host + Beads |
+| 2 | `prism-callee` | `lifecycle` | Host + Beads + Callee |
+| 3 | `prism-light` | `lifecycle` | Host + Beads |
+
+## Public interfaces
+
+| Plugin | Codex | Claude Code | Flat surface |
+| --- | --- | --- | --- |
+| `prism` | `$prism:lifecycle`, `$prism:story`, `$prism:epic` | `/prism:lifecycle`, `/prism:story`, `/prism:epic` | `/prism-lifecycle`, `/prism-story`, `/prism-epic` |
+| `prism-callee` | `$prism-callee:lifecycle` | `/prism-callee:lifecycle` | `/prism-callee-lifecycle` |
+| `prism-light` | `$prism-light:lifecycle` | `/prism-light:lifecycle` | `/prism-light` |
+
+Direct `callee agent run prism/lifecycle` remains the binary entrypoint to the
+canonical Callee Router and its Story and Epic graphs.
 
 ## Durable model
 
 The supported hierarchy is Epic → Story → Task. Story interfaces use exactly
 one `phase:story:*` label; Epic uses exactly one `phase:epic:*` label.
-Unsupported lifecycle labels are treated as absent, never migrated. A label
+Unsupported lifecycle labels are treated as absent and never migrated. A label
 from the other supported namespace fails closed because it indicates an item
 type or routing conflict.
 
-Story and Epic child graphs are evaluated qualitatively. Coverage, cohesion,
-reviewability, verifiability, and dependency correctness matter; fixed child
-count limits do not.
+Story and Epic child graphs are evaluated by coverage, cohesion, reviewability,
+verifiability, and dependency correctness. They have no fixed child-count
+limits.
 
-Approval is layered. Epic approval covers architecture and roadmap only. Every
-Story still requires its own explicit implementation approval. Approval
-presentations begin with the item's complete, untruncated acceptance criteria.
+Approval is layered. Epic approval covers architecture and roadmap only, and
+every Story still requires explicit implementation approval. The full host
+Story and Epic plugins keep acceptance as an internal readiness input and show
+it only on explicit request. Prism Light preserves its concise approval
+presentation. Normal Prism Callee output suppresses acceptance; its current-item
+approval gates retain the complete acceptance context.
 
 ## Ownership
 
-- `plugins/prism/skills/lifecycle/` owns routing and batch coordination.
+- `plugins/prism/skills/lifecycle/` owns routing and Epic batch coordination.
 - `plugins/prism/skills/story/` owns the full host Story contract.
 - `plugins/prism/skills/epic/` owns the host Epic contract.
-- `plugins/prism/skills/light/` owns the concise Story contract.
-- `plugins/prism-callee/skills/lifecycle/` owns host-to-Callee Story/Epic mapping, approval authority, and explicit batches.
-- `pack/callee/prism/` owns the Router and direct Story/Epic agent behavior.
+- `plugins/prism-callee/skills/lifecycle/` owns host-to-Callee Story/Epic mapping
+  and approval authority.
+- `plugins/prism-light/skills/lifecycle/` owns the concise Story contract.
+- `pack/callee/prism/` owns direct Callee Router, Story, and Epic behavior.
 
-Namespaced and flat skill trees are behavioral mirrors. The ownership manifest
-records each managed host source and every Callee pack Markdown source with
-per-file and aggregate SHA-256 digests. Intentional source changes update those
-digests; unsynchronized drift fails validation.
+Each plugin owns its own manifests and marketplace entry. Namespaced and flat
+skill trees remain behavioral mirrors even where their directory names differ,
+as with `prism-light/skills/lifecycle` and the `/prism-light` flat alias.
+
+The ownership manifest records every managed host Markdown source and every
+Callee pack Markdown source with per-file and aggregate SHA-256 digests.
+Intentional source changes update those digests; unsynchronized drift fails
+validation.
 
 ## Validation
-
-Run:
 
 ```sh
 ./scripts/validate-plugin-packaging.sh
@@ -53,5 +68,5 @@ Run:
 ./scripts/test-callee-lifecycle-forward-contracts.sh
 ```
 
-Also validate canonical skills with the skill-creator validator and Callee pack
-agents with `callee agent validate`.
+Also validate each plugin with `plugin-creator` and each canonical skill with
+the skill validator. Validate Callee pack agents with `callee agent validate`.

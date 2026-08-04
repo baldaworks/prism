@@ -1,6 +1,7 @@
 {
   "enabledPlugins": {
     "prism@prism": true,
-    "prism-callee@prism": true
+    "prism-callee@prism": true,
+    "prism-light@prism": true
   }
 }

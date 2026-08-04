@@ -1,0 +1,31 @@
+{
+  "name": "prism-light",
+  "version": "0.5.0+codex.20260804053615",
+  "description": "Run the concise Prism Light story lifecycle directly in the host.",
+  "author": {
+    "name": "Alexey Samoylov",
+    "url": "https://github.com/baldaworks"
+  },
+  "homepage": "https://github.com/baldaworks/prism",
+  "repository": "https://github.com/baldaworks/prism",
+  "license": "MIT",
+  "keywords": [
+    "prism",
+    "beads",
+    "lightweight",
+    "story-lifecycle"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Prism Light",
+    "shortDescription": "Concise host-native Prism story lifecycle.",
+    "longDescription": "Runs a simplified Beads-backed Prism Story lifecycle directly in the host with explicit human approval before implementation.",
+    "developerName": "Alexey Samoylov",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Local filesystem",
+      "CLI orchestration"
+    ],
+    "defaultPrompt": "Use $prism-light:lifecycle to run the concise Prism story lifecycle."
+  }
+}

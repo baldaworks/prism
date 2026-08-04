@@ -85,13 +85,17 @@ def normalized_contract(text: str) -> str:
 mapping_path = root / "docs/lifecycle-ownership.json"
 record(mapping_path.is_file(), "lifecycle ownership mapping exists")
 mapping = load_json(mapping_path)
-record(mapping.get("version") == 16, "ownership schema version is 16")
+record(mapping.get("version") == 17, "ownership schema version is 17")
 
 expected_interfaces = {
     "router": {"codex": "$prism:lifecycle", "claude": "/prism:lifecycle", "flat": "/prism-lifecycle"},
     "story": {"codex": "$prism:story", "claude": "/prism:story", "flat": "/prism-story"},
     "epic": {"codex": "$prism:epic", "claude": "/prism:epic", "flat": "/prism-epic"},
-    "light": {"codex": "$prism:light", "claude": "/prism:light", "flat": "/prism-light"},
+    "light": {
+        "codex": "$prism-light:lifecycle",
+        "claude": "/prism-light:lifecycle",
+        "flat": "/prism-light",
+    },
     "callee_lifecycle": {
         "codex": "$prism-callee:lifecycle",
         "claude": "/prism-callee:lifecycle",
@@ -195,7 +199,7 @@ surface_specs = {
     "router": ("lifecycle", "prism-lifecycle", "lifecycle", "prism-lifecycle"),
     "story": ("story", "prism-story", "story", "prism-story"),
     "epic": ("epic", "prism-epic", "epic", "prism-epic"),
-    "light": ("light", "prism-light", "light", "prism-light"),
+    "light": ("lifecycle", "prism-light", "lifecycle", "prism-light"),
     "callee_lifecycle": ("lifecycle", "prism-callee-lifecycle", "lifecycle", "prism-callee-lifecycle"),
 }
 
@@ -249,7 +253,11 @@ for marker in [
 ]:
     record(marker in router_text, f"router documents batch invariant: {marker}")
 
-host_scan_roots = [root / "plugins/prism", root / "plugins/prism-callee"]
+host_scan_roots = [
+    root / "plugins/prism",
+    root / "plugins/prism-callee",
+    root / "plugins/prism-light",
+]
 legacy_pattern = re.compile(r"phase:(specify|design|breakdown|human|apply|verify)(?!:)")
 legacy_offenders = []
 for scan_root in host_scan_roots:
@@ -262,7 +270,7 @@ record(not legacy_offenders, "host lifecycle surfaces contain no legacy phase la
 for path in [
     root / "plugins/prism/skills/story/SKILL.md",
     root / "plugins/prism/skills/epic/SKILL.md",
-    root / "plugins/prism/skills/light/SKILL.md",
+    root / "plugins/prism-light/skills/lifecycle/SKILL.md",
     root / "plugins/prism-callee/skills/lifecycle/SKILL.md",
 ]:
     text = path.read_text()
@@ -284,7 +292,7 @@ for path, markers in host_approval_contracts.items():
     record("acceptance" in text.lower() and "readiness" in text.lower(), f"{path.relative_to(root)} retains internal acceptance readiness")
 
 acceptance_first_approval_contracts = {
-    root / "plugins/prism/skills/light/references/human.md": [
+    root / "plugins/prism-light/skills/lifecycle/references/human.md": [
         "### Acceptance criteria", "### Design summary", "### Task summary", "### Approval request"
     ],
     root / "plugins/prism-callee/skills/lifecycle/SKILL.md": [
@@ -299,7 +307,12 @@ for path, markers in acceptance_first_approval_contracts.items():
 
 retired_graph_pattern = re.compile(r"(?:3\s*[-–]\s*12|2\s*[-–]\s*12|three[- ]to[- ]twelve)", re.IGNORECASE)
 graph_offenders = []
-for scan_root in [root / "plugins/prism", root / "plugins/prism-callee", root / "pack/callee/prism"]:
+for scan_root in [
+    root / "plugins/prism",
+    root / "plugins/prism-callee",
+    root / "plugins/prism-light",
+    root / "pack/callee/prism",
+]:
     for path in scan_root.rglob("*"):
         if path.is_file() and path.suffix in {".md", ".yaml", ".yml", ".json"} and retired_graph_pattern.search(path.read_text()):
             graph_offenders.append(str(path.relative_to(root)))
@@ -307,7 +320,7 @@ record(not graph_offenders, "active lifecycle contracts contain no retired numer
 
 graph_contracts = [
     root / "plugins/prism/skills/story/references/breakdown.md",
-    root / "plugins/prism/skills/light/references/breakdown.md",
+    root / "plugins/prism-light/skills/lifecycle/references/breakdown.md",
     root / "plugins/prism/skills/epic/references/roadmap.md",
     root / "plugins/prism-callee/skills/lifecycle/references/breakdown.md",
     root / "pack/callee/prism/phases/breakdown.md",

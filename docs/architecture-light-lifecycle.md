@@ -1,7 +1,17 @@
 # Prism Light Story Lifecycle
 
-`prism:light` is the concise, host-only Story workflow. It is selected only by
-an explicit Light invocation and never by `prism:lifecycle` routing.
+Prism Light is a standalone plugin, `prism-light`, containing one canonical
+skill named `lifecycle`. It is selected only by an explicit Light invocation and
+never by the primary `$prism:lifecycle` router.
+
+| Host surface | Invocation | Source |
+| --- | --- | --- |
+| Codex | `$prism-light:lifecycle` | `plugins/prism-light/skills/lifecycle/` |
+| Claude Code | `/prism-light:lifecycle` | `plugins/prism-light/skills/lifecycle/` |
+| Flat hosts | `/prism-light` | `plugins/prism-light/prefixed-skills/prism-light/` |
+
+The canonical and flat trees are behavioral mirrors despite their intentionally
+different skill names.
 
 Light uses the same durable Story phases as the full Story lifecycle:
 
@@ -17,17 +27,11 @@ with no supported Story phase starts at Specify; a phase label from another
 supported item namespace fails closed.
 
 Light keeps requirements, design, Task dependencies, approval, implementation,
-and verification durable in Beads, but uses shorter phase instructions than
-`prism:story`. Breakdown is qualitative and has no numeric child limit.
+and verification durable in Beads, but uses shorter phase instructions than the
+full `prism:story` workflow. Breakdown is qualitative and has no numeric child
+limit.
 
-The approval display is complete Acceptance criteria → Design summary → Task
-summary → Approval request. Unambiguous approval is required before Apply;
+Its concise approval display remains Acceptance criteria → Design summary →
+Task summary → Approval request. Unambiguous approval is required before Apply;
 refinement clears approval and returns to Design; ambiguity keeps the gate
 closed.
-
-| Surface | Source |
-| --- | --- |
-| Namespaced | `plugins/prism/skills/light/` |
-| Flat | `plugins/prism/prefixed-skills/prism-light/` |
-
-The two source trees are behavioral mirrors.

@@ -3,7 +3,7 @@ name: prism-light
 description: >
   Run the simplified Prism Light story lifecycle directly in the host. Beads stores story state,
   and exactly one supported phase:story:* label is the current lifecycle phase. Use when the user runs
-  $prism:light, /prism:light, /prism-light, asks for Prism Light, or explicitly
+  $prism-light:lifecycle, /prism-light:lifecycle, /prism-light, asks for Prism Light, or explicitly
   requests the concise host-only lifecycle instead of the full role-aligned workflow.
 ---
 
@@ -15,7 +15,7 @@ description: >
 | **This skill** | Label-driven phase machine, repository work, and `bd` writes |
 | **Prism Callee workflow** | Specialized `prism/*` subagents with phase-specific roles and settings; owns all `callee agent run prism/...` execution |
 
-**Invoke:** Codex `$prism:light`, Claude Code `/prism:light`, or flat slash `/prism-light`.
+**Invoke:** Codex `$prism-light:lifecycle`, Claude Code `/prism-light:lifecycle`, or flat slash `/prism-light`.
 
 Lifecycle diagram: [references/lifecycle.md](references/lifecycle.md). Keep lifecycle diagrams vertical with Mermaid `flowchart TB`.
 

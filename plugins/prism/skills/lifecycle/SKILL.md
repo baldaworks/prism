@@ -17,8 +17,8 @@ Resolve the user's target, then follow exactly one sibling lifecycle contract:
 
 This skill owns target resolution and explicit open-epic batch coordination.
 It does not duplicate phase procedure and never invokes Callee. Select Prism
-Light only when the user explicitly invokes `$prism:light`, `/prism:light`, or
-`/prism-light`.
+Prism Light only when the user explicitly invokes `$prism-light:lifecycle`,
+`/prism-light:lifecycle`, or `/prism-light`.
 
 ## Prerequisites
 

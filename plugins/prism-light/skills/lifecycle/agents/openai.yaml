@@ -1,4 +1,4 @@
 interface:
   display_name: "Prism Light"
   short_description: "Concise host-native Prism story lifecycle"
-  default_prompt: "Use $prism:light to run the concise Prism story lifecycle."
+  default_prompt: "Use $prism-light:lifecycle to run the concise Prism story lifecycle."
