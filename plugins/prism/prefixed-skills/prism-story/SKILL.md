@@ -63,6 +63,20 @@ Each reference contains a compact contract projection. Execute its logical roles
 in order even though one host session performs them. Do not weaken required
 outputs or skip a gate because Callee is not running.
 
+## Output boundary
+
+Normal host Story output — target resolution, phase progress, status, errors,
+blockers, and normal phase results — MUST NOT emit a standalone ### Acceptance criteria heading,
+including a bullet-wrapped form such as `- ### Acceptance criteria`, or an unsolicited user-facing
+approval-format acceptance block.
+
+This boundary applies only to user-facing Markdown output. It does not prohibit
+internal or machine-readable acceptance artifacts such as requirements
+documents, the Beads acceptance field, or `ACCEPTANCE_CRITERIA:` sections in a
+normal phase result. The informed Human approval request remains the exception
+and MUST present the complete current-Story acceptance first. An explicit
+operator request for acceptance criteria is also allowed.
+
 ## Prerequisites
 
 1. `bd` is available and the repository has a Beads workspace.

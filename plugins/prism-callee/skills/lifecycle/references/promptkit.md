@@ -154,7 +154,7 @@ After regenerate:
 
 ```bash
 callee agent validate pack/callee/prism/roles/<id>.md
-callee agent view prism/roles/<id> --json
+callee agent view prism/roles/<id> --agent-root pack/callee --json
 ```
 
 ---
@@ -168,7 +168,8 @@ PromptKit fields become `spec.params` and must be passed as:
 --param <qualified-key>=<value>
 ```
 
-Inspect live keys with `callee agent view <id> --json` (authoritative if drift).
+Inspect live keys with `callee agent view <id> --agent-root pack/callee --json`
+(authoritative if drift).
 
 ### `prism/roles/interviewer`
 
@@ -340,21 +341,21 @@ callee agent validate pack/callee/prism/human/intent.md
 callee agent validate pack/callee/prism/human/check.md
 callee agent validate pack/callee/prism/apply/loop.md
 callee agent validate pack/callee/prism/verify/review.md
-callee agent view prism/lifecycle --json
-callee agent view prism/phases/specify --json
-callee agent view prism/phases/design --json
-callee agent view prism/phases/breakdown --json
-callee agent view prism/phases/human --json
-callee agent view prism/phases/apply --json
-callee agent view prism/phases/verify --json
-callee agent view prism/human/prompt --json
-callee agent view prism/human/intent --json
-callee agent view prism/human/check --json
-callee agent view prism/design/flow --json
-callee agent view prism/apply/loop --json
-callee agent view prism/verify/review --json
-callee agent view prism/story --json
-callee agent view prism/epic --json
+callee agent view prism/lifecycle --agent-root pack/callee --json
+callee agent view prism/phases/specify --agent-root pack/callee --json
+callee agent view prism/phases/design --agent-root pack/callee --json
+callee agent view prism/phases/breakdown --agent-root pack/callee --json
+callee agent view prism/phases/human --agent-root pack/callee --json
+callee agent view prism/phases/apply --agent-root pack/callee --json
+callee agent view prism/phases/verify --agent-root pack/callee --json
+callee agent view prism/human/prompt --agent-root pack/callee --json
+callee agent view prism/human/intent --agent-root pack/callee --json
+callee agent view prism/human/check --agent-root pack/callee --json
+callee agent view prism/design/flow --agent-root pack/callee --json
+callee agent view prism/apply/loop --agent-root pack/callee --json
+callee agent view prism/verify/review --agent-root pack/callee --json
+callee agent view prism/story --agent-root pack/callee --json
+callee agent view prism/epic --agent-root pack/callee --json
 for f in pack/callee/prism/epic/phases/*.md; do callee agent validate "$f"; done
 for f in pack/callee/prism/epic/roles/*.md; do callee agent validate "$f"; done
 for f in pack/callee/prism/epic/human.md pack/callee/prism/epic/human/*.md; do callee agent validate "$f"; done
@@ -386,5 +387,5 @@ callee promptkit list --type persona
 callee promptkit search "<intent>" --type template
 callee promptkit show <template>
 callee promptkit show <template> --json
-callee agent list | grep '^prism/'
+callee agent list --agent-root pack/callee | grep '^prism/'
 ```

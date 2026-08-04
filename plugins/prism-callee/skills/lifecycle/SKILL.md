@@ -10,7 +10,13 @@ description: >
 # Prism Callee lifecycle
 
 This is the only Prism surface that may execute callee agent run prism/... .
-PromptKit role/workflow contract: references/promptkit.md.
+
+## Reference contracts
+
+- [PromptKit role/workflow contract](references/promptkit.md): Read before
+  inspecting or executing Callee lifecycle resources.
+- [Breakdown normalization contract](references/breakdown.md): Read when a
+  Story reaches Breakdown or when reconciling its task graph.
 
 The host owns Beads resolution, durable labels, approval authority, Epic batch
 coordination, and persistence after every Callee return. The Callee Router owns
@@ -149,13 +155,18 @@ input or an approval/refinement decision.
 
 Normal host output — target resolution, route selection, phase progress, status,
 errors, blockers, batch ledger rows, and normal Story or Epic phase results —
-MUST NOT emit a standalone ### Acceptance criteria heading or an unsolicited
-complete acceptance block.
+MUST NOT emit a standalone ### Acceptance criteria heading, including a
+bullet-wrapped form such as `- ### Acceptance criteria`, or an unsolicited
+user-facing approval-format acceptance block.
 
 The lifecycle-generated exception is the informed approval request for the
-current item. It MUST present the complete current-item acceptance first. An
-explicit operator request for acceptance criteria is also allowed. No other
-phase, status, error, route, or batch output may print that section.
+current item. It MUST present the complete current-item acceptance first. This
+boundary applies only to user-facing Markdown output and does not prohibit
+internal or machine-readable acceptance artifacts such as requirements
+documents, the Beads acceptance field, or `ACCEPTANCE_CRITERIA:` sections in a
+normal phase result. An explicit operator request for acceptance criteria is
+also allowed. No other phase, status, error, route, or batch output may print
+that user-facing section.
 
 ## Approval contracts
 

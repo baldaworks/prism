@@ -78,6 +78,10 @@ def normalized_markdown(text: str, canonical_name: str, flat_name: str, surface:
     return text
 
 
+def normalized_contract(text: str) -> str:
+    return " ".join(text.split())
+
+
 mapping_path = root / "docs/lifecycle-ownership.json"
 record(mapping_path.is_file(), "lifecycle ownership mapping exists")
 mapping = load_json(mapping_path)
@@ -342,16 +346,74 @@ for path, markers in {
     for marker in markers:
         record(marker in text, f"{path.relative_to(root)} contains Callee contract: {marker}")
 
-callee_host_text = (root / "plugins/prism-callee/skills/lifecycle/SKILL.md").read_text()
+output_contracts = {
+    root / "plugins/prism/skills/story/SKILL.md": [
+        "## Output boundary",
+        "MUST NOT emit a standalone ### Acceptance criteria heading",
+        "unsolicited user-facing approval-format acceptance block",
+        "machine-readable acceptance artifacts",
+        "explicit operator request for acceptance criteria",
+    ],
+    root / "plugins/prism-callee/skills/lifecycle/SKILL.md": [
+        "Normal host output",
+        "MUST NOT emit a standalone ### Acceptance criteria heading",
+        "unsolicited user-facing approval-format acceptance block",
+        "machine-readable acceptance artifacts",
+        "explicit operator request for acceptance criteria",
+    ],
+}
+for path, markers in output_contracts.items():
+    text = normalized_contract(path.read_text())
+    for marker in markers:
+        record(marker in text, f"{path.relative_to(root)} output boundary contains: {marker}")
+    record(
+        "complete acceptance block" not in text,
+        f"{path.relative_to(root)} does not use the broad acceptance-block prohibition",
+    )
+
+callee_host_text = normalized_contract((root / "plugins/prism-callee/skills/lifecycle/SKILL.md").read_text())
 for marker in [
-    "Normal host output",
-    "MUST NOT emit a standalone ### Acceptance criteria heading",
     "Story Human request, in exact order",
     "Epic Approval request, in exact order",
     "one invocation-start snapshot",
     "exactly-once ledger",
 ]:
     record(marker in callee_host_text, f"prism-callee host contract contains: {marker}")
+
+callee_skill = root / "plugins/prism-callee/skills/lifecycle/SKILL.md"
+callee_skill_text = normalized_contract(callee_skill.read_text())
+for marker in [
+    "[PromptKit role/workflow contract](references/promptkit.md)",
+    "[Breakdown normalization contract](references/breakdown.md)",
+    "Read before inspecting or executing Callee lifecycle resources",
+    "Read when a Story reaches Breakdown or when reconciling its task graph",
+]:
+    record(marker in callee_skill_text, f"{callee_skill.relative_to(root)} reference contract contains: {marker}")
+
+breakdown = root / "plugins/prism-callee/skills/lifecycle/references/breakdown.md"
+breakdown_text = breakdown.read_text()
+for marker in [
+    "## Contents",
+    "[Goal](#goal)",
+    "[Required output shape](#required-output-shape)",
+    "[Host procedure (strict)](#host-procedure-strict)",
+    "[Reject](#reject)",
+    "[Stop when](#stop-when)",
+    "[Never](#never)",
+]:
+    record(marker in breakdown_text, f"{breakdown.relative_to(root)} TOC contains: {marker}")
+record(len(breakdown_text.splitlines()) > 100, f"{breakdown.relative_to(root)} remains a long reference with navigation")
+
+promptkit = root / "plugins/prism-callee/skills/lifecycle/references/promptkit.md"
+discovery_commands = [
+    line for line in promptkit.read_text().splitlines()
+    if "callee agent view " in line or "callee agent list" in line
+]
+record(bool(discovery_commands), f"{promptkit.relative_to(root)} has discovery examples")
+record(
+    all("--agent-root pack/callee" in line for line in discovery_commands),
+    f"{promptkit.relative_to(root)} discovery examples use explicit Callee root",
+)
 
 expected_task_states = [
     {"state": "implementing", "assignee": "prism/apply/implementer"},
