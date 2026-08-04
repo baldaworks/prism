@@ -2,6 +2,18 @@
 
 Run only for `phase:story:specify` or when description/acceptance is not design-ready.
 
+## Contents
+
+- [Contract projection](#contract-projection)
+- [Inputs](#inputs)
+- [Workflow output protocol](#workflow-output-protocol)
+- [Role 1: interviewer](#role-1-interviewer)
+- [Role 2: readiness gate](#role-2-readiness-gate)
+- [Human clarification loop](#human-clarification-loop)
+- [Requirements extract and persistence](#requirements-extract-and-persistence)
+- [Stop when](#stop-when)
+- [Never](#never)
+
 ## Contract projection
 
 ```json

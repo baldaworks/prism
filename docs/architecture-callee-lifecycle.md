@@ -72,13 +72,14 @@ ORIGINAL_REQUEST:
 ...
 BEADS_CONTEXT:
 ...'
-callee agent run prism/lifecycle --agent-root pack/callee --message "$envelope"
+callee agent run prism/lifecycle --message "$envelope"
 ```
 
-Run `callee agent validate` for changed resources and
-`callee agent view` for `prism/lifecycle`, `prism/story`, and
-`prism/epic`. The host remains the only owner of durable Beads
-transitions, child selection, persistence, and explicit batch coordination.
+Normal plugin execution resolves imported resources through Callee's default
+agent catalog and does not depend on a Prism repository checkout. Use
+`--agent-root pack/callee` only when maintaining and validating the checked-in
+pack. The host remains the only owner of durable Beads transitions, child
+selection, persistence, and explicit batch coordination.
 
 ## Sources
 

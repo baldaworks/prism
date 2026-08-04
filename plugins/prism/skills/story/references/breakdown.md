@@ -2,6 +2,16 @@
 
 Run only for `phase:story:breakdown` or when a concrete design lacks adequate children.
 
+## Contents
+
+- [Contract projection](#contract-projection)
+- [Inputs](#inputs)
+- [Role 1: implementation planner](#role-1-implementation-planner)
+- [Role 2: Beads normalizer](#role-2-beads-normalizer)
+- [Quality gate and persistence](#quality-gate-and-persistence)
+- [Stop when](#stop-when)
+- [Never](#never)
+
 ## Contract projection
 
 ```json

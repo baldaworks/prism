@@ -145,6 +145,13 @@ for contract_path in [
 print("PASS: full host request-only and Callee output boundaries preserve internal acceptance artifacts")
 
 
+callee_skill_text = (repo_root / "plugins/prism-callee/skills/lifecycle/SKILL.md").read_text()
+assert 'callee agent run prism/lifecycle --message "$envelope"' in callee_skill_text
+assert 'callee agent run prism/lifecycle --agent-root pack/callee' not in callee_skill_text
+assert "Do not load\n  it for normal lifecycle execution" in callee_skill_text
+print("PASS: installed Prism Callee runtime uses the default catalog and skips authoring context")
+
+
 promptkit_text = (repo_root / "plugins/prism-callee/skills/lifecycle/references/promptkit.md").read_text()
 discovery_commands = [
     line for line in promptkit_text.splitlines()

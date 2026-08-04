@@ -140,17 +140,6 @@ complete, untruncated acceptance of the current Story to be shown.
 | `phase:story:design`, or requirements exist without design | Design |
 | `phase:story:specify` | Specify |
 
-## Advance loop
-
-Within one invocation:
-
-1. derive the phase from the single supported story label;
-2. load one matching reference;
-3. execute every logical role and gate in that reference;
-4. persist and re-read Beads;
-5. continue through successful pre-approval phases;
-6. stop at explicit reference stop conditions.
-
 ## Safety
 
 - Never invent requirements, approval, repository evidence, review findings, or test results.

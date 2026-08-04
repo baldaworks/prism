@@ -119,30 +119,6 @@ Phase references:
 | `phase:story:design` or (requirements set and design empty) | Design → persist design markdown |
 | `phase:story:specify` | Specify → persist description and acceptance |
 
-## Phase execution contract
-
-The phase references own phase-local procedure. Within one lifecycle
-invocation, repeat:
-
-1. infer the phase from exactly one supported `phase:story:*` label
-2. load exactly one matching reference
-3. follow its inputs, procedure, persistence, and stop conditions
-4. re-check Beads state
-5. continue immediately after successful Specify or Design persistence
-6. after successful Breakdown persistence, load the Human reference and present
-   the approval request without asking for phase-transition confirmation
-7. stop while the Human reference awaits a decision or at another explicit
-   stop condition
-
-| Phase | Load | Successful outcome |
-| --- | --- | --- |
-| Specify | [references/specify.md](references/specify.md) | story label is `phase:story:design` |
-| Design | [references/design.md](references/design.md) | concrete design exists; story label is `phase:story:breakdown` |
-| Breakdown | [references/breakdown.md](references/breakdown.md) | child graph covers the design; story label is `phase:story:human` |
-| Human | [references/human.md](references/human.md) | approval moves to `phase:story:apply`; explicit design refinement moves to `phase:story:design`; otherwise stop |
-| Apply | [references/apply.md](references/apply.md) | one ready child closes, story enters verify, or apply stops blocked |
-| Verify | [references/verify.md](references/verify.md) | story closes on pass; otherwise it bounces to an earlier phase label |
-
 ## Safety
 
 - Do not invent `human:approved` or close a story with open children.

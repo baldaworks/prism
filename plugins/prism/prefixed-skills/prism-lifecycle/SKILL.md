@@ -3,9 +3,10 @@ name: prism-lifecycle
 description: >
   Route Prism work to the host-native story or epic lifecycle and, when
   explicitly requested, advance a deterministic snapshot of all open Prism
-  epics. Use when the user runs $prism:lifecycle, /prism:lifecycle,
-  /prism-lifecycle, /prism, asks to run or advance Prism, resumes an item, or
-  asks to process all open Prism epics.
+  epics. Use when the user runs $prism:lifecycle, /prism:lifecycle, or
+  /prism-lifecycle; asks to run or advance the primary host workflow; resumes
+  one host Story or Epic; or asks to process all open Prism epics. Do not use
+  for explicit Prism Light or Prism Callee requests.
 ---
 
 # Prism lifecycle router
@@ -17,7 +18,7 @@ Resolve the user's target, then follow exactly one sibling lifecycle contract:
 
 This skill owns target resolution and explicit open-epic batch coordination.
 It does not duplicate phase procedure and never invokes Callee. Select Prism
-Prism Light only when the user explicitly invokes `$prism-light:lifecycle`,
+Light only when the user explicitly invokes `$prism-light:lifecycle`,
 `/prism-light:lifecycle`, or `/prism-light`.
 
 ## Prerequisites

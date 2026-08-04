@@ -13,8 +13,9 @@ This is the only Prism surface that may execute callee agent run prism/... .
 
 ## Reference contracts
 
-- [PromptKit role/workflow contract](references/promptkit.md): Read before
-  inspecting or executing Callee lifecycle resources.
+- [PromptKit authoring contract](references/promptkit.md): Read only when
+  inspecting, regenerating, or changing the checked-in Callee pack. Do not load
+  it for normal lifecycle execution.
 - [Breakdown normalization contract](references/breakdown.md): Read when a
   Story reaches Breakdown or when reconciling its task graph.
 
@@ -32,13 +33,17 @@ only deterministic selection between the declared Story and Epic graphs.
 | prism/phases/* | Story phase resources used by prism/story |
 | prism/epic/phases/* | Epic phase resources used by prism/epic |
 
-The canonical resources are under pack/callee/prism. Validate and inspect the
-three public roots before execution:
+For normal installed execution, resolve the three public roots through Callee's
+default agent catalog:
 
-    callee agent validate pack/callee/prism/lifecycle.md
-    callee agent view prism/lifecycle --agent-root pack/callee --json
-    callee agent view prism/story --agent-root pack/callee --json
-    callee agent view prism/epic --agent-root pack/callee --json
+    callee agent list | grep '^prism/'
+    callee agent view prism/lifecycle --json
+    callee agent view prism/story --json
+    callee agent view prism/epic --json
+
+Use `--agent-root pack/callee` only while maintaining this repository and only
+after confirming `pack/callee/prism` exists. Marketplace runtime must not depend
+on the Prism source checkout.
 
 ## Durable lifecycle state
 
@@ -84,7 +89,8 @@ prism/apply/reviewer ownership inside the Story Apply loop.
 1. Beads and a project workspace: bd where and bd prime.
 2. Callee 0.19.0 or a compatible Router-capable release on PATH, with provider
    authentication for Role phases.
-3. Discoverable Prism resources: callee agent list --agent-root pack/callee.
+3. Discoverable imported Prism resources: `callee agent list` includes
+   `prism/lifecycle`, `prism/story`, and `prism/epic`.
 
 Do not use provider output to select a route. Do not invoke a direct Callee
 graph when host Beads resolution is required; route the current item through
@@ -130,7 +136,7 @@ lets a provider select an undeclared route.
 
 Invoke the public root only after constructing the envelope:
 
-    callee agent run prism/lifecycle --agent-root pack/callee --message "$envelope"
+    callee agent run prism/lifecycle --message "$envelope"
 
 Persist the Callee artifact and Beads transition before selecting the next
 phase. A selected child failure remains attached to the current item.

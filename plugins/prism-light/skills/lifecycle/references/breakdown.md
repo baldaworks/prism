@@ -3,6 +3,15 @@
 Run this reference only when the story label is `phase:story:breakdown`, or when
 the story has durable design markdown but no child tasks.
 
+## Contents
+
+- [Goal](#goal)
+- [Required output shape](#required-output-shape)
+- [Host procedure (strict)](#host-procedure-strict)
+- [Reject](#reject)
+- [Stop when](#stop-when)
+- [Never](#never)
+
 ## Goal
 
 Turn the story design into a small Beads task graph ready for the human gate.

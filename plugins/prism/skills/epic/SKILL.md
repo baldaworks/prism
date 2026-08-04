@@ -102,19 +102,6 @@ complete, untruncated acceptance of the current Epic to be shown.
 | `phase:epic:architecture`, or framed requirements exist without architecture | Architecture |
 | `phase:epic:frame` | Frame |
 
-## Advance loop
-
-Within one invocation:
-
-1. derive the phase from the single supported Epic label;
-2. load exactly one matching reference;
-3. execute its complete contract;
-4. persist and re-read the Epic and Story graph;
-5. continue through successful pre-approval phases;
-6. after Approval, Delivery may advance ready Stories sequentially until a
-   durable stop condition is reached;
-7. stop at every reference stop condition.
-
 ## Hard rules
 
 1. Beads is the only durable lifecycle store.

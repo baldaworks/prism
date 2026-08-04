@@ -85,7 +85,7 @@ def normalized_contract(text: str) -> str:
 mapping_path = root / "docs/lifecycle-ownership.json"
 record(mapping_path.is_file(), "lifecycle ownership mapping exists")
 mapping = load_json(mapping_path)
-record(mapping.get("version") == 17, "ownership schema version is 17")
+record(mapping.get("version") == 18, "ownership schema version is 18")
 
 expected_interfaces = {
     "router": {"codex": "$prism:lifecycle", "claude": "/prism:lifecycle", "flat": "/prism-lifecycle"},
@@ -101,7 +101,7 @@ expected_interfaces = {
         "claude": "/prism-callee:lifecycle",
         "flat": "/prism-callee-lifecycle",
     },
-    "direct_callee": 'callee agent run prism/lifecycle --agent-root pack/callee --message "$envelope"',
+    "direct_callee": 'callee agent run prism/lifecycle --message "$envelope"',
 }
 record(mapping.get("interfaces") == expected_interfaces, "ownership schema declares every public interface")
 
@@ -237,12 +237,22 @@ record(
 )
 verify_integrity("host", integrity.get("host_sources", {}), root, host_sources)
 
+for path in host_sources:
+    if "references" in path.parts and len(path.read_text().splitlines()) > 100:
+        record("## Contents" in path.read_text(), f"{path.relative_to(root)} has navigation when longer than 100 lines")
+
 pack_section = integrity.get("callee_pack", {})
 pack_anchor = root / pack_section.get("root", "__missing__")
 pack_sources = sorted((pack_anchor / "prism").rglob("*.md")) if (pack_anchor / "prism").is_dir() else []
 verify_integrity("Callee pack", pack_section, pack_anchor, pack_sources)
 
 router_text = (root / "plugins/prism/skills/lifecycle/SKILL.md").read_text()
+router_contract = normalized_contract(router_text)
+record(
+    "Do not use for explicit Prism Light or Prism Callee requests" in router_contract,
+    "router trigger metadata excludes explicit alternate plugins",
+)
+record("/prism," not in router_text.split("---", 2)[1], "router trigger metadata contains no undocumented /prism alias")
 for marker in [
     "bd list --label prism --status=open --type=epic --limit 0 --json",
     "priority ascending",
@@ -415,12 +425,20 @@ for marker in [
 callee_skill = root / "plugins/prism-callee/skills/lifecycle/SKILL.md"
 callee_skill_text = normalized_contract(callee_skill.read_text())
 for marker in [
-    "[PromptKit role/workflow contract](references/promptkit.md)",
+    "[PromptKit authoring contract](references/promptkit.md)",
     "[Breakdown normalization contract](references/breakdown.md)",
-    "Read before inspecting or executing Callee lifecycle resources",
+    "Do not load it for normal lifecycle execution",
     "Read when a Story reaches Breakdown or when reconciling its task graph",
 ]:
     record(marker in callee_skill_text, f"{callee_skill.relative_to(root)} reference contract contains: {marker}")
+record(
+    'callee agent run prism/lifecycle --message "$envelope"' in callee_skill.read_text(),
+    f"{callee_skill.relative_to(root)} runs imported Callee resources through the default catalog",
+)
+record(
+    'callee agent run prism/lifecycle --agent-root pack/callee' not in callee_skill.read_text(),
+    f"{callee_skill.relative_to(root)} runtime does not require a repository checkout",
+)
 
 breakdown = root / "plugins/prism-callee/skills/lifecycle/references/breakdown.md"
 breakdown_text = breakdown.read_text()
