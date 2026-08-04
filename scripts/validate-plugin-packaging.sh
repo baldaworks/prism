@@ -10,7 +10,8 @@ import pathlib
 import sys
 
 root = pathlib.Path(sys.argv[1])
-expected_version = "0.5.0+codex.20260731000000"
+expected_release_version = "0.5.0+codex.20260731000000"
+expected_codex_version = "0.5.0+codex.20260804040811"
 
 namespaced_plugin_checks = [
     {
@@ -205,6 +206,11 @@ def validate_manifest_common(
     expected_skills: str,
     plugin_root: pathlib.Path,
 ) -> None:
+    expected_version = (
+        expected_codex_version
+        if ".codex-plugin" in manifest_path.parts
+        else expected_release_version
+    )
     record(
         manifest_data.get("name") == expected_name,
         f"{manifest_path.relative_to(root)} name is {expected_name}",
