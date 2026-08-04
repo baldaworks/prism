@@ -58,6 +58,8 @@ callee agent run prism/lifecycle --message "$envelope"
 ```
 
 Normal plugin execution builds this envelope before calling Callee.
+Before execution, the default Callee catalog must contain `prism/lifecycle` as
+a Router plus the `prism/story` and `prism/epic` public roots.
 
 ### 3. Prism Light
 
@@ -103,6 +105,31 @@ Story phases are:
 4. `phase:story:human`
 5. `phase:story:apply`
 6. `phase:story:verify`
+
+## Epic lifecycle
+
+```mermaid
+flowchart TB
+    I["Multi-Story initiative"] --> F["Frame"]
+    F --> A["Architecture"]
+    A --> R["Roadmap"]
+    R --> P{"Epic approval"}
+    P -->|approved| D["Deliver ready Stories sequentially"]
+    P -->|refine architecture| A
+    D --> V{"Validate integration and Epic outcomes"}
+    V -->|pass| C["Closed Epic"]
+    V -->|open child race| D
+    V -->|roadmap gap| R
+    V -->|architecture gap| A
+    V -->|requirements gap| F
+    DB[("Beads state")]
+    DB -.-> F
+    DB -.-> A
+    DB -.-> R
+    DB -.-> P
+    DB -.-> D
+    DB -.-> V
+```
 
 Epic phases are:
 
@@ -162,6 +189,10 @@ codex plugin add prism-callee@prism
 codex plugin add prism-light@prism
 ```
 
+To refresh an existing Git marketplace snapshot, run
+`codex plugin marketplace upgrade prism`, then repeat `codex plugin add` for
+the plugins you use. Start a new thread after a plugin reinstall.
+
 ### Claude Code
 
 ```sh
@@ -208,9 +239,11 @@ cp -a plugins/prism-callee/prefixed-skills/prism-callee-lifecycle .opencode/skil
 cp -a plugins/prism-light/prefixed-skills/prism-light .opencode/skills/
 ```
 
-## Install the Callee agents
+## Install or update the Callee agents
 
 This step is required only for `prism-callee` and direct Callee execution:
+
+Initial import:
 
 ```sh
 callee agent import baldaworks/prism \
@@ -218,13 +251,29 @@ callee agent import baldaworks/prism \
   --prefix prism
 ```
 
-Validate the installation:
+Update or repair an existing import:
+
+```sh
+callee agent import baldaworks/prism \
+  --path pack/callee/prism \
+  --prefix prism \
+  --force
+```
+
+Validate the default catalog:
 
 ```sh
 callee agent list | grep '^prism/'
 callee agent view prism/lifecycle --json
+callee agent view prism/story --json
+callee agent view prism/epic --json
 bd where
 ```
+
+The lifecycle view must report kind `Router`. A `Sequential` lifecycle or a
+missing Story/Epic root means the local import is stale; rerun the `--force`
+command before using Prism Callee. `--agent-root pack/callee` is for repository
+maintenance only and is not a runtime workaround.
 
 ## Repository ownership
 
@@ -249,7 +298,9 @@ Canonical and flat host paths are behavioral mirrors:
 ```sh
 ./scripts/validate-plugin-packaging.sh
 ./scripts/validate-lifecycle-ownership.sh
+./scripts/validate-documentation.sh
 ./scripts/test-lifecycle-drift-detection.sh
+./scripts/test-documentation-drift-detection.sh
 ./scripts/test-lifecycle-forward-contracts.sh
 ./scripts/test-callee-lifecycle-forward-contracts.sh
 ```
@@ -269,6 +320,7 @@ For repeatable PTY-backed Callee Human smoke tests:
 - [`docs/architecture-epic-lifecycle.md`](docs/architecture-epic-lifecycle.md) — Epic behavior
 - [`docs/architecture-callee-lifecycle.md`](docs/architecture-callee-lifecycle.md) — Callee integration
 - [`docs/architecture-light-lifecycle.md`](docs/architecture-light-lifecycle.md) — Prism Light behavior
+- [`docs/callee-lifecycle-smoke-test.md`](docs/callee-lifecycle-smoke-test.md) — PTY-backed Callee Human smoke tests
 - [`docs/lifecycle-ownership.json`](docs/lifecycle-ownership.json) — machine-checked ownership and integrity
 
 ## Authority

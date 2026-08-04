@@ -13,7 +13,7 @@ root = pathlib.Path(sys.argv[1])
 expected_release_version = "0.5.0+codex.20260731000000"
 expected_codex_versions = {
     "prism": "0.5.0+codex.20260804061729",
-    "prism-callee": "0.5.0+codex.20260804061729",
+    "prism-callee": "0.5.0+codex.20260804094602",
     "prism-light": "0.5.0+codex.20260804061729",
 }
 

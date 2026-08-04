@@ -1,68 +1,94 @@
-# Prism Callee Story and Epic Lifecycle
+# Prism Callee Lifecycle
 
 `prism-callee:lifecycle` is the host integration for the specialized
-`prism/*` Callee pack. The host resolves Beads state and authorization;
-the Callee Router selects exactly one direct Story or Epic graph.
+`prism/*` Callee pack. The host owns durable state and authorization; Callee
+owns deterministic execution of the selected Story or Epic graph.
 
 ## Public surface
 
-| Surface | Responsibility |
-| --- | --- |
-| `prism/lifecycle` | Deterministic Router for one Story or Epic envelope |
-| `prism/story` | Direct Story graph: Specify, Design, Breakdown, Human, Apply, Verify |
-| `prism/epic` | Direct Epic graph: Frame, Architecture, Roadmap, Approval, Delivery, Validation |
+| Agent | Required kind | Responsibility |
+| --- | --- | --- |
+| `prism/lifecycle` | Router | Select exactly one Story or Epic route |
+| `prism/story` | Sequential | Six-phase direct Story graph |
+| `prism/epic` | Sequential | Six-phase direct Epic graph |
 
-The only supported hierarchy is Epic → Story → Task. Nested Epics and direct
-Epic Tasks fail closed. Epic approval covers only Epic architecture and
-roadmap; every child Story needs its own implementation approval.
+```mermaid
+flowchart TB
+    H["Host resolves item and Beads state"] --> E["Build ROUTE envelope"]
+    E --> R{"prism/lifecycle Router"}
+    R -->|story| S["prism/story"]
+    R -->|epic| P["prism/epic"]
+    S --> O["Return artifact to host"]
+    P --> O
+    O --> B["Host persists state and selects continuation"]
+```
 
-## Host-managed state
+The envelope begins with exactly `ROUTE=story` or `ROUTE=epic` and preserves
+the original operator request plus current Beads context. Blank, malformed, and
+unknown routes fail closed; the Router has no default branch and never retries
+another graph.
 
-Story phases use exactly one of:
+## Ownership boundary
 
-1. `phase:story:specify`
-2. `phase:story:design`
-3. `phase:story:breakdown`
-4. `phase:story:human`
-5. `phase:story:apply`
-6. `phase:story:verify`
+The host owns:
 
-Epic phases use exactly one of:
+- target and Task-parent resolution;
+- Beads reads, writes, labels, child selection, and persistence;
+- approval authority and open-Epic batch coordination;
+- continuation after every Callee return.
 
-1. `phase:epic:frame`
-2. `phase:epic:architecture`
-3. `phase:epic:roadmap`
-4. `phase:epic:approval`
-5. `phase:epic:delivery`
-6. `phase:epic:validation`
+Callee owns only the selected graph's phase roles, scripts, Human steps, loops,
+and returned artifact. Direct Callee graphs do not independently mutate the
+host's durable lifecycle state.
 
-Unsupported phase labels are absent and never migrated. Multiple supported
-phases or a phase from the other item namespace fails closed.
+The hierarchy is Epic → Story → Task. Epic approval covers only Epic
+architecture and roadmap and never approves a child Story.
 
-The host constructs the Router envelope with an exact first line
-`ROUTE=story` or `ROUTE=epic` (or a single-line envelope ending at
-EOF), then preserves the complete original
-request and current Beads context. Explicit all-open-Epic mode freezes one
-ordered snapshot, visits each Epic exactly once, continues after item-local
-gates or failures, and reports one outcome row per snapshot item without
-rescanning.
+## Approval and output
 
-## Approval and output boundary
+Normal routing, phase, status, blocker, and error output does not emit an
+unsolicited `### Acceptance criteria` section. The complete current-item
+acceptance is included in the informed Callee Story Human or Epic Approval
+request, and may also be shown after an explicit operator request. Approval is
+stored only on the item being approved.
 
-Before Story Human approval, the host presents complete current-item
-Acceptance criteria, Design summary, Task summary, then Approval request.
-Before Epic Approval, it presents complete current-item Acceptance criteria,
-Architecture summary, Story roadmap, then Approval request.
+## Catalog installation and updates
 
-Normal route, phase, status, error, and non-gate output must not emit a
-standalone or unsolicited `### Acceptance criteria` section. The complete
-section is permitted in the informed current-item Human or Approval request,
-or after an explicit operator request. Approval is stored only on the item
-being approved.
+Initial import:
 
-## Direct Callee execution
+```sh
+callee agent import baldaworks/prism \
+  --path pack/callee/prism \
+  --prefix prism
+```
 
-The public invocation is:
+Update or repair an existing import:
+
+```sh
+callee agent import baldaworks/prism \
+  --path pack/callee/prism \
+  --prefix prism \
+  --force
+```
+
+Verify the default catalog before runtime:
+
+```sh
+callee agent list | grep '^prism/'
+callee agent view prism/lifecycle --json
+callee agent view prism/story --json
+callee agent view prism/epic --json
+```
+
+`prism/lifecycle` must report kind `Router`, and all three public roots must be
+present. A `Sequential` lifecycle or missing Story/Epic root is a stale import:
+stop before execution and re-import with `--force`. Do not compensate by
+running a direct graph or adding `--agent-root pack/callee` to normal runtime.
+
+`--agent-root pack/callee` is reserved for validating the checked-in pack while
+maintaining this repository.
+
+## Direct execution
 
 ```sh
 envelope='ROUTE=story
@@ -75,20 +101,12 @@ BEADS_CONTEXT:
 callee agent run prism/lifecycle --message "$envelope"
 ```
 
-Normal plugin execution resolves imported resources through Callee's default
-agent catalog and does not depend on a Prism repository checkout. Use
-`--agent-root pack/callee` only when maintaining and validating the checked-in
-pack. The host remains the only owner of durable Beads transitions, child
-selection, persistence, and explicit batch coordination.
-
 ## Sources
 
 | Surface | Source |
 | --- | --- |
 | Host wrapper | `plugins/prism-callee/skills/lifecycle/` |
-| Flat host wrapper | `plugins/prism-callee/prefixed-skills/prism-callee-lifecycle/` |
+| Flat wrapper | `plugins/prism-callee/prefixed-skills/prism-callee-lifecycle/` |
 | Callee pack | `pack/callee/prism/` |
 
-Namespaced and flat skill trees are behavioral mirrors. Ownership metadata
-records every managed host source and every Callee pack Markdown source with
-per-file and aggregate SHA-256 digests.
+Host and pack digests are recorded in `docs/lifecycle-ownership.json`.

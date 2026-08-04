@@ -1,8 +1,8 @@
-# Prism Light Story Lifecycle
+# Prism Light Lifecycle
 
-Prism Light is a standalone plugin, `prism-light`, containing one canonical
-skill named `lifecycle`. It is selected only by an explicit Light invocation and
-never by the primary `$prism:lifecycle` router.
+Prism Light is the standalone `prism-light` plugin. It provides one concise,
+host-native Story workflow and is selected only by an explicit Light
+invocation.
 
 | Host surface | Invocation | Source |
 | --- | --- | --- |
@@ -10,28 +10,36 @@ never by the primary `$prism:lifecycle` router.
 | Claude Code | `/prism-light:lifecycle` | `plugins/prism-light/skills/lifecycle/` |
 | Flat hosts | `/prism-light` | `plugins/prism-light/prefixed-skills/prism-light/` |
 
-The canonical and flat trees are behavioral mirrors despite their intentionally
-different skill names.
+The canonical skill is named `lifecycle`; the flat mirror is intentionally
+named `prism-light`.
 
-Light uses the same durable Story phases as the full Story lifecycle:
+## State machine
 
-1. `phase:story:specify`
-2. `phase:story:design`
-3. `phase:story:breakdown`
-4. `phase:story:human`
-5. `phase:story:apply`
-6. `phase:story:verify`
+```mermaid
+flowchart TB
+    I["Change intent"] --> S["Specify"]
+    S --> D["Design"]
+    D --> B["Breakdown"]
+    B --> H{"Concise Human approval"}
+    H -->|approved| A["Apply"]
+    H -->|refine design| D
+    A --> V{"Verify"]
+    V -->|pass| C["Close Story"]
+    V -->|gap| S
+```
 
-Unsupported phase labels are treated as absent and are not migrated. A Story
-with no supported Story phase starts at Specify; a phase label from another
-supported item namespace fails closed.
+Light uses the same durable Story phase labels and the same Epic → Story → Task
+hierarchy as the full host workflow. Unsupported labels are not migrated, a
+wrong-type phase fails closed, Task graphs are qualitative, and every Apply
+transition requires explicit approval.
 
-Light keeps requirements, design, Task dependencies, approval, implementation,
-and verification durable in Beads, but uses shorter phase instructions than the
-full `prism:story` workflow. Breakdown is qualitative and has no numeric child
-limit.
+## Deliberate differences
 
-Its concise approval display remains Acceptance criteria → Design summary →
-Task summary → Approval request. Unambiguous approval is required before Apply;
-refinement clears approval and returns to Design; ambiguity keeps the gate
-closed.
+- phase instructions are shorter than the role-aligned `prism:story` contract;
+- the approval display remains Acceptance criteria → Design summary → Task
+  summary → Approval request;
+- the primary Prism router never selects Light implicitly;
+- Light does not run Epics, open-Epic batches, or Callee agents.
+
+Namespaced and flat trees are behavioral mirrors enforced by the ownership
+validator.

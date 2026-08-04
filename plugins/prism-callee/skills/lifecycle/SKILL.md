@@ -41,6 +41,17 @@ default agent catalog:
     callee agent view prism/story --json
     callee agent view prism/epic --json
 
+Require all three public roots. Require the lifecycle view to report kind
+`Router` with declared `story` and `epic` branches. A missing root or a
+Story-only `Sequential` lifecycle is a stale catalog. Stop before execution and
+tell the operator to refresh it:
+
+    callee agent import baldaworks/prism --path pack/callee/prism --prefix prism --force
+
+After refresh, repeat the default-catalog list and view checks. Do not bypass a
+stale catalog by invoking a direct graph or adding a repository-local agent
+root to normal runtime.
+
 Use `--agent-root pack/callee` only while maintaining this repository and only
 after confirming `pack/callee/prism` exists. Marketplace runtime must not depend
 on the Prism source checkout.

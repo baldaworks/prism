@@ -1,10 +1,28 @@
 # Story Lifecycle
 
-`prism:story` is the full host-native lifecycle for one Beads Story. It keeps
-durable state in Beads and preserves the role and gate contracts of the Prism
-Callee Story workflow without requiring the Callee runtime.
+`prism:story` runs the full host-native lifecycle for one Beads Story. It keeps
+durable state in Beads, preserves role-aligned phase contracts, and never
+invokes Callee.
 
 ## State machine
+
+```mermaid
+flowchart TB
+    I["Change intent"] --> S["Specify"]
+    S --> G{"Design-ready?"}
+    G -->|clarify| Q["Human clarification"]
+    Q --> S
+    G -->|ready| D["Design"]
+    D --> B["Breakdown"]
+    B --> H{"Human approval"}
+    H -->|approved| A["Apply"]
+    H -->|refine design| D
+    A --> V{"Verify"]
+    V -->|pass| C["Close Story"]
+    V -->|task graph gap| B
+    V -->|design gap| D
+    V -->|requirements gap| S
+```
 
 An active Story has exactly one supported phase label:
 
@@ -15,30 +33,43 @@ An active Story has exactly one supported phase label:
 5. `phase:story:apply`
 6. `phase:story:verify`
 
-Unsupported phase labels are treated as absent. They are not migrated. A Story
-with no supported Story phase starts at Specify and any stale approval is
-cleared. Labels from another supported item namespace fail closed.
+A Story with no supported Story phase starts at Specify and clears stale
+approval. Unsupported phase-like labels are absent and never migrated. An Epic
+phase or multiple Story phases fail closed.
 
-## Gates and children
+## Gates and Task delivery
 
-Specify produces complete acceptance criteria before Design. Breakdown creates
-or reconciles Task children using qualitative readiness: coverage, cohesion,
-reviewability, verifiability, and correct dependencies. There is no numeric
-minimum or maximum; one Task or more than twelve Tasks can be valid.
+Specify produces design-ready requirements and complete acceptance. Breakdown
+creates or reconciles direct Task children using qualitative coverage,
+cohesion, reviewability, verifiability, and necessary acyclic dependencies.
+There is no numeric Task-count contract.
 
-Before requesting approval, the host shows this exact order:
+The host approval prompt shows exactly:
 
 1. Design summary;
 2. Task summary;
 3. Approval request.
 
-Acceptance remains a required internal gate input, but the host shows it only
-when the operator explicitly requests the current Story criteria.
+Acceptance remains an internal readiness input and appears only when the
+operator explicitly requests the current Story criteria. Only unambiguous
+approval writes `human:approved`; questions, conditions, denial, and ambiguity
+keep the gate closed.
 
-Only unambiguous human approval writes `human:approved` and advances to Apply.
-Design refinement clears approval and returns to Design. Ambiguity keeps the
-gate closed. Apply advances ready Tasks sequentially; Verify closes a complete
-Story or bounces a discovered gap to the appropriate phase.
+```mermaid
+flowchart TB
+    A["Approved Story"] --> R["Select one ready Task"]
+    R --> I["Implement"]
+    I --> V{"Independent Task review"}
+    V -->|repair| I
+    V -->|pass| C["Close Task"]
+    C --> M{"Open Tasks remain?"}
+    M -->|yes| R
+    M -->|no| SV["Story Verify"]
+```
+
+Verify performs no repairs. It closes the Story only when acceptance and
+required checks pass, otherwise it returns the Story to the earliest defective
+phase.
 
 ## Sources
 
@@ -47,5 +78,4 @@ Story or bounces a discovered gap to the appropriate phase.
 | Namespaced | `plugins/prism/skills/story/` |
 | Flat | `plugins/prism/prefixed-skills/prism-story/` |
 
-These two trees are behavioral mirrors and are covered by the ownership
-validator.
+These trees are behavioral mirrors covered by the ownership validator.

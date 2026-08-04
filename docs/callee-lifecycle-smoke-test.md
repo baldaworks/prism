@@ -17,6 +17,25 @@ The public Callee workflow entrypoints are:
 - `prism/phases/*` for Story phases
 - `prism/epic/phases/*` for Epic phases
 
+Before running the harness, verify that the default catalog contains
+`prism/lifecycle` as a Router and includes both `prism/story` and `prism/epic`:
+
+```sh
+callee agent view prism/lifecycle --json
+callee agent view prism/story --json
+callee agent view prism/epic --json
+```
+
+If the lifecycle is still a Story-only `Sequential` resource or either direct
+root is missing, refresh the import before testing:
+
+```sh
+callee agent import baldaworks/prism \
+  --path pack/callee/prism \
+  --prefix prism \
+  --force
+```
+
 `prism/lifecycle` requires a host-built envelope whose first line is
 exactly `ROUTE=story` or `ROUTE=epic`. Direct graph runs are useful
 for maintainer inspection; host-managed Beads advancement and explicit batch

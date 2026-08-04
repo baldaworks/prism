@@ -146,9 +146,14 @@ print("PASS: full host request-only and Callee output boundaries preserve intern
 
 
 callee_skill_text = (repo_root / "plugins/prism-callee/skills/lifecycle/SKILL.md").read_text()
+callee_skill_contract = normalized_contract(callee_skill_text)
 assert 'callee agent run prism/lifecycle --message "$envelope"' in callee_skill_text
 assert 'callee agent run prism/lifecycle --agent-root pack/callee' not in callee_skill_text
 assert "Do not load\n  it for normal lifecycle execution" in callee_skill_text
+assert "Require all three public roots" in callee_skill_contract
+assert "Story-only `Sequential` lifecycle is a stale catalog" in callee_skill_contract
+assert "callee agent import baldaworks/prism --path pack/callee/prism --prefix prism --force" in callee_skill_text
+assert "Do not bypass a stale catalog by invoking a direct graph" in callee_skill_contract
 print("PASS: installed Prism Callee runtime uses the default catalog and skips authoring context")
 
 

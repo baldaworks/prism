@@ -15,6 +15,22 @@ An active Epic has exactly one supported phase label:
 5. `phase:epic:delivery`
 6. `phase:epic:validation`
 
+```mermaid
+flowchart TB
+    I["Multi-Story initiative"] --> F["Frame"]
+    F --> A["Architecture"]
+    A --> R["Roadmap"]
+    R --> P{"Epic approval"}
+    P -->|approved| D["Delivery"]
+    P -->|refine architecture| A
+    D --> V{"Validation"}
+    V -->|pass| C["Close Epic"]
+    V -->|open child race| D
+    V -->|roadmap gap| R
+    V -->|architecture gap| A
+    V -->|requirements gap| F
+```
+
 Unsupported phase labels are treated as absent and are never migrated. An Epic
 with no supported Epic phase starts at Frame and clears stale Epic approval.
 Labels from another supported item namespace fail closed.
@@ -40,6 +56,23 @@ implementation of a child Story. Delivery advances eligible Stories
 sequentially through `prism:story`; each Story retains its own human gate.
 Validation closes the Epic only after its acceptance criteria and child Story
 outcomes are verified.
+
+### Sequential delivery and approval scope
+
+```mermaid
+flowchart TB
+    E["Epic"] --> G["Direct children: Stories only"]
+    G --> R["Select one ready Story"]
+    R --> S["Run prism:story"]
+    S --> H{"Story's own Human gate or blocker?"}
+    H -->|awaiting or blocked| Stop["Stop on the current Epic"]
+    H -->|approved and delivered| Done["Story closes"]
+    Done --> More{"Open Stories remain?"}
+    More -->|yes| R
+    More -->|no| V["Epic Validation"]
+    EA["Epic approval: architecture and roadmap only"] -.-> NC["Never creates Story approval"]
+    NC -.-> H
+```
 
 When called by router batch mode, the Epic lifecycle advances only that Epic to
 its next genuine stop. Item-local gates and blockers are returned as outcomes

@@ -85,7 +85,7 @@ def normalized_contract(text: str) -> str:
 mapping_path = root / "docs/lifecycle-ownership.json"
 record(mapping_path.is_file(), "lifecycle ownership mapping exists")
 mapping = load_json(mapping_path)
-record(mapping.get("version") == 18, "ownership schema version is 18")
+record(mapping.get("version") == 19, "ownership schema version is 19")
 
 expected_interfaces = {
     "router": {"codex": "$prism:lifecycle", "claude": "/prism:lifecycle", "flat": "/prism-lifecycle"},
@@ -429,6 +429,10 @@ for marker in [
     "[Breakdown normalization contract](references/breakdown.md)",
     "Do not load it for normal lifecycle execution",
     "Read when a Story reaches Breakdown or when reconciling its task graph",
+    "Require all three public roots",
+    "Story-only `Sequential` lifecycle is a stale catalog",
+    "callee agent import baldaworks/prism --path pack/callee/prism --prefix prism --force",
+    "Do not bypass a stale catalog by invoking a direct graph",
 ]:
     record(marker in callee_skill_text, f"{callee_skill.relative_to(root)} reference contract contains: {marker}")
 record(

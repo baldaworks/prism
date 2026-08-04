@@ -1,5 +1,5 @@
 {
-  "version": 18,
+  "version": 19,
   "interfaces": {
     "router": {
       "codex": "$prism:lifecycle",
@@ -189,9 +189,9 @@
     "aggregate_algorithm": "sha256 over sorted source path UTF-8, NUL, file bytes, NUL",
     "host_sources": {
       "mutation_policy": "digest-locked",
-      "aggregate_sha256": "2f9b2643243539681fd1c0f2d6b00f3820cc104aa2b4d5f8f8cdb2c9fceaf27f",
+      "aggregate_sha256": "9e47226dcdefef4c5f7b91f8e50ea6abea0acbd1720c87ad675f1c7c2c581652",
       "sources": [
-        {"path": "plugins/prism-callee/skills/lifecycle/SKILL.md", "sha256": "39465bef2132f0e28a63be4f9459363d5c2029c5174e227fa78d04c965df93da"},
+        {"path": "plugins/prism-callee/skills/lifecycle/SKILL.md", "sha256": "c5b28258a63056251a71bc121770e231dccb75386a839aedf241ceafe1d62892"},
         {"path": "plugins/prism-callee/skills/lifecycle/references/breakdown.md", "sha256": "002023fa3df1ae6ac1f6e2ab43e53b464e2703923ff86708f4429eed48683c27"},
         {"path": "plugins/prism-callee/skills/lifecycle/references/promptkit.md", "sha256": "6612b7cfb2db0ed7ff1dee2f296b179be056ec57ebafaff4ea2c188461dd6ba4"},
         {"path": "plugins/prism-light/skills/lifecycle/SKILL.md", "sha256": "fe6b8c5c5885498073f1fb82150d277004748a1240805487bda3d63325750844"},
