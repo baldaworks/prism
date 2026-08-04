@@ -55,6 +55,10 @@ interaction that Prism maintainers need to validate.
 If you bypass the harness's PTY-backed launch, you may not reproduce the same
 interactive behavior that the smoke test is designed to exercise.
 
+The harness prefers an installed `callee` binary. If `callee` is absent, it
+falls back to `npx --yes @baldaworks/callee@0.19.0`, matching the repository's
+documented Router-capable Callee baseline.
+
 ## Codex-backed local shell caveat
 
 Prism's automated Role generation is codex-backed. In practice, `specify` or

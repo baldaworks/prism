@@ -24,7 +24,7 @@ Runs PTY-backed Callee smoke tests for Prism Human steps:
 - all: runs both tests
 
 Requires util-linux script(1). Uses callee when installed, otherwise falls back
-to npx --yes @baldaworks/callee@0.18.0.
+to npx --yes @baldaworks/callee@0.19.0.
 EOF
 }
 
@@ -84,7 +84,7 @@ if command -v callee >/dev/null 2>&1; then
   callee_cmd=(callee)
 else
   require_cmd npx
-  callee_cmd=(npx --yes @baldaworks/callee@0.18.0)
+  callee_cmd=(npx --yes @baldaworks/callee@0.19.0)
 fi
 
 temp_dir="$(mktemp -d "${TMPDIR:-/tmp}/prism-callee-smoke.XXXXXX")"
