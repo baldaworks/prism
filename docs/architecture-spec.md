@@ -177,6 +177,11 @@ Canonical namespaced skills live under `plugins/*/skills/`. Flat-skill hosts
 consume the corresponding `plugins/*/prefixed-skills/` mirrors. Behavioral
 drift between those trees fails validation.
 
+Each `plugins/*/` directory is also an Agent Plugins 1.0.0 package root. Its
+root `plugin.json` exposes the canonical immediate-child skills under `skills/`;
+the portable package does not define installation, invocation syntax, Callee
+agents, or a marketplace.
+
 The Callee pack is digest-locked independently. Host skill digests, Callee pack
 digests, public interfaces, phase sets, approval boundaries, routing behavior,
 and documentation invariants are checked by repository scripts.

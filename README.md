@@ -232,6 +232,22 @@ cp -a plugins/prism-callee/prefixed-skills/prism-callee-lifecycle .opencode/skil
 cp -a plugins/prism-light/prefixed-skills/prism-light .opencode/skills/
 ```
 
+### Agent Plugins 1.0.0
+
+Each plugin directory is also an Agent Plugins 1.0.0 package root:
+
+| Plugin | Package root |
+| --- | --- |
+| `prism` | `plugins/prism/` |
+| `prism-callee` | `plugins/prism-callee/` |
+| `prism-light` | `plugins/prism-light/` |
+
+Point an Agent Plugins-compatible client at the package root for the workflow
+you want to expose. The standard defines package discovery, not installation,
+marketplaces, or invocation syntax; use the selected client's own workflow for
+those operations. Portable clients discover the canonical immediate-child
+skills under each package's `skills/` directory.
+
 ## Install or update the Callee agents
 
 This step is required only for `prism-callee` and direct Callee execution:
@@ -275,6 +291,7 @@ maintenance only and is not a runtime workaround.
 | `plugins/prism/` | Primary host router, Story, and Epic skills |
 | `plugins/prism-callee/` | Host integration for Callee-backed Story and Epic workflows |
 | `plugins/prism-light/` | Concise host Story lifecycle and flat Light alias |
+| `plugins/*/plugin.json` | Agent Plugins 1.0.0 portable package manifests |
 | `pack/callee/prism/` | Digest-locked canonical Callee Router, Story, and Epic agents |
 
 Canonical and flat host paths are behavioral mirrors:

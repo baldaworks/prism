@@ -7,6 +7,7 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 python3 - "$repo_root" <<'PY'
 import json
 import pathlib
+import re
 import sys
 
 root = pathlib.Path(sys.argv[1])
@@ -16,6 +17,23 @@ expected_codex_versions = {
     "prism-callee": "0.6.0+codex.20260804000000",
     "prism-light": "0.6.0+codex.20260804000000",
 }
+agent_plugins_schema = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"
+agent_plugins_version = "0.6.0"
+agent_plugins_fields = {
+    "$schema",
+    "name",
+    "version",
+    "description",
+    "author",
+    "homepage",
+    "repository",
+    "license",
+    "keywords",
+    "extensions",
+}
+agent_plugins_name_pattern = re.compile(
+    r"^(?!.*(?:--|\.\.))[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?$"
+)
 
 namespaced_plugin_checks = [
     {
@@ -240,6 +258,56 @@ def validate_skill_inventory(plugin: str, plugin_root: pathlib.Path) -> None:
         )
 
 
+def validate_agent_plugins_manifest(check: dict, baseline: dict) -> None:
+    plugin_root = check["root"]
+    manifest_path = plugin_root / "plugin.json"
+    record(manifest_path.is_file(), f"{manifest_path.relative_to(root)} exists")
+    if not manifest_path.is_file():
+        return
+
+    manifest_data = load_json(manifest_path)
+    if manifest_data is None:
+        return
+
+    extra_fields = set(manifest_data) - agent_plugins_fields
+    record(
+        not extra_fields,
+        f"{manifest_path.relative_to(root)} uses only Agent Plugins 1.0.0 manifest fields",
+    )
+    record(
+        manifest_data.get("$schema") == agent_plugins_schema,
+        f"{manifest_path.relative_to(root)} pins the Agent Plugins 1.0.0 schema",
+    )
+    name = manifest_data.get("name")
+    record(
+        isinstance(name, str)
+        and 1 <= len(name) <= 64
+        and agent_plugins_name_pattern.fullmatch(name) is not None,
+        f"{manifest_path.relative_to(root)} has a valid Agent Plugins name",
+    )
+    record(
+        name == check["expected_name"],
+        f"{manifest_path.relative_to(root)} name is {check['expected_name']}",
+    )
+    record(
+        manifest_data.get("version") == agent_plugins_version,
+        f"{manifest_path.relative_to(root)} version matches release tag v{agent_plugins_version}",
+    )
+    for field in flat_shared_manifest_fields:
+        record(
+            manifest_data.get(field) == baseline.get(field),
+            f"{manifest_path.relative_to(root)} matches the Codex baseline for {field}",
+        )
+    record(
+        "skills" not in manifest_data,
+        f"{manifest_path.relative_to(root)} relies on the portable skills/ discovery path",
+    )
+    record(
+        not (plugin_root / "mcp.json").exists(),
+        f"{plugin_root.relative_to(root)} omits mcp.json because the plugin declares no MCP servers",
+    )
+
+
 def validate_manifest_common(
     manifest_path: pathlib.Path,
     manifest_data: dict,
@@ -396,6 +464,11 @@ for check in flat_plugin_checks:
     baseline = codex_baselines.get(check["plugin"])
     if baseline is not None:
         validate_flat_manifest(check, baseline)
+
+for check in namespaced_plugin_checks:
+    baseline = codex_baselines.get(check["plugin"])
+    if baseline is not None:
+        validate_agent_plugins_manifest(check, baseline)
 
 claude_marketplace_path = root / ".claude-plugin/marketplace.json"
 record(claude_marketplace_path.is_file(), ".claude-plugin/marketplace.json exists")
