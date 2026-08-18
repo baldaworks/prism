@@ -258,6 +258,56 @@ def validate_skill_inventory(plugin: str, plugin_root: pathlib.Path) -> None:
         )
 
 
+def frontmatter_description_present(path: pathlib.Path) -> bool:
+    if not path.is_file():
+        return False
+    text = path.read_text()
+    if not text.startswith("---"):
+        return False
+    parts = text.split("---", 2)
+    if len(parts) < 3:
+        return False
+    lines = parts[1].splitlines()
+    for index, line in enumerate(lines):
+        if line.lstrip().startswith("description:"):
+            inline = line.split(":", 1)[1].strip()
+            if inline:
+                return True
+            for next_line in lines[index + 1:]:
+                if not next_line.strip():
+                    continue
+                if not next_line.startswith((" ", "\t")):
+                    return False
+                if next_line.strip():
+                    return True
+            return False
+    return False
+
+
+def validate_command_inventory(plugin: str, plugin_root: pathlib.Path) -> None:
+    flat_skills = expected_skill_inventory[plugin]["flat"]
+    commands_dir = plugin_root / "prefixed-commands"
+    actual = sorted(path.stem for path in commands_dir.glob("*.md"))
+    record(
+        actual == sorted(flat_skills),
+        f"{plugin} OpenCode command inventory is {sorted(flat_skills)}",
+    )
+    for command_name in flat_skills:
+        command_path = commands_dir / f"{command_name}.md"
+        record(command_path.is_file(), f"{command_path.relative_to(root)} exists")
+        if not command_path.is_file():
+            continue
+        command_text = command_path.read_text()
+        record(
+            frontmatter_description_present(command_path),
+            f"{command_path.relative_to(root)} has a non-empty frontmatter description",
+        )
+        record(
+            f"Load the {command_name} skill" in command_text,
+            f"{command_path.relative_to(root)} loads the matching {command_name} skill",
+        )
+
+
 def validate_agent_plugins_manifest(check: dict, baseline: dict) -> None:
     plugin_root = check["root"]
     manifest_path = plugin_root / "plugin.json"
@@ -452,6 +502,7 @@ def validate_flat_manifest(check: dict, baseline: dict) -> None:
 for check in namespaced_plugin_checks:
     validate_namespaced_pair(check)
     validate_skill_inventory(check["plugin"], check["root"])
+    validate_command_inventory(check["plugin"], check["root"])
 
 prism_codex_manifest_path = root / "plugins/prism/.codex-plugin/plugin.json"
 codex_baselines = {}

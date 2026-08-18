@@ -232,6 +232,23 @@ cp -a plugins/prism-callee/prefixed-skills/prism-callee-lifecycle .opencode/skil
 cp -a plugins/prism-light/prefixed-skills/prism-light .opencode/skills/
 ```
 
+To also expose the explicit slash invocations (`/prism-lifecycle`,
+`/prism-story`, `/prism-epic`, `/prism-callee-lifecycle`, `/prism-light`) as
+OpenCode commands, install the matching command files:
+
+```sh
+mkdir -p .opencode/commands
+cp plugins/prism/prefixed-commands/prism-lifecycle.md .opencode/commands/
+cp plugins/prism/prefixed-commands/prism-story.md .opencode/commands/
+cp plugins/prism/prefixed-commands/prism-epic.md .opencode/commands/
+cp plugins/prism-callee/prefixed-commands/prism-callee-lifecycle.md .opencode/commands/
+cp plugins/prism-light/prefixed-commands/prism-light.md .opencode/commands/
+```
+
+Commands are optional thin wrappers: OpenCode loads skills on demand through its
+skill tool, and each command only directs the agent to the matching skill while
+forwarding your request.
+
 ### Agent Plugins 1.0.0
 
 Each plugin directory is also an Agent Plugins 1.0.0 package root:
@@ -291,6 +308,7 @@ maintenance only and is not a runtime workaround.
 | `plugins/prism/` | Primary host router, Story, and Epic skills |
 | `plugins/prism-callee/` | Host integration for Callee-backed Story and Epic workflows |
 | `plugins/prism-light/` | Concise host Story lifecycle and flat Light alias |
+| `plugins/*/prefixed-commands/` | OpenCode command wrappers over the flat skills |
 | `plugins/*/plugin.json` | Agent Plugins 1.0.0 portable package manifests |
 | `pack/callee/prism/` | Digest-locked canonical Callee Router, Story, and Epic agents |
 
@@ -302,6 +320,9 @@ Canonical and flat host paths are behavioral mirrors:
   `plugins/prism-callee/prefixed-skills/prism-callee-lifecycle`
 - `plugins/prism-light/skills/lifecycle` ↔
   `plugins/prism-light/prefixed-skills/prism-light`
+
+Each OpenCode command in `plugins/*/prefixed-commands/` is a thin wrapper whose
+name matches the flat skill it loads (see the install steps above).
 
 ## Validation
 
