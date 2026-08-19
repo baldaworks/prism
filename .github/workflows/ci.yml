@@ -24,6 +24,9 @@ jobs:
         with:
           node-version: "22"
 
+      - name: Install ripgrep
+        run: sudo apt-get update && sudo apt-get install -y ripgrep
+
       - name: Install bd
         run: go install github.com/steveyegge/beads/cmd/bd@v1.1.0
 
