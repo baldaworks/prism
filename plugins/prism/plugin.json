@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "prism",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Route Prism work across full Story and Epic lifecycles directly in the host.",
   "author": {
     "name": "Alexey Samoylov",

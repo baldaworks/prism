@@ -11,14 +11,9 @@ import re
 import sys
 
 root = pathlib.Path(sys.argv[1])
-expected_release_version = "0.6.0+codex.20260804000000"
-expected_codex_versions = {
-    "prism": "0.6.0+codex.20260804000000",
-    "prism-callee": "0.6.0+codex.20260804000000",
-    "prism-light": "0.6.0+codex.20260804000000",
-}
+expected_release_version = "0.7.0"
 agent_plugins_schema = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"
-agent_plugins_version = "0.6.0"
+agent_plugins_version = "0.7.0"
 agent_plugins_fields = {
     "$schema",
     "name",
@@ -365,11 +360,6 @@ def validate_manifest_common(
     expected_skills: str,
     plugin_root: pathlib.Path,
 ) -> None:
-    expected_version = (
-        expected_codex_versions[expected_name]
-        if ".codex-plugin" in manifest_path.parts
-        else expected_release_version
-    )
     record(
         manifest_data.get("name") == expected_name,
         f"{manifest_path.relative_to(root)} name is {expected_name}",
@@ -383,8 +373,8 @@ def validate_manifest_common(
         f"{manifest_path.relative_to(root)} has a non-empty description",
     )
     record(
-        manifest_data.get("version") == expected_version,
-        f"{manifest_path.relative_to(root)} keeps version {expected_version}",
+        manifest_data.get("version") == expected_release_version,
+        f"{manifest_path.relative_to(root)} keeps version {expected_release_version}",
     )
 
     skills_dir = expected_skills_dir(plugin_root, manifest_data)

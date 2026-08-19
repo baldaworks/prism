@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "prism-light",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Run the concise Prism Light story lifecycle directly in the host.",
   "author": {
     "name": "Alexey Samoylov",

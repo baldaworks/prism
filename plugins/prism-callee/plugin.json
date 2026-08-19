@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "prism-callee",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Run the Prism Story and Epic lifecycles as workflows of specialized Callee subagents.",
   "author": {
     "name": "Alexey Samoylov",
