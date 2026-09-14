@@ -35,7 +35,6 @@ documents = {
     "docs/architecture-story-lifecycle.md": read("docs/architecture-story-lifecycle.md"),
     "docs/architecture-epic-lifecycle.md": read("docs/architecture-epic-lifecycle.md"),
     "docs/architecture-callee-lifecycle.md": read("docs/architecture-callee-lifecycle.md"),
-    "docs/architecture-light-lifecycle.md": read("docs/architecture-light-lifecycle.md"),
     "docs/callee-lifecycle-smoke-test.md": read("docs/callee-lifecycle-smoke-test.md"),
 }
 
@@ -47,11 +46,11 @@ marketplace_path = root / ".agents/plugins/marketplace.json"
 marketplace = json.loads(marketplace_path.read_text()) if marketplace_path.is_file() else {}
 marketplace_names = [entry.get("name") for entry in marketplace.get("plugins", [])]
 record(
-    marketplace_names[:3] == ["prism", "prism-callee", "prism-light"],
-    "Codex marketplace preserves Prism host, Prism Callee, Prism Light priority",
+    marketplace_names == ["prism", "prism-callee"],
+    "Codex marketplace preserves Prism host and Prism Callee priority",
 )
 
-priority_markers = ["| 1 | **prism**", "| 2 | **prism-callee**", "| 3 | **prism-light**"]
+priority_markers = ["| 1 | **prism**", "| 2 | **prism-callee**"]
 positions = [readme.find(marker) for marker in priority_markers]
 record(all(position >= 0 for position in positions) and positions == sorted(positions), "README documents plugin priority")
 
@@ -60,22 +59,20 @@ for marker in [
     "$prism:story",
     "$prism:epic",
     "$prism-callee:lifecycle",
-    "$prism-light:lifecycle",
     "/prism-lifecycle",
     "/prism-story",
     "/prism-epic",
     "/prism-callee-lifecycle",
-    "/prism-light",
 ]:
     record(marker in readme, f"README documents public entrypoint {marker}")
 
 combined_docs = "\n".join(documents.values())
-for retired in ["@baldaworks/callee@0.18.0", "plugins/prism/skills/light", "$prism:light", "/prism:light"]:
+for retired in ["@baldaworks/callee@0.18.0"]:
     record(retired not in combined_docs, f"documentation excludes retired marker {retired}")
 record("`callee` `0.19.0`" in readme, "README documents the Callee 0.19.0 baseline")
 
 freeform_request = "Add CSV export to the report page."
-for entrypoint in ["$prism:lifecycle", "$prism-callee:lifecycle", "$prism-light:lifecycle"]:
+for entrypoint in ["$prism:lifecycle", "$prism-callee:lifecycle"]:
     record(
         f"{entrypoint} {freeform_request}" in readme,
         f"README shows a free-form request for {entrypoint}",
@@ -131,7 +128,6 @@ diagram_minimums = {
     "docs/architecture-story-lifecycle.md": 2,
     "docs/architecture-epic-lifecycle.md": 2,
     "docs/architecture-callee-lifecycle.md": 1,
-    "docs/architecture-light-lifecycle.md": 1,
 }
 for relative, minimum in diagram_minimums.items():
     blocks = re.findall(r"```mermaid\s*\n(.*?)```", documents[relative], flags=re.DOTALL)

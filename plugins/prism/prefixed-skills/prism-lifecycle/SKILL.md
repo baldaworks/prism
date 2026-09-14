@@ -6,7 +6,7 @@ description: >
   epics. Use when the user runs $prism:lifecycle, /prism:lifecycle, or
   /prism-lifecycle; asks to run or advance the primary host workflow; resumes
   one host Story or Epic; or asks to process all open Prism epics. Do not use
-  for explicit Prism Light or Prism Callee requests.
+  for explicit Prism Callee requests.
 ---
 
 # Prism lifecycle router
@@ -17,9 +17,8 @@ Resolve the user's target, then follow exactly one sibling lifecycle contract:
 - epic: [Epic skill](../prism-epic/SKILL.md)
 
 This skill owns target resolution and explicit open-epic batch coordination.
-It does not duplicate phase procedure and never invokes Callee. Select Prism
-Light only when the user explicitly invokes `$prism-light:lifecycle`,
-`/prism-light:lifecycle`, or `/prism-light`.
+It does not duplicate phase procedure and never invokes Callee. Use the Prism
+Callee lifecycle only when the user explicitly requests subagent execution.
 
 ## Prerequisites
 

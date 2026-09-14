@@ -16,27 +16,24 @@ When documentation and implementation disagree, use this precedence:
 
 ## Plugin boundary
 
-Prism ships three independent plugins in this priority order:
+Prism ships two independent plugins in this priority order:
 
 | Priority | Plugin | Canonical skills | Runtime |
 | --- | --- | --- | --- |
 | 1 | `prism` | `lifecycle`, `story`, `epic` | Host + Beads |
 | 2 | `prism-callee` | `lifecycle` | Host + Beads + imported Callee agents |
-| 3 | `prism-light` | `lifecycle` | Host + Beads |
 
-Installing one plugin does not install either of the others. All three use the
-same Beads labels, but each owns its own host entrypoints and skill inventory.
-The primary router never selects Prism Callee or Prism Light implicitly.
+Installing one plugin does not install the other. Both use the same Beads
+labels, but each owns its own host entrypoints and skill inventory. The primary
+router never selects Prism Callee implicitly.
 
 ```mermaid
 flowchart TB
     U["Operator request"] --> P{"Explicit workflow?"}
     P -->|default| H["Prism host"]
     P -->|Callee| C["Prism Callee"]
-    P -->|Light| L["Prism Light"]
     H --> B[("Beads")]
     C --> B
-    L --> B
     C --> A["Imported prism/* Callee catalog"]
 ```
 
@@ -162,15 +159,6 @@ repository checkout. `--agent-root pack/callee` is maintainer-only.
 
 See [Prism Callee Lifecycle](architecture-callee-lifecycle.md).
 
-## Prism Light
-
-Prism Light is an explicit-only, host-native Story workflow. It reuses the
-durable Story phase model but uses shorter phase instructions and keeps its
-concise approval display: Acceptance criteria → Design summary → Task summary
-→ Approval request. It never runs an Epic or invokes Callee.
-
-See [Prism Light Lifecycle](architecture-light-lifecycle.md).
-
 ## Mirrors and integrity
 
 Canonical namespaced skills live under `plugins/*/skills/`. Flat-skill hosts
@@ -212,5 +200,4 @@ Provider-backed Human smoke tests are documented separately in
 | [Story](architecture-story-lifecycle.md) | Full host Story lifecycle |
 | [Epic](architecture-epic-lifecycle.md) | Full host Epic lifecycle |
 | [Callee](architecture-callee-lifecycle.md) | Host/Callee ownership and catalog operations |
-| [Light](architecture-light-lifecycle.md) | Explicit concise Story lifecycle |
 | [Ownership manifest](lifecycle-ownership.json) | Machine-checked source and digest inventory |

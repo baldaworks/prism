@@ -22,8 +22,6 @@ directories = [
     "plugins/prism/prefixed-skills",
     "plugins/prism-callee/skills",
     "plugins/prism-callee/prefixed-skills",
-    "plugins/prism-light/skills",
-    "plugins/prism-light/prefixed-skills",
     "pack/callee/prism",
 ]
 files = [

@@ -10,6 +10,7 @@ baseline="$temp_root/baseline"
 git clone --quiet --no-hardlinks "$repo_root" "$baseline"
 
 cp "$repo_root/README.md" "$baseline/README.md"
+cp "$repo_root/.agents/plugins/marketplace.json" "$baseline/.agents/plugins/marketplace.json"
 rm -rf "$baseline/docs"
 cp -a "$repo_root/docs" "$baseline/docs"
 cp "$repo_root/scripts/validate-documentation.sh" "$baseline/scripts/validate-documentation.sh"
@@ -50,12 +51,12 @@ printf 'PASS: validator rejects internal Callee protocol in README\n'
 
 horizontal_diagram="$temp_root/horizontal-diagram"
 cp -a "$baseline" "$horizontal_diagram"
-sed -i '0,/flowchart TB/s//flowchart LR/' "$horizontal_diagram/docs/architecture-light-lifecycle.md"
+sed -i '0,/flowchart TB/s//flowchart LR/' "$horizontal_diagram/docs/architecture-host-lifecycle.md"
 if "$horizontal_diagram/scripts/validate-documentation.sh" "$horizontal_diagram" >"$temp_root/horizontal-diagram.log" 2>&1; then
   printf 'horizontal lifecycle diagram unexpectedly passed documentation validation\n' >&2
   exit 1
 fi
-rg -Fq 'FAIL: docs/architecture-light-lifecycle.md keeps Mermaid diagrams vertical' "$temp_root/horizontal-diagram.log"
+rg -Fq 'FAIL: docs/architecture-host-lifecycle.md keeps Mermaid diagrams vertical' "$temp_root/horizontal-diagram.log"
 printf 'PASS: validator rejects a horizontal lifecycle diagram\n'
 
 stale_catalog="$temp_root/stale-catalog"

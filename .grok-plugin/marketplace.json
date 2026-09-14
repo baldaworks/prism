@@ -1,6 +1,6 @@
 {
   "name": "prism",
-  "description": "Prism host, Prism Callee, and Prism Light lifecycle plugins for Grok Build.",
+  "description": "Prism host and Prism Callee lifecycle plugins for Grok Build.",
   "owner": {
     "name": "Alexey Samoylov"
   },
@@ -35,22 +35,6 @@
       "source": {
         "type": "local",
         "path": "./plugins/prism-callee"
-      }
-    },
-    {
-      "name": "prism-light",
-      "description": "Run the concise Prism Light story lifecycle directly in the host.",
-      "version": "0.7.0",
-      "category": "development",
-      "author": {
-        "name": "Alexey Samoylov",
-        "url": "https://github.com/baldaworks"
-      },
-      "homepage": "https://github.com/baldaworks/prism",
-      "keywords": ["prism", "beads", "lightweight", "story-lifecycle"],
-      "source": {
-        "type": "local",
-        "path": "./plugins/prism-light"
       }
     }
   ]

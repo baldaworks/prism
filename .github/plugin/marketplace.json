@@ -4,7 +4,7 @@
     "name": "Alexey Samoylov"
   },
   "metadata": {
-    "description": "Prism host, Prism Callee, and Prism Light lifecycle plugins for GitHub Copilot CLI.",
+    "description": "Prism host and Prism Callee lifecycle plugins for GitHub Copilot CLI.",
     "version": "0.7.0"
   },
   "plugins": [
@@ -35,20 +35,6 @@
       "repository": "https://github.com/baldaworks/prism",
       "license": "MIT",
       "keywords": ["prism", "beads", "callee", "story-lifecycle", "epic-lifecycle", "subagents"]
-    },
-    {
-      "name": "prism-light",
-      "description": "Run the concise Prism Light story lifecycle directly in the host.",
-      "version": "0.7.0",
-      "source": "./plugins/prism-light",
-      "author": {
-        "name": "Alexey Samoylov",
-        "url": "https://github.com/baldaworks"
-      },
-      "homepage": "https://github.com/baldaworks/prism",
-      "repository": "https://github.com/baldaworks/prism",
-      "license": "MIT",
-      "keywords": ["prism", "beads", "lightweight", "story-lifecycle"]
     }
   ]
 }

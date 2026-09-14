@@ -4,7 +4,7 @@
 
 Prism stores requirements, design, dependencies, approval, implementation, and
 verification state in [Beads](https://github.com/gastownhall/beads). It ships as
-three independent plugins, listed in their intended priority order.
+two independent plugins, listed in their intended priority order.
 
 ## Plugins
 
@@ -12,16 +12,15 @@ three independent plugins, listed in their intended priority order.
 | --- | --- | --- | --- |
 | 1 | **prism** | Primary host-native Story and Epic lifecycles | `$prism:lifecycle` |
 | 2 | **prism-callee** | Story and Epic workflows executed through specialized Callee subagents | `$prism-callee:lifecycle` |
-| 3 | **prism-light** | Concise host-native Story lifecycle | `$prism-light:lifecycle` |
 
 The plugins share Beads state but have separate manifests, skill inventories,
 marketplace entries, and runtime ownership. Installing one does not implicitly
-install either of the others.
+install the other.
 
 ### 1. Prism host
 
 The primary `prism` plugin owns the type-aware router, the full Story lifecycle,
-and the Epic lifecycle. It never selects Prism Light or Callee implicitly.
+and the Epic lifecycle. It never selects Prism Callee implicitly.
 
 | Workflow | Codex | Claude Code | Flat-slash hosts |
 | --- | --- | --- | --- |
@@ -53,17 +52,6 @@ The host resolves Beads state and builds the internal route envelope before
 calling Callee; users do not construct that protocol manually.
 Before execution, the default Callee catalog must contain `prism/lifecycle` as
 a Router plus the `prism/story` and `prism/epic` imported roots.
-
-### 3. Prism Light
-
-`prism-light` owns the concise host-only Story workflow. Its canonical skill is
-named `lifecycle`; the flat alias remains `prism-light`.
-
-| Codex | Claude Code | Flat-slash hosts |
-| --- | --- | --- |
-| `$prism-light:lifecycle` | `/prism-light:lifecycle` | `/prism-light` |
-
-Light is always explicit and is never selected by the primary Prism router.
 
 ## Story lifecycle
 
@@ -141,8 +129,8 @@ Tasks. Nested Epics and direct Epic Tasks are invalid.
 The full host plugin presents Design summary → Task summary → Approval request
 for Stories and Architecture summary → Story roadmap → Approval request for
 Epics. It shows acceptance criteria only when the operator explicitly requests
-the current item's criteria. Prism Light retains its concise approval contract.
-Every Apply transition still requires explicit human authorization.
+the current item's criteria. Every Apply transition still requires explicit
+human authorization.
 
 ## Quick start
 
@@ -151,14 +139,13 @@ Each public plugin accepts an ordinary request:
 ```text
 $prism:lifecycle Add CSV export to the report page.
 $prism-callee:lifecycle Add CSV export to the report page.
-$prism-light:lifecycle Add CSV export to the report page.
 ```
 
 Run only the entrypoint for the workflow you installed and want to use.
 
 ## Requirements
 
-All three plugins require:
+Both plugins require:
 
 - [`bd` (Beads)](https://github.com/gastownhall/beads)
 - a supported host
@@ -179,7 +166,6 @@ want to expose.
 codex plugin marketplace add baldaworks/prism
 codex plugin add prism@prism
 codex plugin add prism-callee@prism
-codex plugin add prism-light@prism
 ```
 
 To refresh an existing Git marketplace snapshot, run
@@ -192,7 +178,6 @@ the plugins you use. Start a new thread after a plugin reinstall.
 claude plugin marketplace add baldaworks/prism
 claude plugin install prism@prism --scope user
 claude plugin install prism-callee@prism --scope user
-claude plugin install prism-light@prism --scope user
 ```
 
 ### Grok Build
@@ -200,7 +185,6 @@ claude plugin install prism-light@prism --scope user
 ```sh
 grok plugin install 'baldaworks/prism#plugins/prism' --trust
 grok plugin install 'baldaworks/prism#plugins/prism-callee' --trust
-grok plugin install 'baldaworks/prism#plugins/prism-light' --trust
 ```
 
 ### GitHub Copilot CLI
@@ -209,7 +193,6 @@ grok plugin install 'baldaworks/prism#plugins/prism-light' --trust
 copilot plugin marketplace add baldaworks/prism
 copilot plugin install prism@prism
 copilot plugin install prism-callee@prism
-copilot plugin install prism-light@prism
 ```
 
 ### Cursor
@@ -218,8 +201,7 @@ copilot plugin install prism-light@prism
 agent plugin marketplace add https://github.com/baldaworks/prism.git
 ```
 
-Install **prism**, **prism-callee**, and **prism-light** independently from the
-marketplace UI.
+Install **prism** and **prism-callee** independently from the marketplace UI.
 
 ### OpenCode and compatible flat-skill hosts
 
@@ -229,12 +211,11 @@ cp -a plugins/prism/prefixed-skills/prism-lifecycle .opencode/skills/
 cp -a plugins/prism/prefixed-skills/prism-story .opencode/skills/
 cp -a plugins/prism/prefixed-skills/prism-epic .opencode/skills/
 cp -a plugins/prism-callee/prefixed-skills/prism-callee-lifecycle .opencode/skills/
-cp -a plugins/prism-light/prefixed-skills/prism-light .opencode/skills/
 ```
 
 To also expose the explicit slash invocations (`/prism-lifecycle`,
-`/prism-story`, `/prism-epic`, `/prism-callee-lifecycle`, `/prism-light`) as
-OpenCode commands, install the matching command files:
+`/prism-story`, `/prism-epic`, and `/prism-callee-lifecycle`) as OpenCode
+commands, install the matching command files:
 
 ```sh
 mkdir -p .opencode/commands
@@ -242,7 +223,6 @@ cp plugins/prism/prefixed-commands/prism-lifecycle.md .opencode/commands/
 cp plugins/prism/prefixed-commands/prism-story.md .opencode/commands/
 cp plugins/prism/prefixed-commands/prism-epic.md .opencode/commands/
 cp plugins/prism-callee/prefixed-commands/prism-callee-lifecycle.md .opencode/commands/
-cp plugins/prism-light/prefixed-commands/prism-light.md .opencode/commands/
 ```
 
 Commands are optional thin wrappers: OpenCode loads skills on demand through its
@@ -257,7 +237,6 @@ Each plugin directory is also an Agent Plugins 1.0.0 package root:
 | --- | --- |
 | `prism` | `plugins/prism/` |
 | `prism-callee` | `plugins/prism-callee/` |
-| `prism-light` | `plugins/prism-light/` |
 
 Point an Agent Plugins-compatible client at the package root for the workflow
 you want to expose. The standard defines package discovery, not installation,
@@ -307,7 +286,6 @@ maintenance only and is not a runtime workaround.
 | --- | --- |
 | `plugins/prism/` | Primary host router, Story, and Epic skills |
 | `plugins/prism-callee/` | Host integration for Callee-backed Story and Epic workflows |
-| `plugins/prism-light/` | Concise host Story lifecycle and flat Light alias |
 | `plugins/*/prefixed-commands/` | OpenCode command wrappers over the flat skills |
 | `plugins/*/plugin.json` | Agent Plugins 1.0.0 portable package manifests |
 | `pack/callee/prism/` | Digest-locked canonical Callee Router, Story, and Epic agents |
@@ -318,8 +296,6 @@ Canonical and flat host paths are behavioral mirrors:
   `plugins/prism/prefixed-skills/prism-*` trees
 - `plugins/prism-callee/skills/lifecycle` ↔
   `plugins/prism-callee/prefixed-skills/prism-callee-lifecycle`
-- `plugins/prism-light/skills/lifecycle` ↔
-  `plugins/prism-light/prefixed-skills/prism-light`
 
 Each OpenCode command in `plugins/*/prefixed-commands/` is a thin wrapper whose
 name matches the flat skill it loads (see the install steps above).
@@ -350,7 +326,6 @@ For repeatable PTY-backed Callee Human smoke tests:
 - [`docs/architecture-story-lifecycle.md`](docs/architecture-story-lifecycle.md) — full Story behavior
 - [`docs/architecture-epic-lifecycle.md`](docs/architecture-epic-lifecycle.md) — Epic behavior
 - [`docs/architecture-callee-lifecycle.md`](docs/architecture-callee-lifecycle.md) — Callee integration
-- [`docs/architecture-light-lifecycle.md`](docs/architecture-light-lifecycle.md) — Prism Light behavior
 - [`docs/callee-lifecycle-smoke-test.md`](docs/callee-lifecycle-smoke-test.md) — PTY-backed Callee Human smoke tests
 - [`docs/lifecycle-ownership.json`](docs/lifecycle-ownership.json) — machine-checked ownership and integrity
 

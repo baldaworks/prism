@@ -4,7 +4,7 @@
     "name": "Alexey Samoylov"
   },
   "metadata": {
-    "description": "Prism host, Prism Callee, and Prism Light lifecycle plugins for Claude Code.",
+    "description": "Prism host and Prism Callee lifecycle plugins for Claude Code.",
     "version": "0.7.0"
   },
   "plugins": [
@@ -25,15 +25,6 @@
         "name": "Alexey Samoylov"
       },
       "source": "./plugins/prism-callee"
-    },
-    {
-      "name": "prism-light",
-      "description": "Run the concise Prism Light story lifecycle directly in the host.",
-      "version": "0.7.0",
-      "author": {
-        "name": "Alexey Samoylov"
-      },
-      "source": "./plugins/prism-light"
     }
   ]
 }

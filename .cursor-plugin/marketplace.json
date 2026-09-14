@@ -4,7 +4,7 @@
     "name": "Alexey Samoylov"
   },
   "metadata": {
-    "description": "Prism host, Prism Callee, and Prism Light lifecycle plugins for Cursor.",
+    "description": "Prism host and Prism Callee lifecycle plugins for Cursor.",
     "version": "0.7.0"
   },
   "plugins": [
@@ -23,14 +23,6 @@
       "version": "0.7.0",
       "category": "developer-tools",
       "tags": ["prism", "beads", "callee", "story-lifecycle", "epic-lifecycle", "subagents"]
-    },
-    {
-      "name": "prism-light",
-      "source": "./plugins/prism-light",
-      "description": "Run the concise Prism Light story lifecycle directly in the host.",
-      "version": "0.7.0",
-      "category": "developer-tools",
-      "tags": ["prism", "beads", "lightweight", "story-lifecycle"]
     }
   ]
 }
