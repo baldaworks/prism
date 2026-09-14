@@ -1,6 +1,6 @@
 # Prism
 
-Prism is the primary host-native workflow for turning software-change requests into requirements, design, reviewed implementation and verification.
+Prism runs software-change workflows directly in your coding agent, from requirements and design through reviewed implementation and verification.
 Lifecycle state lives in [Beads](https://github.com/gastownhall/beads).
 
 The separately maintained [Prism Callee repository](https://github.com/baldaworks/prism-callee) provides the optional Callee integration and agent pack.
@@ -13,7 +13,7 @@ not install the other.
 $prism:lifecycle Add CSV export to the report page.
 ```
 
-| Workflow | Codex | Claude Code | Flat-slash hosts |
+| Workflow | Codex | Claude Code | Flat-slash coding agents |
 | --- | --- | --- | --- |
 | lifecycle | `$prism:lifecycle` | `/prism:lifecycle` | `/prism-lifecycle` |
 | story | `$prism:story` | `/prism:story` | `/prism-story` |
@@ -21,8 +21,8 @@ $prism:lifecycle Add CSV export to the report page.
 
 ## Requirements
 
-- A supported host and `bd` (Beads).
-- Host execution uses the bundled skills directly; no Callee installation is required.
+- A supported coding agent and `bd` (Beads).
+- Coding agent execution uses the bundled skills directly; no Callee installation is required.
 
 ## Installation
 
@@ -64,7 +64,7 @@ agent plugin marketplace add https://github.com/baldaworks/prism.git
 
 Install **prism** from the marketplace UI.
 
-### OpenCode and compatible flat-skill hosts
+### OpenCode and compatible flat-skill coding agents
 
 From this checkout:
 
@@ -158,7 +158,7 @@ reviewability, verification, and necessary acyclic dependencies matter. There
 is no fixed child-count range. Epic children are Stories; Story children are
 Tasks. Nested Epics and direct Epic Tasks are invalid.
 
-The full host plugin presents Design summary → Task summary → Approval request
+The full coding agent plugin presents Design summary → Task summary → Approval request
 for Stories and Architecture summary → Story roadmap → Approval request for
 Epics. It shows acceptance criteria only when the operator explicitly requests
 the current item's criteria. Every Apply transition still requires explicit
@@ -168,7 +168,7 @@ human authorization.
 
 ## Migration from the combined repository
 
-Existing `prism@prism` installs retain their identity. Refresh the marketplace and reinstall to obtain the host-only package. Callee users must move to the linked Prism Callee repository; its plugin and agent pack are no longer distributed here.
+Existing `prism@prism` installs retain their identity. Refresh the marketplace and reinstall to obtain the primary coding agent package. Callee users must move to the linked Prism Callee repository; its plugin and agent pack are no longer distributed here.
 Public invocation names and existing Beads labels remain compatible.
 Remote installation commands require the split repositories to be published;
 pre-publication verification uses the local package roots.
@@ -194,7 +194,7 @@ Callee into a temporary catalog without changing your installed agents.
 ./scripts/test-lifecycle-forward-contracts.sh
 ```
 
-See [architecture](docs/architecture-spec.md), [host router](docs/architecture-host-lifecycle.md), [Story](docs/architecture-story-lifecycle.md), and [Epic](docs/architecture-epic-lifecycle.md).
+See [architecture](docs/architecture-spec.md), [coding agent router](docs/architecture-host-lifecycle.md), [Story](docs/architecture-story-lifecycle.md), and [Epic](docs/architecture-epic-lifecycle.md).
 [Ownership and integrity](docs/lifecycle-ownership.json) records the checked sources.
 
 ## Authority and license

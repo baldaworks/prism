@@ -1,6 +1,6 @@
 # Story Lifecycle
 
-`prism:story` runs the full host-native lifecycle for one Beads Story. It keeps
+`prism:story` runs the full coding agent lifecycle for one Beads Story. It keeps
 durable state in Beads, preserves role-aligned phase contracts, and never
 invokes Callee.
 
@@ -44,7 +44,7 @@ creates or reconciles direct Task children using qualitative coverage,
 cohesion, reviewability, verifiability, and necessary acyclic dependencies.
 There is no numeric Task-count contract.
 
-The host approval prompt shows exactly:
+The coding agent approval prompt shows exactly:
 
 1. Design summary;
 2. Task summary;

@@ -1,6 +1,6 @@
 # Epic Lifecycle
 
-`prism:epic` is the host-native lifecycle for one multi-Story Beads Epic. Its
+`prism:epic` is the coding agent lifecycle for one multi-Story Beads Epic. Its
 hierarchy is strict: Epic → Story → Task. Nested Epics and Tasks directly under
 an Epic are invalid.
 
@@ -42,13 +42,13 @@ boundaries and cross-Story risks. Roadmap creates or reconciles Story children
 using qualitative coverage, cohesion, independent reviewability, verification,
 and dependency correctness. There is no child-count limit.
 
-Before requesting Epic approval, the host shows this exact order:
+Before requesting Epic approval, the coding agent shows this exact order:
 
 1. Architecture summary;
 2. Story roadmap;
 3. Approval request.
 
-Acceptance remains a required internal gate input, but the host shows it only
+Acceptance remains a required internal gate input, but the coding agent shows it only
 when the operator explicitly requests the current Epic criteria.
 
 Epic approval authorizes only the architecture and roadmap. It never approves

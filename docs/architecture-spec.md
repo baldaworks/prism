@@ -8,7 +8,7 @@ and maintainer map, not a generated audit report.
 When documentation and implementation disagree, use this precedence:
 
 1. plugin manifests and marketplace files define packaging and public names;
-2. canonical `plugins/*/skills/` files define host behavior;
+2. canonical `plugins/*/skills/` files define coding agent behavior;
 3. the external [Prism Callee pack](https://github.com/baldaworks/prism-callee/tree/main/pack/callee/prism) defines direct Callee graphs;
 4. `docs/lifecycle-ownership.json` and repository validators define mirrored
    sources and integrity requirements;
@@ -20,17 +20,17 @@ Prism and Prism Callee ship from separate repositories in this priority order:
 
 | Priority | Plugin | Canonical skills | Runtime |
 | --- | --- | --- | --- |
-| 1 | `prism` | `lifecycle`, `story`, `epic` | Host + Beads |
-| 2 | [prism-callee](https://github.com/baldaworks/prism-callee) | `lifecycle` | Host + Beads + imported Callee agents |
+| 1 | `prism` | `lifecycle`, `story`, `epic` | Coding agent + Beads |
+| 2 | [prism-callee](https://github.com/baldaworks/prism-callee) | `lifecycle` | Coding agent + Beads + imported Callee agents |
 
 Installing one plugin does not install the other. Both use the same Beads
-labels, but each owns its own host entrypoints and skill inventory. The primary
+labels, but each owns its own coding agent entrypoints and skill inventory. The primary
 router never selects Prism Callee implicitly.
 
 ```mermaid
 flowchart TB
     U["Operator request"] --> P{"Explicit workflow?"}
-    P -->|default| H["Prism host"]
+    P -->|default| H["Prism coding agent workflow"]
     P -->|Callee| C["Prism Callee"]
     H --> B[("Beads")]
     C --> B
@@ -62,7 +62,7 @@ Nested Epics and Tasks directly under an Epic are invalid. Child graphs are
 evaluated qualitatively for coverage, cohesion, reviewability, verifiability,
 and necessary acyclic dependencies; there is no numeric child-count contract.
 
-## Host routing
+## Coding agent routing
 
 `prism:lifecycle` resolves exactly one operation in this order:
 
@@ -77,7 +77,7 @@ Batch mode freezes one invocation-start snapshot of open Prism Epics, orders it
 by priority, creation time, then ID, and visits every item exactly once. It does
 not rescan and approval never moves between snapshot items.
 
-See [Host Lifecycle Router](architecture-host-lifecycle.md).
+See [Coding agent Lifecycle Router](architecture-host-lifecycle.md).
 
 ## Full Story lifecycle
 
@@ -100,8 +100,8 @@ Specify may request clarification before it advances. Apply claims and reviews
 one ready Task at a time. Verify performs no repairs: it closes the Story or
 returns it to the earliest defective phase.
 
-The full host approval prompt shows Design summary → Task summary → Approval
-request. Acceptance is an internal readiness input and appears in host output
+The full coding agent approval prompt shows Design summary → Task summary → Approval
+request. Acceptance is an internal readiness input and appears in coding agent output
 only when the operator explicitly requests the current Story criteria.
 
 See [Story Lifecycle](architecture-story-lifecycle.md).
@@ -133,15 +133,15 @@ See [Epic Lifecycle](architecture-epic-lifecycle.md).
 
 ## Prism Callee
 
-The host wrapper owns target resolution, Beads reads and writes, approval
+The coding agent wrapper owns target resolution, Beads reads and writes, approval
 authority, batch coordination, and persistence. The imported Callee Router
-selects one declared graph from a host-built internal envelope. The public
+selects one declared graph from a internal envelope built by the coding agent. The public
 plugin entrypoint accepts an ordinary request; operators do not construct the
 envelope:
 
 ```mermaid
 flowchart TB
-    H["Prism Callee host wrapper"] --> E["ROUTE=story or ROUTE=epic envelope"]
+    H["Prism Callee coding agent wrapper"] --> E["ROUTE=story or ROUTE=epic envelope"]
     E --> R{"prism/lifecycle Router"}
     R -->|story| S["prism/story"]
     R -->|epic| P["prism/epic"]
@@ -161,7 +161,7 @@ See [Prism Callee Lifecycle](https://github.com/baldaworks/prism-callee/blob/mai
 
 ## Mirrors and integrity
 
-Canonical namespaced skills live under `plugins/*/skills/`. Flat-skill hosts
+Canonical namespaced skills live under `plugins/*/skills/`. Flat-skill coding agents
 consume the corresponding `plugins/*/prefixed-skills/` mirrors. Behavioral
 drift between those trees fails validation.
 
@@ -171,7 +171,7 @@ the portable package does not define installation, invocation syntax, Callee
 agents, or a marketplace.
 
 The Callee pack is digest-locked in its own repository. This repository checks
-host skill digests, public interfaces, phase sets, approval boundaries, routing
+coding agent skill digests, public interfaces, phase sets, approval boundaries, routing
 behavior and documentation invariants without a Callee checkout.
 
 ## Validation
@@ -195,8 +195,8 @@ Provider-backed Human smoke tests are documented separately in
 | Document | Responsibility |
 | --- | --- |
 | [README](../README.md) | User-facing selection, installation, update, and quick start |
-| [Host router](architecture-host-lifecycle.md) | Target resolution and open-Epic batch semantics |
-| [Story](architecture-story-lifecycle.md) | Full host Story lifecycle |
-| [Epic](architecture-epic-lifecycle.md) | Full host Epic lifecycle |
-| [Callee](https://github.com/baldaworks/prism-callee/blob/main/docs/architecture-callee-lifecycle.md) | Host/Callee ownership and catalog operations |
+| [Coding agent router](architecture-host-lifecycle.md) | Target resolution and open-Epic batch semantics |
+| [Story](architecture-story-lifecycle.md) | Full coding agent Story lifecycle |
+| [Epic](architecture-epic-lifecycle.md) | Full coding agent Epic lifecycle |
+| [Callee](https://github.com/baldaworks/prism-callee/blob/main/docs/architecture-callee-lifecycle.md) | Coding agent/Callee ownership and catalog operations |
 | [Ownership manifest](lifecycle-ownership.json) | Machine-checked source and digest inventory |

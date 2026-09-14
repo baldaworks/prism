@@ -1,6 +1,6 @@
-# Host Lifecycle Router
+# Coding agent Lifecycle Router
 
-`prism:lifecycle` is the default host-native entrypoint. It resolves a target
+`prism:lifecycle` is the default coding agent entrypoint. It resolves a target
 and delegates to `prism:story` or `prism:epic`; it is not a third item
 lifecycle and never selects Prism Callee implicitly.
 
