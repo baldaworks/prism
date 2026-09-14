@@ -1,57 +1,89 @@
 # Prism
 
-**Turn ambiguous software-change requests into durable, reviewable delivery.**
+Prism is the primary host-native workflow for turning software-change requests into requirements, design, reviewed implementation and verification.
+Lifecycle state lives in [Beads](https://github.com/gastownhall/beads).
 
-Prism stores requirements, design, dependencies, approval, implementation, and
-verification state in [Beads](https://github.com/gastownhall/beads). It ships as
-two independent plugins, listed in their intended priority order.
+The separately maintained [Prism Callee repository](https://github.com/baldaworks/prism-callee) provides the optional Callee integration and agent pack.
+Each repository installs and validates independently. Installing one plugin does
+not install the other.
 
-## Plugins
+## Quick start
 
-| Priority | Plugin | Purpose | Primary entrypoint |
-| --- | --- | --- | --- |
-| 1 | **prism** | Primary host-native Story and Epic lifecycles | `$prism:lifecycle` |
-| 2 | **prism-callee** | Story and Epic workflows executed through specialized Callee subagents | `$prism-callee:lifecycle` |
-
-The plugins share Beads state but have separate manifests, skill inventories,
-marketplace entries, and runtime ownership. Installing one does not implicitly
-install the other.
-
-### 1. Prism host
-
-The primary `prism` plugin owns the type-aware router, the full Story lifecycle,
-and the Epic lifecycle. It never selects Prism Callee implicitly.
+```text
+$prism:lifecycle Add CSV export to the report page.
+```
 
 | Workflow | Codex | Claude Code | Flat-slash hosts |
 | --- | --- | --- | --- |
-| Router and Epic batches | `$prism:lifecycle` | `/prism:lifecycle` | `/prism-lifecycle` |
-| Full Story | `$prism:story` | `/prism:story` | `/prism-story` |
-| Epic | `$prism:epic` | `/prism:epic` | `/prism-epic` |
+| lifecycle | `$prism:lifecycle` | `/prism:lifecycle` | `/prism-lifecycle` |
+| story | `$prism:story` | `/prism:story` | `/prism-story` |
+| epic | `$prism:epic` | `/prism:epic` | `/prism-epic` |
 
-An explicit request to process all open Prism epics snapshots them once, orders
-them by priority, creation time, and ID, advances each sequentially, and reports
-every outcome.
+## Requirements
 
-### 2. Prism Callee
+- A supported host and `bd` (Beads).
+- Host execution uses the bundled skills directly; no Callee installation is required.
 
-`prism-callee` runs Story or Epic work through the canonical
-[`prism/*`](pack/callee/prism) Callee agent pack. Specialized Role, Script,
-Human, Sequential, Loop, and Router agents own phase-specific work.
+## Installation
 
-| Codex | Claude Code | Flat-slash hosts |
-| --- | --- | --- |
-| `$prism-callee:lifecycle` | `/prism-callee:lifecycle` | `/prism-callee-lifecycle` |
+### Codex
 
-Invoke the plugin with an ordinary request:
-
-```text
-$prism-callee:lifecycle Add CSV export to the report page.
+```sh
+codex plugin marketplace add baldaworks/prism
+codex plugin add prism@prism
 ```
 
-The host resolves Beads state and builds the internal route envelope before
-calling Callee; users do not construct that protocol manually.
-Before execution, the default Callee catalog must contain `prism/lifecycle` as
-a Router plus the `prism/story` and `prism/epic` imported roots.
+Refresh using `codex plugin marketplace upgrade prism`, repeat the plugin
+add command, and start a new thread.
+
+### Claude Code
+
+```sh
+claude plugin marketplace add baldaworks/prism
+claude plugin install prism@prism --scope user
+```
+
+### Grok Build
+
+```sh
+grok plugin install 'baldaworks/prism#plugins/prism' --trust
+```
+
+### GitHub Copilot CLI
+
+```sh
+copilot plugin marketplace add baldaworks/prism
+copilot plugin install prism@prism
+```
+
+### Cursor
+
+```sh
+agent plugin marketplace add https://github.com/baldaworks/prism.git
+```
+
+Install **prism** from the marketplace UI.
+
+### OpenCode and compatible flat-skill hosts
+
+From this checkout:
+
+```sh
+mkdir -p .opencode/skills .opencode/commands
+cp -a plugins/prism/prefixed-skills/prism-lifecycle .opencode/skills/
+cp plugins/prism/prefixed-commands/prism-lifecycle.md .opencode/commands/
+cp -a plugins/prism/prefixed-skills/prism-story .opencode/skills/
+cp plugins/prism/prefixed-commands/prism-story.md .opencode/commands/
+cp -a plugins/prism/prefixed-skills/prism-epic .opencode/skills/
+cp plugins/prism/prefixed-commands/prism-epic.md .opencode/commands/
+```
+
+Commands are optional thin wrappers that load the corresponding skill.
+
+### Agent Plugins 1.0.0
+
+The portable package root is `plugins/prism/`; clients discover its immediate
+child skills under `skills/`. Use your client's installation workflow.
 
 ## Story lifecycle
 
@@ -132,175 +164,20 @@ Epics. It shows acceptance criteria only when the operator explicitly requests
 the current item's criteria. Every Apply transition still requires explicit
 human authorization.
 
-## Quick start
 
-Each public plugin accepts an ordinary request:
 
-```text
-$prism:lifecycle Add CSV export to the report page.
-$prism-callee:lifecycle Add CSV export to the report page.
-```
+## Migration from the combined repository
 
-Run only the entrypoint for the workflow you installed and want to use.
+Existing `prism@prism` installs retain their identity. Refresh the marketplace and reinstall to obtain the host-only package. Callee users must move to the linked Prism Callee repository; its plugin and agent pack are no longer distributed here.
+Public invocation names and existing Beads labels remain compatible.
+Remote installation commands require the split repositories to be published;
+pre-publication verification uses the local package roots.
 
-## Requirements
+## Ownership and validation
 
-Both plugins require:
-
-- [`bd` (Beads)](https://github.com/gastownhall/beads)
-- a supported host
-
-Prism Callee additionally requires:
-
-- `callee` `0.19.0` or a compatible Router-capable release
-- the `prism/*` agent pack
-
-## Installation
-
-Install plugins individually in priority order according to the workflows you
-want to expose.
-
-### Codex
-
-```sh
-codex plugin marketplace add baldaworks/prism
-codex plugin add prism@prism
-codex plugin add prism-callee@prism
-```
-
-To refresh an existing Git marketplace snapshot, run
-`codex plugin marketplace upgrade prism`, then repeat `codex plugin add` for
-the plugins you use. Start a new thread after a plugin reinstall.
-
-### Claude Code
-
-```sh
-claude plugin marketplace add baldaworks/prism
-claude plugin install prism@prism --scope user
-claude plugin install prism-callee@prism --scope user
-```
-
-### Grok Build
-
-```sh
-grok plugin install 'baldaworks/prism#plugins/prism' --trust
-grok plugin install 'baldaworks/prism#plugins/prism-callee' --trust
-```
-
-### GitHub Copilot CLI
-
-```sh
-copilot plugin marketplace add baldaworks/prism
-copilot plugin install prism@prism
-copilot plugin install prism-callee@prism
-```
-
-### Cursor
-
-```sh
-agent plugin marketplace add https://github.com/baldaworks/prism.git
-```
-
-Install **prism** and **prism-callee** independently from the marketplace UI.
-
-### OpenCode and compatible flat-skill hosts
-
-```sh
-mkdir -p .opencode/skills
-cp -a plugins/prism/prefixed-skills/prism-lifecycle .opencode/skills/
-cp -a plugins/prism/prefixed-skills/prism-story .opencode/skills/
-cp -a plugins/prism/prefixed-skills/prism-epic .opencode/skills/
-cp -a plugins/prism-callee/prefixed-skills/prism-callee-lifecycle .opencode/skills/
-```
-
-To also expose the explicit slash invocations (`/prism-lifecycle`,
-`/prism-story`, `/prism-epic`, and `/prism-callee-lifecycle`) as OpenCode
-commands, install the matching command files:
-
-```sh
-mkdir -p .opencode/commands
-cp plugins/prism/prefixed-commands/prism-lifecycle.md .opencode/commands/
-cp plugins/prism/prefixed-commands/prism-story.md .opencode/commands/
-cp plugins/prism/prefixed-commands/prism-epic.md .opencode/commands/
-cp plugins/prism-callee/prefixed-commands/prism-callee-lifecycle.md .opencode/commands/
-```
-
-Commands are optional thin wrappers: OpenCode loads skills on demand through its
-skill tool, and each command only directs the agent to the matching skill while
-forwarding your request.
-
-### Agent Plugins 1.0.0
-
-Each plugin directory is also an Agent Plugins 1.0.0 package root:
-
-| Plugin | Package root |
-| --- | --- |
-| `prism` | `plugins/prism/` |
-| `prism-callee` | `plugins/prism-callee/` |
-
-Point an Agent Plugins-compatible client at the package root for the workflow
-you want to expose. The standard defines package discovery, not installation,
-marketplaces, or invocation syntax; use the selected client's own workflow for
-those operations. Portable clients discover the canonical immediate-child
-skills under each package's `skills/` directory.
-
-## Install or update the Callee agents
-
-This step is required only for `prism-callee` and direct Callee execution:
-
-Initial import:
-
-```sh
-callee agent import baldaworks/prism \
-  --path pack/callee/prism \
-  --prefix prism
-```
-
-Update or repair an existing import:
-
-```sh
-callee agent import baldaworks/prism \
-  --path pack/callee/prism \
-  --prefix prism \
-  --force
-```
-
-Validate the default catalog:
-
-```sh
-callee agent list | grep '^prism/'
-callee agent view prism/lifecycle --json
-callee agent view prism/story --json
-callee agent view prism/epic --json
-bd where
-```
-
-The lifecycle view must report kind `Router`. A `Sequential` lifecycle or a
-missing Story/Epic root means the local import is stale; rerun the `--force`
-command before using Prism Callee. `--agent-root pack/callee` is for repository
-maintenance only and is not a runtime workaround.
-
-## Repository ownership
-
-| Path | Ownership |
-| --- | --- |
-| `plugins/prism/` | Primary host router, Story, and Epic skills |
-| `plugins/prism-callee/` | Host integration for Callee-backed Story and Epic workflows |
-| `plugins/*/prefixed-commands/` | OpenCode command wrappers over the flat skills |
-| `plugins/*/plugin.json` | Agent Plugins 1.0.0 portable package manifests |
-| `pack/callee/prism/` | Digest-locked canonical Callee Router, Story, and Epic agents |
-
-Canonical and flat host paths are behavioral mirrors:
-
-- `plugins/prism/skills/{lifecycle,story,epic}` ↔ corresponding
-  `plugins/prism/prefixed-skills/prism-*` trees
-- `plugins/prism-callee/skills/lifecycle` ↔
-  `plugins/prism-callee/prefixed-skills/prism-callee-lifecycle`
-
-Each OpenCode command in `plugins/*/prefixed-commands/` is a thin wrapper whose
-name matches the flat skill it loads (see the install steps above).
-
-## Validation
+`plugins/prism/` owns the router, Story and Epic skills. Their canonical and prefixed trees are behavioral mirrors.
+Each checkout has its own marketplace, integrity inventory and CI.
+Required cross-links are checked for their exact destinations.
 
 ```sh
 ./scripts/validate-plugin-packaging.sh
@@ -309,33 +186,14 @@ name matches the flat skill it loads (see the install steps above).
 ./scripts/test-lifecycle-drift-detection.sh
 ./scripts/test-documentation-drift-detection.sh
 ./scripts/test-lifecycle-forward-contracts.sh
-./scripts/test-callee-lifecycle-forward-contracts.sh
 ```
 
-For repeatable PTY-backed Callee Human smoke tests:
+See [architecture](docs/architecture-spec.md), [host router](docs/architecture-host-lifecycle.md), [Story](docs/architecture-story-lifecycle.md), and [Epic](docs/architecture-epic-lifecycle.md).
+[Ownership and integrity](docs/lifecycle-ownership.json) records the checked sources.
 
-```sh
-./scripts/smoke-test-callee-human.sh questions
-./scripts/smoke-test-callee-human.sh specify
-```
+## Authority and license
 
-## Maintainer docs
-
-- [`docs/architecture-spec.md`](docs/architecture-spec.md) — repository architecture specification
-- [`docs/architecture-host-lifecycle.md`](docs/architecture-host-lifecycle.md) — primary host router
-- [`docs/architecture-story-lifecycle.md`](docs/architecture-story-lifecycle.md) — full Story behavior
-- [`docs/architecture-epic-lifecycle.md`](docs/architecture-epic-lifecycle.md) — Epic behavior
-- [`docs/architecture-callee-lifecycle.md`](docs/architecture-callee-lifecycle.md) — Callee integration
-- [`docs/callee-lifecycle-smoke-test.md`](docs/callee-lifecycle-smoke-test.md) — PTY-backed Callee Human smoke tests
-- [`docs/lifecycle-ownership.json`](docs/lifecycle-ownership.json) — machine-checked ownership and integrity
-
-## Authority
-
-- Only explicit human intent authorizes Apply.
-- Prism never invents approval.
-- Repository tasks are committed after successful verification; pushing and
-  publishing require explicit human authority.
-
-## License
+Only explicit human intent authorizes Apply. Verified repository tasks are
+committed; pushing and publishing require explicit authorization.
 
 MIT — see [LICENSE](LICENSE).

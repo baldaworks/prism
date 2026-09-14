@@ -14,15 +14,13 @@
       "description": "Route Prism work across full Story and Epic lifecycles directly in the host.",
       "version": "0.7.0",
       "category": "developer-tools",
-      "tags": ["prism", "beads", "callee", "story-lifecycle", "epic-lifecycle"]
-    },
-    {
-      "name": "prism-callee",
-      "source": "./plugins/prism-callee",
-      "description": "Run the Prism Story and Epic lifecycles as workflows of specialized Callee subagents.",
-      "version": "0.7.0",
-      "category": "developer-tools",
-      "tags": ["prism", "beads", "callee", "story-lifecycle", "epic-lifecycle", "subagents"]
+      "tags": [
+        "prism",
+        "beads",
+        "callee",
+        "story-lifecycle",
+        "epic-lifecycle"
+      ]
     }
   ]
 }

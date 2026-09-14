@@ -16,15 +16,6 @@
         "name": "Alexey Samoylov"
       },
       "source": "./plugins/prism"
-    },
-    {
-      "name": "prism-callee",
-      "description": "Run the Prism Story and Epic lifecycles as workflows of specialized Callee subagents.",
-      "version": "0.7.0",
-      "author": {
-        "name": "Alexey Samoylov"
-      },
-      "source": "./plugins/prism-callee"
     }
   ]
 }

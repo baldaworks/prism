@@ -20,21 +20,13 @@
       "homepage": "https://github.com/baldaworks/prism",
       "repository": "https://github.com/baldaworks/prism",
       "license": "MIT",
-      "keywords": ["prism", "beads", "callee", "story-lifecycle", "epic-lifecycle"]
-    },
-    {
-      "name": "prism-callee",
-      "description": "Run the Prism Story and Epic lifecycles as workflows of specialized Callee subagents.",
-      "version": "0.7.0",
-      "source": "./plugins/prism-callee",
-      "author": {
-        "name": "Alexey Samoylov",
-        "url": "https://github.com/baldaworks"
-      },
-      "homepage": "https://github.com/baldaworks/prism",
-      "repository": "https://github.com/baldaworks/prism",
-      "license": "MIT",
-      "keywords": ["prism", "beads", "callee", "story-lifecycle", "epic-lifecycle", "subagents"]
+      "keywords": [
+        "prism",
+        "beads",
+        "callee",
+        "story-lifecycle",
+        "epic-lifecycle"
+      ]
     }
   ]
 }

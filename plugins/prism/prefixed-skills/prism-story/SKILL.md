@@ -17,7 +17,7 @@ requests subagent execution.
 | --- | --- |
 | **Beads** | Story description, acceptance, design, child tasks, status, assignee, labels, comments |
 | **This skill** | Host execution of the full phase/role contract plus all `bd` writes |
-| **Prism Callee pack** | Read-only behavioral source from which the bundled story contracts are projected |
+| **[Prism Callee pack](https://github.com/baldaworks/prism-callee/tree/main/pack/callee/prism)** | External provenance for the self-contained bundled story contracts |
 | **Prism Callee skill** | Actual `callee agent run prism/...` execution |
 
 **Invoke:** Codex `$prism:story`, Claude Code `/prism:story`, or flat slash `/prism-story`.

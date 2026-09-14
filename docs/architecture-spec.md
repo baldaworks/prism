@@ -9,19 +9,19 @@ When documentation and implementation disagree, use this precedence:
 
 1. plugin manifests and marketplace files define packaging and public names;
 2. canonical `plugins/*/skills/` files define host behavior;
-3. `pack/callee/prism/` defines direct Callee graphs;
+3. the external [Prism Callee pack](https://github.com/baldaworks/prism-callee/tree/main/pack/callee/prism) defines direct Callee graphs;
 4. `docs/lifecycle-ownership.json` and repository validators define mirrored
    sources and integrity requirements;
 5. README and focused architecture documents explain those contracts.
 
 ## Plugin boundary
 
-Prism ships two independent plugins in this priority order:
+Prism and Prism Callee ship from separate repositories in this priority order:
 
 | Priority | Plugin | Canonical skills | Runtime |
 | --- | --- | --- | --- |
 | 1 | `prism` | `lifecycle`, `story`, `epic` | Host + Beads |
-| 2 | `prism-callee` | `lifecycle` | Host + Beads + imported Callee agents |
+| 2 | [prism-callee](https://github.com/baldaworks/prism-callee) | `lifecycle` | Host + Beads + imported Callee agents |
 
 Installing one plugin does not install the other. Both use the same Beads
 labels, but each owns its own host entrypoints and skill inventory. The primary
@@ -157,7 +157,7 @@ A missing root or an older `Sequential` lifecycle is a stale catalog and must
 be repaired by re-importing with `--force`; runtime must not fall back to a
 repository checkout. `--agent-root pack/callee` is maintainer-only.
 
-See [Prism Callee Lifecycle](architecture-callee-lifecycle.md).
+See [Prism Callee Lifecycle](https://github.com/baldaworks/prism-callee/blob/main/docs/architecture-callee-lifecycle.md).
 
 ## Mirrors and integrity
 
@@ -170,9 +170,9 @@ root `plugin.json` exposes the canonical immediate-child skills under `skills/`;
 the portable package does not define installation, invocation syntax, Callee
 agents, or a marketplace.
 
-The Callee pack is digest-locked independently. Host skill digests, Callee pack
-digests, public interfaces, phase sets, approval boundaries, routing behavior,
-and documentation invariants are checked by repository scripts.
+The Callee pack is digest-locked in its own repository. This repository checks
+host skill digests, public interfaces, phase sets, approval boundaries, routing
+behavior and documentation invariants without a Callee checkout.
 
 ## Validation
 
@@ -185,11 +185,10 @@ Run the repository checks from the root:
 ./scripts/test-lifecycle-drift-detection.sh
 ./scripts/test-documentation-drift-detection.sh
 ./scripts/test-lifecycle-forward-contracts.sh
-./scripts/test-callee-lifecycle-forward-contracts.sh
 ```
 
 Provider-backed Human smoke tests are documented separately in
-[Prism Callee Human-Step Smoke Tests](callee-lifecycle-smoke-test.md).
+[Prism Callee Human-Step Smoke Tests](https://github.com/baldaworks/prism-callee/blob/main/docs/callee-lifecycle-smoke-test.md).
 
 ## Documentation map
 
@@ -199,5 +198,5 @@ Provider-backed Human smoke tests are documented separately in
 | [Host router](architecture-host-lifecycle.md) | Target resolution and open-Epic batch semantics |
 | [Story](architecture-story-lifecycle.md) | Full host Story lifecycle |
 | [Epic](architecture-epic-lifecycle.md) | Full host Epic lifecycle |
-| [Callee](architecture-callee-lifecycle.md) | Host/Callee ownership and catalog operations |
+| [Callee](https://github.com/baldaworks/prism-callee/blob/main/docs/architecture-callee-lifecycle.md) | Host/Callee ownership and catalog operations |
 | [Ownership manifest](lifecycle-ownership.json) | Machine-checked source and digest inventory |

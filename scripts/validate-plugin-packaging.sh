@@ -11,6 +11,7 @@ import re
 import sys
 
 root = pathlib.Path(sys.argv[1])
+plugin_name = "prism"
 expected_release_version = "0.7.0"
 agent_plugins_schema = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"
 agent_plugins_version = "0.7.0"
@@ -47,7 +48,7 @@ flat_plugin_checks = [
     {
         "plugin": "prism",
         "host": "cursor",
-        "manifest": root / "plugins/prism/.cursor-plugin/plugin.json",
+        "manifest": root / f"plugins/{plugin_name}/.cursor-plugin/plugin.json",
         "expected_name": "prism",
         "expected_skills": "./prefixed-skills/",
         "allowed_extra_fields": {"displayName"},
@@ -150,6 +151,9 @@ expected_skill_inventory = {
         "flat": ["prism-callee-lifecycle"],
     },
 }
+
+namespaced_plugin_checks = [c for c in namespaced_plugin_checks if c["plugin"] == plugin_name]
+flat_plugin_checks = [c for c in flat_plugin_checks if c["plugin"] == plugin_name]
 
 errors = []
 
@@ -482,7 +486,7 @@ if claude_marketplace_path.is_file():
     if claude_marketplace is not None:
         plugins = claude_marketplace.get("plugins", [])
         record(
-            [item.get("name") for item in plugins] == ["prism", "prism-callee"],
+            [item.get("name") for item in plugins] == [plugin_name],
             ".claude-plugin/marketplace.json preserves Prism plugin priority order",
         )
         for check in namespaced_plugin_checks:
@@ -528,6 +532,7 @@ if agents_marketplace_path.is_file():
             "prism": "./plugins/prism",
             "prism-callee": "./plugins/prism-callee",
         }
+        expected_sources = {plugin_name: expected_sources[plugin_name]}
         record(
             [item.get("name") for item in plugins] == list(expected_sources),
             ".agents/plugins/marketplace.json preserves Prism plugin priority order",
@@ -563,11 +568,11 @@ record(cursor_marketplace_path.is_file(), ".cursor-plugin/marketplace.json exist
 
 if cursor_marketplace_path.is_file():
     cursor_marketplace = load_json(cursor_marketplace_path)
-    prism_cursor_manifest = load_json(root / "plugins/prism/.cursor-plugin/plugin.json")
+    prism_cursor_manifest = load_json(root / f"plugins/{plugin_name}/.cursor-plugin/plugin.json")
     if cursor_marketplace is not None and prism_cursor_manifest is not None:
         record(
             [item.get("name") for item in cursor_marketplace.get("plugins", [])]
-            == ["prism", "prism-callee"],
+            == [plugin_name],
             ".cursor-plugin/marketplace.json preserves Prism plugin priority order",
         )
         record(
@@ -578,6 +583,8 @@ if cursor_marketplace_path.is_file():
             ("prism", root / "plugins/prism"),
             ("prism-callee", root / "plugins/prism-callee"),
         ]:
+            if expected_name != plugin_name:
+                continue
             cursor_manifest = load_json(plugin_root / ".cursor-plugin/plugin.json")
             if cursor_manifest is None:
                 continue
@@ -610,13 +617,15 @@ if grok_marketplace_path.is_file():
     if grok_marketplace is not None:
         record(
             [item.get("name") for item in grok_marketplace.get("plugins", [])]
-            == ["prism", "prism-callee"],
+            == [plugin_name],
             ".grok-plugin/marketplace.json preserves Prism plugin priority order",
         )
         for expected_name, plugin_root in [
             ("prism", root / "plugins/prism"),
             ("prism-callee", root / "plugins/prism-callee"),
         ]:
+            if expected_name != plugin_name:
+                continue
             grok_manifest = load_json(plugin_root / ".grok-plugin/plugin.json")
             if grok_manifest is None:
                 continue
@@ -661,13 +670,15 @@ if github_marketplace_path.is_file():
     if github_marketplace is not None:
         record(
             [item.get("name") for item in github_marketplace.get("plugins", [])]
-            == ["prism", "prism-callee"],
+            == [plugin_name],
             ".github/plugin/marketplace.json preserves Prism plugin priority order",
         )
         for expected_name, plugin_root in [
             ("prism", root / "plugins/prism"),
             ("prism-callee", root / "plugins/prism-callee"),
         ]:
+            if expected_name != plugin_name:
+                continue
             generic_manifest = load_json(plugin_root / ".plugin/plugin.json")
             if generic_manifest is None:
                 continue
@@ -693,19 +704,11 @@ if github_marketplace_path.is_file():
                         f".github/plugin/marketplace.json {field} for {expected_name} matches the generic manifest",
                     )
 
-claude_settings_path = root / ".claude/settings.local.json"
-record(claude_settings_path.is_file(), ".claude/settings.local.json exists")
-if claude_settings_path.is_file():
-    claude_settings = load_json(claude_settings_path)
-    if claude_settings is not None:
-        record(
-            claude_settings.get("enabledPlugins")
-            == {
-                "prism@prism": True,
-                "prism-callee@prism": True,
-            },
-            ".claude/settings.local.json enables both Prism plugins",
-        )
+record(sorted(p.name for p in (root / "plugins").iterdir() if p.is_dir()) == [plugin_name], "repository contains exactly its own plugin")
+record(not (root / "pack/callee").exists(), "host repository contains no Callee pack")
+for baseline in codex_baselines.values():
+    record(baseline.get("repository") == f"https://github.com/baldaworks/{plugin_name}", "manifest repository identifies its owner")
+    record(baseline.get("homepage") == f"https://github.com/baldaworks/{plugin_name}", "manifest homepage identifies its owner")
 
 if errors:
     print(f"\nValidation failed with {len(errors)} error(s).")

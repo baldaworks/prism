@@ -188,6 +188,23 @@ for marker in [
 ]:
     assert marker in router, marker
 print("PASS: executable router contract contains all snapshot and continuation invariants")
+
+def normalized_contract(text):
+    return " ".join(text.split())
+
+for contract_path in [
+    root / "plugins/prism/skills/story/SKILL.md",
+    root / "plugins/prism/skills/epic/SKILL.md",
+]:
+    contract_text = normalized_contract(contract_path.read_text())
+    assert "MUST NOT emit a standalone ### Acceptance criteria heading" in contract_text
+    assert "unsolicited user-facing approval-format acceptance block" in contract_text
+    assert "machine-readable acceptance artifacts" in contract_text
+    assert "explicit operator request for acceptance criteria" in contract_text
+    assert "pre-approve request" in contract_text
+    assert "remains the exception" not in contract_text
+    assert "complete acceptance block" not in contract_text
+print("PASS: host output boundaries preserve internal acceptance artifacts")
 PY
 
 echo "PASS: lifecycle forward-contract fixtures"
