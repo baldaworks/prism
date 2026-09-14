@@ -179,6 +179,12 @@ pre-publication verification uses the local package roots.
 Each checkout has its own marketplace, integrity inventory and CI.
 Required cross-links are checked for their exact destinations.
 
+For publication verification, run `scripts/verify-published-split.sh` with the
+published Prism and Prism Callee `main` commit SHAs, in that order. This separate
+network check requires `gh`, `git`, `curl`, `jq`, `python3`, `rg`, `bd`, and `callee`.
+It checks public links and successful CI, validates fresh clones, and imports
+Callee into a temporary catalog without changing your installed agents.
+
 ```sh
 ./scripts/validate-plugin-packaging.sh
 ./scripts/validate-lifecycle-ownership.sh
