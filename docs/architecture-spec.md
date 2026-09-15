@@ -176,16 +176,8 @@ behavior and documentation invariants without a Callee checkout.
 
 ## Validation
 
-Run the repository checks from the root:
-
-```sh
-./scripts/validate-plugin-packaging.sh
-./scripts/validate-lifecycle-ownership.sh
-./scripts/validate-documentation.sh
-./scripts/test-lifecycle-drift-detection.sh
-./scripts/test-documentation-drift-detection.sh
-./scripts/test-lifecycle-forward-contracts.sh
-```
+See [Contributing](../CONTRIBUTING.md) for the six native repository checks,
+their limits, and separate publication-verification instructions.
 
 Provider-backed Human smoke tests are documented separately in
 [Prism Callee Human-Step Smoke Tests](https://github.com/baldaworks/prism-callee/blob/main/docs/callee-lifecycle-smoke-test.md).
@@ -195,6 +187,9 @@ Provider-backed Human smoke tests are documented separately in
 | Document | Responsibility |
 | --- | --- |
 | [README](../README.md) | User-facing selection, installation, update, and quick start |
+| [Comparison](comparison.md) | Prism, OpenSpec and BMAD workflows, counts, state and validation |
+| [Team workflow](team-workflow.md) | User onboarding, handoff, saved state and recovery |
+| [Contributing](../CONTRIBUTING.md) | Maintenance, ownership and repository validation |
 | [Coding agent router](architecture-host-lifecycle.md) | Target resolution and open-Epic batch semantics |
 | [Story](architecture-story-lifecycle.md) | Full coding agent Story lifecycle |
 | [Epic](architecture-epic-lifecycle.md) | Full coding agent Epic lifecycle |

@@ -1,13 +1,23 @@
 # Prism
 
-Prism runs software-change workflows directly in your coding agent, from requirements and design through reviewed implementation and verification.
-Lifecycle state lives in [Beads](https://github.com/gastownhall/beads).
-
-The separately maintained [Prism Callee repository](https://github.com/baldaworks/prism-callee) provides the optional Callee integration and agent pack.
-Each repository installs and validates independently. Installing one plugin does
-not install the other.
+Run `prism:story` with a change request and carry it from requirements and design
+through reviewed implementation and verification in your coding agent.
+Prism manages the phases: you do not need to choose a new command at each step.
+It pauses for necessary clarification, your approval before implementation,
+or a blocker. Saved state in [Beads](https://github.com/gastownhall/beads) lets
+you resume the same Story across sessions.
 
 ## Quick start
+
+```text
+$prism:story Add CSV export to the report page.
+```
+
+Describe the outcome you want, refine the plan when asked, and approve it when
+ready. Prism then implements, reviews and verifies the change.
+
+For a larger initiative, use `prism:epic`. If you want Prism to select the
+workflow, use the router:
 
 ```text
 $prism:lifecycle Add CSV export to the report page.
@@ -22,7 +32,7 @@ $prism:lifecycle Add CSV export to the report page.
 ## Requirements
 
 - A supported coding agent and `bd` (Beads).
-- Coding agent execution uses the bundled skills directly; no Callee installation is required.
+- Coding agent execution uses the bundled skills directly.
 
 ## Installation
 
@@ -164,42 +174,28 @@ Epics. It shows acceptance criteria only when the operator explicitly requests
 the current item's criteria. Every Apply transition still requires explicit
 human authorization.
 
+## Learn more
 
+- [Prism, OpenSpec and BMAD](docs/comparison.md): workflow, skill counts, Git teamwork, durability and validation.
+- [Teams, saved state and recovery](docs/team-workflow.md): share work and resume safely across people and sessions.
+- [Architecture](docs/architecture-spec.md), [coding agent router](docs/architecture-host-lifecycle.md), [Story](docs/architecture-story-lifecycle.md), and [Epic](docs/architecture-epic-lifecycle.md): lifecycle contracts in detail.
+- [Contributing](CONTRIBUTING.md): maintaining and validating Prism.
 
-## Migration from the combined repository
+## Optional integration
 
-Existing `prism@prism` installs retain their identity. Refresh the marketplace and reinstall to obtain the primary coding agent package. Callee users must move to the linked Prism Callee repository; its plugin and agent pack are no longer distributed here.
-Public invocation names and existing Beads labels remain compatible.
-Remote installation commands require the split repositories to be published;
-pre-publication verification uses the local package roots.
+The separately maintained [Prism Callee repository](https://github.com/baldaworks/prism-callee)
+provides the optional Callee integration and agent pack. For the coding agent
+workflow above, no Callee installation is required. Installing either plugin
+does not install the other.
 
-## Ownership and validation
+### Migration from the combined repository
 
-`plugins/prism/` owns the router, Story and Epic skills. Their canonical and prefixed trees are behavioral mirrors.
-Each checkout has its own marketplace, integrity inventory and CI.
-Required cross-links are checked for their exact destinations.
+Existing `prism@prism` installs retain their identity. Refresh the marketplace
+and reinstall to obtain the primary coding agent package. Callee users must
+move to the linked Prism Callee repository; its plugin and agent pack are no
+longer distributed here. Public invocation names and existing Beads labels
+remain compatible.
 
-For publication verification, run `scripts/verify-published-split.sh` with the
-published Prism and Prism Callee `main` commit SHAs, in that order. This separate
-network check requires `gh`, `git`, `curl`, `jq`, `python3`, `rg`, `bd`, and `callee`.
-It checks public links and successful CI, validates fresh clones, and imports
-Callee into a temporary catalog without changing your installed agents.
-
-```sh
-./scripts/validate-plugin-packaging.sh
-./scripts/validate-lifecycle-ownership.sh
-./scripts/validate-documentation.sh
-./scripts/test-lifecycle-drift-detection.sh
-./scripts/test-documentation-drift-detection.sh
-./scripts/test-lifecycle-forward-contracts.sh
-```
-
-See [architecture](docs/architecture-spec.md), [coding agent router](docs/architecture-host-lifecycle.md), [Story](docs/architecture-story-lifecycle.md), and [Epic](docs/architecture-epic-lifecycle.md).
-[Ownership and integrity](docs/lifecycle-ownership.json) records the checked sources.
-
-## Authority and license
-
-Only explicit human intent authorizes Apply. Verified repository tasks are
-committed; pushing and publishing require explicit authorization.
+## License
 
 MIT — see [LICENSE](LICENSE).

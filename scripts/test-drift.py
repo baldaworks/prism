@@ -24,12 +24,41 @@ with tempfile.TemporaryDirectory(prefix="prism-drift-") as temporary:
     print("PASS: isolated working-tree baseline validates")
     cases = []
     if kind == "documentation":
-        targets = ["https://github.com/baldaworks/prism-callee"]
+        targets = ["https://github.com/baldaworks/prism-callee", "CONTRIBUTING.md",
+                   "docs/comparison.md", "docs/team-workflow.md"]
         for target in targets:
             for replacement in ["", "https://example.invalid/wrong"]:
                 cases.append(("README.md", "(" + target + ")", "(" + replacement + ")",
                               "FAIL: mandatory cross-link: " + target))
         cases.extend([
+            ("README.md", "$prism:story Add CSV export to the report page.",
+             "$prism:story", "FAIL: README shows a free-form request for $prism:story"),
+            ("README.md", "## Quick start", "```text\n$prism:lifecycle\n```\n\n## Quick start",
+             "FAIL: README primary example is the complete Story request"),
+            ("README.md", "## Requirements", "Callee integration.\n\n## Requirements",
+             "FAIL: README introduces Prism before optional Callee integration"),
+            ("README.md", "## Optional integration", "## Other integration",
+             "FAIL: Callee cross-link belongs to Optional integration"),
+            ("README.md", "## Learn more", "## Ownership and validation\n\n## Learn more",
+             "FAIL: README excludes maintenance policy: ## Ownership and validation"),
+            ("README.md", "## License", "## Authority and license",
+             "FAIL: README has a plain License section"),
+            ("README.md", "## Learn more", "./scripts/validate-documentation.sh\n\n## Learn more",
+             "FAIL: README excludes maintenance check ./scripts/validate-documentation.sh"),
+            ("CONTRIBUTING.md", "./scripts/validate-documentation.sh", "",
+             "FAIL: CONTRIBUTING lists maintenance check ./scripts/validate-documentation.sh"),
+            ("CONTRIBUTING.md", "./scripts/test-documentation-drift-detection.sh", "",
+             "FAIL: CONTRIBUTING lists maintenance check ./scripts/test-documentation-drift-detection.sh"),
+            ("docs/comparison.md", "## Skill counts", "## Catalog",
+             "FAIL: comparison covers ## Skill counts"),
+            ("docs/comparison.md", "(team-workflow.md)", "(missing-team-guide.md)",
+             "FAIL: docs/comparison.md local link resolves: missing-team-guide.md"),
+            ("docs/team-workflow.md", "refs/dolt/data", "source branch",
+             "FAIL: team guide covers refs/dolt/data"),
+            ("docs/team-workflow.md", "Semantic review", "Review",
+             "FAIL: docs/team-workflow.md distinguishes Semantic review"),
+            ("docs/architecture-spec.md", "(../CONTRIBUTING.md)", "(../missing-contributing.md)",
+             "FAIL: architecture links ../CONTRIBUTING.md"),
             ("README.md", f"${plugin}:lifecycle Add CSV export to the report page.",
              f"${plugin}:lifecycle", "FAIL: README shows a free-form request"),
             ("README.md", "## Quick start", "ROUTE=story\n\n## Quick start",
