@@ -24,7 +24,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y ripgrep
 
       - name: Install bd
-        run: npm install -g @beads/bd@1.1.0
+        run: curl -fsSL https://raw.githubusercontent.com/gastownhall/beads/main/scripts/install.sh | bash
 
       - name: Verify bd
         run: bd version
