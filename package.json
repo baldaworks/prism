@@ -1,0 +1,24 @@
+{
+  "name": "prism",
+  "version": "0.7.0",
+  "description": "Run complete Prism Story and Epic lifecycles in coding agents.",
+  "type": "module",
+  "exports": "./integrations/opencode/index.js",
+  "files": [
+    "integrations/opencode/index.js",
+    "plugins/prism/prefixed-skills/",
+    "LICENSE",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/baldaworks/prism.git"
+  },
+  "license": "MIT",
+  "engines": {
+    "opencode": ">=2.0.0 <3"
+  },
+  "dependencies": {
+    "@opencode/plugin": "^2.0.3"
+  }
+}

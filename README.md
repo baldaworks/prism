@@ -74,21 +74,16 @@ agent plugin marketplace add https://github.com/baldaworks/prism.git
 
 Install **prism** from the marketplace UI.
 
-### OpenCode and compatible flat-skill coding agents
+### OpenCode v2
 
-From this checkout:
+Requires OpenCode 2.x. Install Prism from the Git repository:
 
 ```sh
-mkdir -p .opencode/skills .opencode/commands
-cp -a plugins/prism/prefixed-skills/prism-lifecycle .opencode/skills/
-cp plugins/prism/prefixed-commands/prism-lifecycle.md .opencode/commands/
-cp -a plugins/prism/prefixed-skills/prism-story .opencode/skills/
-cp plugins/prism/prefixed-commands/prism-story.md .opencode/commands/
-cp -a plugins/prism/prefixed-skills/prism-epic .opencode/skills/
-cp plugins/prism/prefixed-commands/prism-epic.md .opencode/commands/
+opencode plugin add 'github:baldaworks/prism#main'
 ```
 
-Commands are optional thin wrappers that load the corresponding skill.
+Invoke `/prism-lifecycle`, `/prism-story`, or `/prism-epic`. The package
+registers the bundled skills and keeps their supporting references available.
 
 ### Agent Plugins 1.0.0
 

@@ -8,6 +8,7 @@ python3 - "$repo_root" <<'PY'
 import json
 import pathlib
 import re
+import subprocess
 import sys
 
 root = pathlib.Path(sys.argv[1])
@@ -270,6 +271,81 @@ def validate_command_inventory(plugin: str, plugin_root: pathlib.Path) -> None:
         )
 
 
+def validate_opencode_package() -> None:
+    package_path = root / "package.json"
+    record(package_path.is_file(), "package.json exists for OpenCode v2")
+    if not package_path.is_file():
+        return
+
+    package = load_json(package_path)
+    if package is None:
+        return
+
+    expected_files = [
+        "integrations/opencode/index.js",
+        "plugins/prism/prefixed-skills/",
+        "LICENSE",
+        "README.md",
+    ]
+    record(package.get("name") == plugin_name, "OpenCode package name is prism")
+    record(package.get("version") == expected_release_version, "OpenCode package version is 0.7.0")
+    record(package.get("type") == "module", "OpenCode package uses ESM")
+    record(package.get("exports") == "./integrations/opencode/index.js", "OpenCode package exports its v2 entrypoint")
+    record(package.get("files") == expected_files, "OpenCode package has the exact files allowlist")
+    record(package.get("license") == "MIT", "OpenCode package keeps the MIT license")
+    record(package.get("engines", {}).get("opencode") == ">=2.0.0 <3", "OpenCode package targets v2")
+    record(package.get("dependencies", {}).get("@opencode/plugin") == "^2.0.3", "OpenCode package pins the verified plugin API")
+    record(
+        package.get("repository", {}).get("url") == "git+https://github.com/baldaworks/prism.git",
+        "OpenCode package repository identifies prism",
+    )
+
+    entrypoint = root / "integrations/opencode/index.js"
+    record(entrypoint.is_file(), "OpenCode v2 entrypoint exists")
+    if not entrypoint.is_file():
+        return
+
+    script = """
+      import plugin from './integrations/opencode/index.js'
+      const registered = []
+      await plugin.setup({
+        skill: {
+          async transform(callback) {
+            callback({ add(skill) { registered.push(skill) } })
+          },
+        },
+      })
+      process.stdout.write(JSON.stringify({ id: plugin.id, registered }))
+    """
+    result = subprocess.run(
+        ["node", "--input-type=module", "--eval", script],
+        cwd=root,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    record(result.returncode == 0, "OpenCode v2 entrypoint executes against an isolated skill editor")
+    if result.returncode != 0:
+        print(result.stderr, file=sys.stderr)
+        return
+
+    registered = json.loads(result.stdout)
+    record(registered.get("id") == plugin_name, "OpenCode plugin id is prism")
+    skills = registered.get("registered", [])
+    record(
+        [skill.get("id") for skill in skills] == ["prism-lifecycle", "prism-story", "prism-epic"],
+        "OpenCode entrypoint registers the exact Prism skill inventory",
+    )
+    for skill in skills:
+        skill_id = skill.get("id", "")
+        expected_suffix = f"/plugins/prism/prefixed-skills/{skill_id}/SKILL.md"
+        record(str(skill.get("location", "")).endswith(expected_suffix), f"OpenCode skill {skill_id} uses its packaged location")
+        record(bool(str(skill.get("description", "")).strip()), f"OpenCode skill {skill_id} has a description")
+        content = str(skill.get("content", ""))
+        record(bool(content.strip()), f"OpenCode skill {skill_id} has content")
+        record(not content.startswith("---"), f"OpenCode skill {skill_id} content excludes frontmatter")
+
+
 def validate_agent_plugins_manifest(check: dict, baseline: dict) -> None:
     plugin_root = check["root"]
     manifest_path = plugin_root / "plugin.json"
@@ -460,6 +536,8 @@ for check in namespaced_plugin_checks:
     validate_namespaced_pair(check)
     validate_skill_inventory(check["plugin"], check["root"])
     validate_command_inventory(check["plugin"], check["root"])
+
+validate_opencode_package()
 
 prism_codex_manifest_path = root / "plugins/prism/.codex-plugin/plugin.json"
 codex_baselines = {}
