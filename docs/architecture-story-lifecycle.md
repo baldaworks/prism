@@ -44,6 +44,42 @@ creates or reconciles direct Task children using qualitative coverage,
 cohesion, reviewability, verifiability, and necessary acyclic dependencies.
 There is no numeric Task-count contract.
 
+## Example: acceptance saved in Beads
+
+Specify saves a Story's acceptance criteria in Beads alongside its requirements.
+There is no separate acceptance-criteria phase. This historical snapshot comes
+from closed Story `prism-8xz`:
+
+**Show Story and Epic acceptance only on explicit request**
+
+Its complete `acceptance_criteria` field is shown as Markdown source:
+
+```markdown
+REQ-OUTPUT-001
+- Given normal full Story or Epic output and no explicit criteria request, when output is rendered, then it contains neither a standalone acceptance criteria heading nor an approval-format acceptance block.
+
+REQ-OUTPUT-002
+- Given a ready Story Human gate or Epic Approval gate and no explicit criteria request, when its pre-approve prompt is rendered, then acceptance criteria are omitted.
+
+REQ-STORY-001
+- Given a ready Story at Human, when pre-approve is rendered, then it contains Design summary, Task summary, and Approval request in that order.
+
+REQ-EPIC-001
+- Given a ready Epic at Approval, when pre-approve is rendered, then it contains Architecture summary, Story roadmap, and Approval request in that order.
+
+REQ-READY-001
+- Given missing or unusable current-item acceptance, when the gate runs, then Story returns to phase:story:specify or Epic returns to phase:epic:frame, approval is cleared, and no approval request is presented.
+
+REQ-REQUEST-001
+- Given an explicit operator request for acceptance criteria, when the lifecycle responds, then it may show complete untruncated acceptance for the current item only.
+
+REQ-TEST-001
+- Contract validation fails if either full host Story Human or Epic Approval reference declares acceptance as an unsolicited prompt section or either main skill declares a pre-approve exception.
+
+REQ-COMPAT-001
+- Requirements documents, Beads acceptance fields, and machine-readable acceptance sections remain permitted.
+```
+
 The coding agent approval prompt shows exactly:
 
 1. Design summary;
