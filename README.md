@@ -1,5 +1,7 @@
 # Prism
 
+<img src="assets/brand/prism-sticker.png" alt="Prism logo" width="200">
+
 Run `prism:story` with a change request and carry it from requirements and design
 through reviewed implementation and verification in your coding agent.
 Prism manages the phases: you do not need to choose a new command at each step.
