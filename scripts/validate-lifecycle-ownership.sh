@@ -91,7 +91,7 @@ def normalized_contract(text: str) -> str:
 mapping_path = root / "docs/lifecycle-ownership.json"
 record(mapping_path.is_file(), "lifecycle ownership mapping exists")
 mapping = load_json(mapping_path)
-record(mapping.get("version") == 21, "ownership schema version is 21")
+record(mapping.get("version") == 22, "ownership schema version is 22")
 
 expected_interfaces = {
     "router": {"codex": "$prism:lifecycle", "claude": "/prism:lifecycle", "flat": "/prism-lifecycle"},
@@ -381,6 +381,37 @@ expected_task_states = [
     {"state": "reviewing", "assignee": "prism/apply/reviewer"},
 ]
 record(mapping.get("task_states") == expected_task_states, "child Task assignee states are preserved")
+
+record(
+    mapping.get("delivery_evidence")
+    == {
+        "storage": "story-notes-append-only",
+        "fields": ["repository", "base", "artifact", "state", "merge_commit", "checks", "verified_at"],
+        "allowed_terminal_states": ["MERGED", "NO_CHANGE"],
+        "refresh": "independent-forge-and-git-verification",
+        "unmerged_policy": "remain-in-story-verify",
+        "close_reason": "Verified; delivery=<repo:PR|NO_CHANGE@merge_sha>; ci=<required checks>; verify=acceptance met, no findings",
+    },
+    "Story delivery evidence contract is complete",
+)
+
+record(
+    mapping.get("scope_revision")
+    == {
+        "marker": "SCOPE_REVISION",
+        "material_action": "route-earliest-affected-phase-and-renew-human-approval",
+        "implementation_detail_action": "record-rationale-and-continue-apply",
+        "preserve_completed_children": True,
+    },
+    "Story scope revision contract is complete",
+)
+
+story_apply = (root / "plugins/prism/skills/story/references/apply.md").read_text()
+story_verify = (root / "plugins/prism/skills/story/references/verify.md").read_text()
+for marker in ["SCOPE_REVISION", "IMPLEMENTATION_DETAIL", "MATERIAL", "earliest affected phase"]:
+    record(marker in story_apply, f"Story Apply scope revision marker: {marker}")
+for marker in ["DELIVERY_EVIDENCE", "append-only", "MERGED", "NO_CHANGE", "ancestor", "Verified; delivery="]:
+    record(marker in story_verify, f"Story Verify delivery marker: {marker}")
 
 
 if errors:

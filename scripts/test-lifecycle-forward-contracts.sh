@@ -205,6 +205,49 @@ for contract_path in [
     assert "remains the exception" not in contract_text
     assert "complete acceptance block" not in contract_text
 print("PASS: host output boundaries preserve internal acceptance artifacts")
+
+delivery = ownership["delivery_evidence"]
+required_fields = {
+    "repository", "base", "artifact", "state", "merge_commit", "checks", "verified_at"
+}
+
+def delivery_ready(rows):
+    return bool(rows) and all(
+        required_fields <= row.keys()
+        and row["state"] in delivery["allowed_terminal_states"]
+        and (
+            row["state"] == "MERGED"
+            and row["artifact"] != "NO_CHANGE"
+            and row["merge_commit"] != "NO_CHANGE"
+            and row["checks"] == "passed"
+            or row["state"] == "NO_CHANGE"
+            and row["artifact"] == row["merge_commit"] == row["checks"] == "NO_CHANGE"
+        )
+        for row in rows
+    )
+
+merged = {
+    "repository": "baldaworks/prism", "base": "main", "artifact": "PR-123",
+    "state": "MERGED", "merge_commit": "a" * 40, "checks": "passed",
+    "verified_at": "2026-10-22T00:00:00Z",
+}
+no_change = {
+    "repository": "example/docs", "base": "main", "artifact": "NO_CHANGE",
+    "state": "NO_CHANGE", "merge_commit": "NO_CHANGE", "checks": "NO_CHANGE",
+    "verified_at": "2026-10-22T00:00:00Z",
+}
+assert delivery_ready([merged, no_change])
+assert not delivery_ready([{**merged, "state": "OPEN"}])
+assert not delivery_ready([{**merged, "checks": "pending"}])
+assert not delivery_ready([{key: value for key, value in merged.items() if key != "merge_commit"}])
+assert not delivery_ready([{**no_change, "artifact": "PR-124"}])
+print("PASS: Story delivery evidence accepts merged/no-change rows and fails closed otherwise")
+
+scope_revision = ownership["scope_revision"]
+assert scope_revision["material_action"] == "route-earliest-affected-phase-and-renew-human-approval"
+assert scope_revision["implementation_detail_action"] == "record-rationale-and-continue-apply"
+assert scope_revision["preserve_completed_children"] is True
+print("PASS: material scope revisions renew approval while implementation details remain in Apply")
 PY
 
 echo "PASS: lifecycle forward-contract fixtures"

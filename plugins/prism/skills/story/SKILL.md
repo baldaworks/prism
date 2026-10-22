@@ -126,7 +126,15 @@ complete, untruncated acceptance of the current Story to be shown.
    independently of the implementation narrative.
 10. Do not close a task when checks or review fail.
 11. Verify is close-or-bounce and never repairs implementation.
-12. Do not commit or push without the authority provided by the repository and user.
+12. A material scope change discovered after approval must be recorded in Story
+    notes as `SCOPE_REVISION` and routed to the earliest affected phase; the
+    Story must return through Human before Apply resumes. An implementation
+    detail within the approved requirements and design may remain in Apply only
+    with a recorded rationale.
+13. Story closure requires independently refreshed delivery evidence for every
+    affected repository. An unmerged change, incomplete required checks, or
+    ambiguous evidence leaves the Story open in Verify.
+14. Do not commit or push without the authority provided by the repository and user.
 
 ## Phase selection
 
@@ -145,4 +153,5 @@ complete, untruncated acceptance of the current Story to be shown.
 - Never invent requirements, approval, repository evidence, review findings, or test results.
 - Treat the Callee pack as a read-only source during lifecycle execution.
 - Preserve existing child state during design/breakdown reconciliation.
-- Close a story only after every child is closed and Verify passes.
+- Close a story only after every child is closed, Verify passes, and every
+  related repository change is merged into its upstream base branch.

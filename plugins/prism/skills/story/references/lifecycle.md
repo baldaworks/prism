@@ -55,5 +55,9 @@ flowchart TB
 - Human approval is distinct from Specify clarification.
 - Design is explorer evidence followed by architect decisions.
 - Apply review is based on the actual working tree and tests, not only worker output.
-- Verify makes a close-or-bounce decision and performs no repairs.
+- Verify makes a close-or-bounce decision and performs no repairs. Closure also
+  requires independently refreshed upstream merge and required-check evidence
+  for every affected repository.
+- A material scope change after approval is recorded as `SCOPE_REVISION`, routed
+  to the earliest affected phase, and must pass Human approval again.
 - `pack/callee/**` is never modified by host execution.

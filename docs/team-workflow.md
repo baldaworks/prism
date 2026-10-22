@@ -138,6 +138,20 @@ native checks and an independent logical review pass before Task closure.
 Story and closes it or returns it to the appropriate phase. Returning to
 requirements, design or breakdown clears prior approval.
 
+Closure is a delivery decision as well as an acceptance decision. Verify
+independently refreshes pull-request state, required checks, merge commit, and
+upstream ancestry for every affected repository. It appends observations to the
+`DELIVERY_EVIDENCE` history in Story notes and writes a bounded close reason
+from each repository's latest valid row, including PR, merge commit, CI outcome,
+and final Verify result. A related change that is not upstream leaves the Story
+open.
+
+When implementation reveals a material scope change, add a dated
+`SCOPE_REVISION` note and route the Story to the earliest affected phase. Do not
+continue under the old approval; reconcile requirements, design, and Tasks and
+return through Human. An implementation detail already covered by the approved
+requirements and design needs only a recorded rationale in Apply review.
+
 The repository's [ownership validator](../scripts/validate-lifecycle-ownership.sh)
 and [forward fixtures](../scripts/test-lifecycle-forward-contracts.sh) test
 Prism's own contracts. They are not a universal live-project validator or proof

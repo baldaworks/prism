@@ -1,5 +1,5 @@
 {
-  "version": 21,
+  "version": 22,
   "interfaces": {
     "router": {
       "codex": "$prism:lifecycle",
@@ -150,11 +150,36 @@
       "assignee": "prism/apply/reviewer"
     }
   ],
+  "delivery_evidence": {
+    "storage": "story-notes-append-only",
+    "fields": [
+      "repository",
+      "base",
+      "artifact",
+      "state",
+      "merge_commit",
+      "checks",
+      "verified_at"
+    ],
+    "allowed_terminal_states": [
+      "MERGED",
+      "NO_CHANGE"
+    ],
+    "refresh": "independent-forge-and-git-verification",
+    "unmerged_policy": "remain-in-story-verify",
+    "close_reason": "Verified; delivery=<repo:PR|NO_CHANGE@merge_sha>; ci=<required checks>; verify=acceptance met, no findings"
+  },
+  "scope_revision": {
+    "marker": "SCOPE_REVISION",
+    "material_action": "route-earliest-affected-phase-and-renew-human-approval",
+    "implementation_detail_action": "record-rationale-and-continue-apply",
+    "preserve_completed_children": true
+  },
   "integrity": {
     "aggregate_algorithm": "sha256 over sorted source path UTF-8, NUL, file bytes, NUL",
     "host_sources": {
       "mutation_policy": "digest-locked",
-      "aggregate_sha256": "684d9e780a6c4875af2d747d17f1d35fc4f78a3b9d9121e364ef1fcc0cd9be9d",
+      "aggregate_sha256": "a499adf920b3062289a67836eeee24e8a60c39aab968d0b9252e0b37ff539fa4",
       "sources": [
         {
           "path": "plugins/prism/skills/epic/SKILL.md",
@@ -194,11 +219,11 @@
         },
         {
           "path": "plugins/prism/skills/story/SKILL.md",
-          "sha256": "5d8d83dae2bee728b27956549ef8ad7e4ad6b82a5433369df4e89d55441337c4"
+          "sha256": "7fb9b99a643a6ed0a85b0bd30d20621b6b654721f5a2a59febb0cbcb798657e1"
         },
         {
           "path": "plugins/prism/skills/story/references/apply.md",
-          "sha256": "fde992e35947c7fa7eaee3563b58018d8f778be6387cfafd55d03dae5a11185d"
+          "sha256": "791a95f7d4ad8050996ef5d1840d5ad4f446486494d094408b25f87f5ab0ba8a"
         },
         {
           "path": "plugins/prism/skills/story/references/breakdown.md",
@@ -214,7 +239,7 @@
         },
         {
           "path": "plugins/prism/skills/story/references/lifecycle.md",
-          "sha256": "b5066115e88da4d74de40a662947fb25eafaadec0e5d3f4bf2c9fdb6ac997851"
+          "sha256": "6dd953964aafe95398b42ab845a574f0e155c38b3d734640d8a97ec16889a493"
         },
         {
           "path": "plugins/prism/skills/story/references/specify.md",
@@ -222,7 +247,7 @@
         },
         {
           "path": "plugins/prism/skills/story/references/verify.md",
-          "sha256": "cb5e4995641f1cd124ef66eb52db72cf33546f408d5e2916702a08ec8a1c76b5"
+          "sha256": "2b21076a731660f825811a1fb5d82a96abaa709a25c0b293c9cb68674585e059"
         }
       ]
     }

@@ -68,8 +68,18 @@ flowchart TB
 ```
 
 Verify performs no repairs. It closes the Story only when acceptance and
-required checks pass, otherwise it returns the Story to the earliest defective
-phase.
+required checks pass and every related repository change is independently
+confirmed merged into its upstream base branch. Story notes retain append-only
+`DELIVERY_EVIDENCE` observations per repository; the latest valid observation
+drives closure, and the close reason summarizes PR, merge-commit, CI, and final
+Verify outcomes. Missing or ambiguous evidence keeps the Story open in Verify.
+
+If Apply discovers a material change to requirements, design, the Task graph,
+affected repositories, or verification obligations, it records a dated
+`SCOPE_REVISION`, routes to the earliest affected phase, clears stale approval,
+and returns through Human before implementation resumes. Details that stay
+inside the approved requirements and design remain in Apply with a recorded
+rationale.
 
 ## Sources
 
