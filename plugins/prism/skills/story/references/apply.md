@@ -32,11 +32,10 @@ Run only for `phase:story:apply` with `human:approved`.
 - one ready/unblocked child belonging to this story
 - live implementation, tests, repository instructions, and saved design
 
-Claim exactly one child for the logical implementer:
-
-```bash
-bd update <task> -a prism/apply/implementer
-```
+Select exactly one ready child by parentage, status, and dependencies. Task
+assignee is outside Prism lifecycle state: do not read or write it when
+selecting work or moving between logical role passes, and preserve any existing
+value.
 
 ## Role 1: implementer
 
@@ -83,7 +82,8 @@ iteration. Preserve completed children during reconciliation.
 
 If review finds a material defect:
 
-1. keep the task open and assign `prism/apply/implementer`;
+1. keep the task open and return to the logical implementer pass without
+   changing assignee;
 2. feed every finding into the next implementer pass;
 3. rerun relevant checks;
 4. repeat the independent reviewer pass.
@@ -94,7 +94,6 @@ with the story still in Apply.
 When accepted:
 
 ```bash
-bd update <task> -a prism/apply/reviewer
 bd close <task> --reason="Implemented, independently reviewed, checks passed"
 ```
 
@@ -122,4 +121,5 @@ bd update <story> --set-labels prism,phase:story:verify,human:approved
 - let the implementer self-declare review acceptance;
 - close with failing checks or unresolved findings;
 - continue Apply with stale approval after a material scope revision;
+- inspect or mutate Task assignee as lifecycle or Apply-role state;
 - modify `pack/callee/**`.

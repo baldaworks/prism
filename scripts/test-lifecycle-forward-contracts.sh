@@ -125,6 +125,13 @@ print("PASS: human approval remains isolated to its owning Epic")
 
 ownership = json.loads((root / "docs/lifecycle-ownership.json").read_text())
 beads = ownership["beads"]
+apply_roles = ownership["apply_task_roles"]
+assert apply_roles == {
+    "sequence": ["implementer", "independent-reviewer"],
+    "persistence": "host-logical-pass-only",
+    "assignee_policy": "preserve-and-ignore",
+}
+print("PASS: Apply roles are host-local and Task assignee is preserved and ignored")
 assert beads["unsupported_phase_policy"] == "treat-as-absent-no-migration"
 
 unsupported = {"phase:design", "phase:legacy", "phase:other:unknown"}

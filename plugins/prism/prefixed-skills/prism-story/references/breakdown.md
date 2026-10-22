@@ -73,13 +73,14 @@ Create children with the detailed task description:
 
 ```bash
 bd create "<title>" --type=task --parent=<story> -l prism \
-  -a prism/apply/implementer --description="<full task contract>" --silent
+  --description="<full task contract>" --silent
 bd update <new-task> --set-labels prism
 bd dep add <later-id> <earlier-id>
 ```
 
 The explicit task-label replacement removes any phase label inherited from the
-Story parent.
+Story parent. Task assignee is outside Prism lifecycle state: do not set it on
+creation, and preserve any existing value during reconciliation.
 
 For an existing graph, preserve every open/closed child and dependency, reuse
 sufficient coverage, and create only missing work. Stop on conflict with

@@ -39,8 +39,9 @@ Exactly one supported story label is the active phase:
 | Verify | `phase:story:verify` | story reviewer → close or phase-specific bounce |
 
 `prism` marks membership. `human:approved` is the only authorization for Apply.
-Story assignees never encode lifecycle phases. Within Apply, child-task assignees
-move from `prism/apply/implementer` to `prism/apply/reviewer`.
+Story and child-Task assignees are outside Prism lifecycle state. Never read or
+write them for phase or Apply-role selection; preserve any existing value.
+Within Apply, implementer and independent reviewer remain ordered host passes.
 
 Supported global phase labels are the `phase:story:*` set above and the sibling
 Epic skill's `phase:epic:*` set. Ignore any other phase-like label as absent; do

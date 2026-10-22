@@ -58,10 +58,12 @@ bd children <story-id>
 ```
 
 Stop on a source or database conflict. Reconcile requirements, phases and child
-status rather than blindly choosing the newest text. Prism's logical Task
-assignee records the implementation/review role, not an exclusive distributed
-lease. Two disconnected clones can both believe work is ready. Team ownership
-and coordination are still necessary.
+status rather than blindly choosing the newest text. Prism treats Task assignee
+as lifecycle-opaque state: it neither reads nor writes the field when selecting
+work or moving between the logical implementer and reviewer passes. External
+processes may use assignee for their own ownership model, and Prism preserves
+that value. Two disconnected clones can still both believe work is ready, so
+team ownership and coordination remain necessary.
 
 ### Hand off a change
 

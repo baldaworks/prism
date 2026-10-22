@@ -1,5 +1,5 @@
 {
-  "version": 22,
+  "version": 23,
   "interfaces": {
     "router": {
       "codex": "$prism:lifecycle",
@@ -140,16 +140,14 @@
       ]
     }
   },
-  "task_states": [
-    {
-      "state": "implementing",
-      "assignee": "prism/apply/implementer"
-    },
-    {
-      "state": "reviewing",
-      "assignee": "prism/apply/reviewer"
-    }
-  ],
+  "apply_task_roles": {
+    "sequence": [
+      "implementer",
+      "independent-reviewer"
+    ],
+    "persistence": "host-logical-pass-only",
+    "assignee_policy": "preserve-and-ignore"
+  },
   "delivery_evidence": {
     "storage": "story-notes-append-only",
     "fields": [
@@ -179,7 +177,7 @@
     "aggregate_algorithm": "sha256 over sorted source path UTF-8, NUL, file bytes, NUL",
     "host_sources": {
       "mutation_policy": "digest-locked",
-      "aggregate_sha256": "a499adf920b3062289a67836eeee24e8a60c39aab968d0b9252e0b37ff539fa4",
+      "aggregate_sha256": "a11ccf90e8fbb3ccef831bf02688d12dfd5346b3923c6e11166e6fa60229e788",
       "sources": [
         {
           "path": "plugins/prism/skills/epic/SKILL.md",
@@ -219,15 +217,15 @@
         },
         {
           "path": "plugins/prism/skills/story/SKILL.md",
-          "sha256": "7fb9b99a643a6ed0a85b0bd30d20621b6b654721f5a2a59febb0cbcb798657e1"
+          "sha256": "ddf5783db1247589c76d82e8a0f9c17c30767de0fb9b44179f63a732c4594f46"
         },
         {
           "path": "plugins/prism/skills/story/references/apply.md",
-          "sha256": "791a95f7d4ad8050996ef5d1840d5ad4f446486494d094408b25f87f5ab0ba8a"
+          "sha256": "e5617be541580dde33c7f4c83bf64b932df2609d2fc6276749f120c495e233ce"
         },
         {
           "path": "plugins/prism/skills/story/references/breakdown.md",
-          "sha256": "a3687a3a0199f0f2b5afbe966ab53b459e512b1b59f3455c4e246a4372ad8f07"
+          "sha256": "f420f7ba50b46dfdc24ab329fbda0c1762c505f7b79d39c8838ac75c0e488a14"
         },
         {
           "path": "plugins/prism/skills/story/references/design.md",
