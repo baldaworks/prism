@@ -2,6 +2,17 @@
 
 Run only for `phase:story:apply` with `human:approved`.
 
+## Contents
+
+- [Contract projection](#contract-projection)
+- [Inputs](#inputs)
+- [Role 1: implementer](#role-1-implementer)
+- [Role 2: independent reviewer](#role-2-independent-reviewer)
+- [Scope revision gate](#scope-revision-gate)
+- [Repair loop](#repair-loop)
+- [Stop when](#stop-when)
+- [Never](#never)
+
 ## Contract projection
 
 ```json
@@ -21,11 +32,10 @@ Run only for `phase:story:apply` with `human:approved`.
 - one ready/unblocked child belonging to this story
 - live implementation, tests, repository instructions, and saved design
 
-Claim exactly one child for the logical implementer:
-
-```bash
-bd update <task> -a prism/apply/implementer
-```
+Select exactly one ready child by parentage, status, and dependencies. Task
+assignee is outside Prism lifecycle state: do not read or write it when
+selecting work or moving between logical role passes, and preserve any existing
+value.
 
 ## Role 1: implementer
 
@@ -49,11 +59,31 @@ maintainability, scope, missing tests, and invariant preservation.
 Report findings by severity with specific locations, evidence, impact, and an
 actionable repair. State acceptance only when no material finding remains.
 
+## Scope revision gate
+
+When implementation or review exposes a change to requirements, design
+boundaries, the Task graph, affected repositories, or verification obligations,
+classify it before continuing:
+
+- `IMPLEMENTATION_DETAIL` stays inside the approved requirements and design.
+  Record the rationale in the implementer and reviewer output and continue the
+  existing Apply loop.
+- `MATERIAL` changes approved scope. Keep the current Task open, append a dated
+  `SCOPE_REVISION` entry to Story notes with the changed scope, reason, affected
+  REQ IDs, and earliest affected phase, then route there. Use label replacement
+  so `human:approved` is cleared for Specify, Design, or Breakdown. Reconcile
+  requirements, design, and children in that phase and return through Human
+  before Apply resumes.
+
+Never silently widen an approved change or treat a material revision as a repair
+iteration. Preserve completed children during reconciliation.
+
 ## Repair loop
 
 If review finds a material defect:
 
-1. keep the task open and assign `prism/apply/implementer`;
+1. keep the task open and return to the logical implementer pass without
+   changing assignee;
 2. feed every finding into the next implementer pass;
 3. rerun relevant checks;
 4. repeat the independent reviewer pass.
@@ -64,7 +94,6 @@ with the story still in Apply.
 When accepted:
 
 ```bash
-bd update <task> -a prism/apply/reviewer
 bd close <task> --reason="Implemented, independently reviewed, checks passed"
 ```
 
@@ -82,6 +111,8 @@ bd update <story> --set-labels prism,phase:story:verify,human:approved
 - review findings remain after the current pass;
 - five iterations are exhausted;
 - implementation exposes a requirement/design/breakdown defect.
+- a material scope revision has been persisted and routed to the earliest
+  affected phase.
 
 ## Never
 
@@ -89,4 +120,6 @@ bd update <story> --set-labels prism,phase:story:verify,human:approved
 - implement sibling scope;
 - let the implementer self-declare review acceptance;
 - close with failing checks or unresolved findings;
+- continue Apply with stale approval after a material scope revision;
+- inspect or mutate Task assignee as lifecycle or Apply-role state;
 - modify `pack/callee/**`.

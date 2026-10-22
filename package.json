@@ -1,6 +1,6 @@
 {
   "name": "prism",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "Run complete Prism Story and Epic lifecycles in coding agents.",
   "type": "module",
   "exports": "./integrations/opencode/index.js",

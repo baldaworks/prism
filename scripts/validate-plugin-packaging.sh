@@ -13,9 +13,9 @@ import sys
 
 root = pathlib.Path(sys.argv[1])
 plugin_name = "prism"
-expected_release_version = "0.7.0"
+expected_release_version = "0.8.0"
 agent_plugins_schema = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"
-agent_plugins_version = "0.7.0"
+agent_plugins_version = "0.8.0"
 agent_plugins_fields = {
     "$schema",
     "name",
@@ -288,7 +288,7 @@ def validate_opencode_package() -> None:
         "README.md",
     ]
     record(package.get("name") == plugin_name, "OpenCode package name is prism")
-    record(package.get("version") == expected_release_version, "OpenCode package version is 0.7.0")
+    record(package.get("version") == expected_release_version, "OpenCode package version is 0.8.0")
     record(package.get("type") == "module", "OpenCode package uses ESM")
     record(package.get("exports") == "./integrations/opencode/index.js", "OpenCode package exports its v2 entrypoint")
     record(package.get("files") == expected_files, "OpenCode package has the exact files allowlist")

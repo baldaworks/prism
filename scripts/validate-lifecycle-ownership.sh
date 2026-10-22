@@ -91,7 +91,7 @@ def normalized_contract(text: str) -> str:
 mapping_path = root / "docs/lifecycle-ownership.json"
 record(mapping_path.is_file(), "lifecycle ownership mapping exists")
 mapping = load_json(mapping_path)
-record(mapping.get("version") == 21, "ownership schema version is 21")
+record(mapping.get("version") == 23, "ownership schema version is 23")
 
 expected_interfaces = {
     "router": {"codex": "$prism:lifecycle", "claude": "/prism:lifecycle", "flat": "/prism-lifecycle"},
@@ -376,11 +376,58 @@ for path, markers in output_contracts.items():
     )
 
 
-expected_task_states = [
-    {"state": "implementing", "assignee": "prism/apply/implementer"},
-    {"state": "reviewing", "assignee": "prism/apply/reviewer"},
-]
-record(mapping.get("task_states") == expected_task_states, "child Task assignee states are preserved")
+expected_apply_task_roles = {
+    "sequence": ["implementer", "independent-reviewer"],
+    "persistence": "host-logical-pass-only",
+    "assignee_policy": "preserve-and-ignore",
+}
+record(
+    mapping.get("apply_task_roles") == expected_apply_task_roles,
+    "Apply roles remain ordered host passes and preserve Task assignee",
+)
+
+for relative in [
+    "plugins/prism/skills/story/SKILL.md",
+    "plugins/prism/skills/story/references/apply.md",
+    "plugins/prism/skills/story/references/breakdown.md",
+    "plugins/prism/prefixed-skills/prism-story/SKILL.md",
+    "plugins/prism/prefixed-skills/prism-story/references/apply.md",
+    "plugins/prism/prefixed-skills/prism-story/references/breakdown.md",
+]:
+    text = (root / relative).read_text()
+    for forbidden in ["prism/apply/implementer", "prism/apply/reviewer"]:
+        record(forbidden not in text, f"{relative} does not encode Apply role in assignee: {forbidden}")
+
+record(
+    mapping.get("delivery_evidence")
+    == {
+        "storage": "story-notes-append-only",
+        "fields": ["repository", "base", "artifact", "state", "merge_commit", "checks", "verified_at"],
+        "allowed_terminal_states": ["MERGED", "NO_CHANGE"],
+        "refresh": "independent-forge-and-git-verification",
+        "unmerged_policy": "remain-in-story-verify",
+        "close_reason": "Verified; delivery=<repo:PR|NO_CHANGE@merge_sha>; ci=<required checks>; verify=acceptance met, no findings",
+    },
+    "Story delivery evidence contract is complete",
+)
+
+record(
+    mapping.get("scope_revision")
+    == {
+        "marker": "SCOPE_REVISION",
+        "material_action": "route-earliest-affected-phase-and-renew-human-approval",
+        "implementation_detail_action": "record-rationale-and-continue-apply",
+        "preserve_completed_children": True,
+    },
+    "Story scope revision contract is complete",
+)
+
+story_apply = (root / "plugins/prism/skills/story/references/apply.md").read_text()
+story_verify = (root / "plugins/prism/skills/story/references/verify.md").read_text()
+for marker in ["SCOPE_REVISION", "IMPLEMENTATION_DETAIL", "MATERIAL", "earliest affected phase"]:
+    record(marker in story_apply, f"Story Apply scope revision marker: {marker}")
+for marker in ["DELIVERY_EVIDENCE", "append-only", "MERGED", "NO_CHANGE", "ancestor", "Verified; delivery="]:
+    record(marker in story_verify, f"Story Verify delivery marker: {marker}")
 
 
 if errors:
